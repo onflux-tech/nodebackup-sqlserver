@@ -1,6 +1,6 @@
 {
   "name": "node-backup",
-  "version": "1.1.0",
+  "version": "0.0.5",
   "description": "Backup automático SQL Server",
   "main": "src/app.js",
   "bin": "src/app.js",
@@ -17,8 +17,8 @@
     "windows",
     "service"
   ],
-  "author": "",
-  "license": "ISC",
+  "author": "Onflux Tech <https://github.com/onflux-tech/nodebackup-sqlserver>",
+  "license": "MIT",
   "dependencies": {
     "basic-ftp": "^5.0.5",
     "bcryptjs": "^2.4.3",

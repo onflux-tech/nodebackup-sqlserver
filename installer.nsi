@@ -5,11 +5,33 @@
 !include "LogicLib.nsh"
 !include "WinVer.nsh"
 
-Name "NodeBackup SQL Server"
+; Informações da Versão
+!define PRODUCT_NAME "NodeBackup SQL Server"
+!define PRODUCT_VERSION "0.0.5"
+!define PRODUCT_PUBLISHER "Onflux Tech"
+!define PRODUCT_WEB_SITE "https://github.com/onflux-tech/nodebackup-sqlserver"
+!define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
+!define PRODUCT_UNINST_ROOT_KEY "HKLM"
+
+Name "${PRODUCT_NAME}"
 OutFile "NodeBackupInstaller.exe"
 InstallDir "$PROGRAMFILES64\NodeBackup"
 InstallDirRegKey HKLM "Software\NodeBackup" "Install_Dir"
 RequestExecutionLevel admin
+
+; Informações de Versão do Arquivo
+VIProductVersion "0.0.5.0"
+VIFileVersion "0.0.5.0"
+VIAddVersionKey "ProductName" "${PRODUCT_NAME}"
+VIAddVersionKey "Comments" "Backup automático SQL Server"
+VIAddVersionKey "CompanyName" "${PRODUCT_PUBLISHER}"
+VIAddVersionKey "LegalTrademarks" "${PRODUCT_PUBLISHER}"
+VIAddVersionKey "LegalCopyright" "© ${PRODUCT_PUBLISHER}"
+VIAddVersionKey "FileDescription" "${PRODUCT_NAME}"
+VIAddVersionKey "FileVersion" "${PRODUCT_VERSION}"
+VIAddVersionKey "ProductVersion" "${PRODUCT_VERSION}"
+VIAddVersionKey "InternalName" "${PRODUCT_NAME}"
+VIAddVersionKey "OriginalFilename" "NodeBackupInstaller.exe"
 
 Var InstallService
 Var ServiceCheckbox
@@ -65,10 +87,19 @@ Section "NodeBackup (obrigatório)" SEC01
     CreateDirectory "$INSTDIR\temp"
 
     WriteRegStr HKLM "Software\NodeBackup" "Install_Dir" "$INSTDIR"
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\NodeBackup" "DisplayName" "NodeBackup SQL Server"
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\NodeBackup" "UninstallString" '"$INSTDIR\uninstall.exe"'
-    WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\NodeBackup" "NoModify" 1
-    WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\NodeBackup" "NoRepair" 1
+    
+    ; Informações no Painel de Controle (Adicionar/Remover Programas)
+    WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayName" "${PRODUCT_NAME}"
+    WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "UninstallString" '"$INSTDIR\uninstall.exe"'
+    WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayIcon" "$INSTDIR\public\favicon.ico"
+    WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayVersion" "${PRODUCT_VERSION}"
+    WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "Publisher" "${PRODUCT_PUBLISHER}"
+    WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "URLInfoAbout" "${PRODUCT_WEB_SITE}"
+    WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "HelpLink" "${PRODUCT_WEB_SITE}"
+    WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "InstallLocation" "$INSTDIR"
+    WriteRegDWORD ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "EstimatedSize" 59000
+    WriteRegDWORD ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "NoModify" 1
+    WriteRegDWORD ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "NoRepair" 1
 
     WriteUninstaller "uninstall.exe"
 
@@ -107,7 +138,7 @@ Section "Uninstall"
     Delete "$SMPROGRAMS\NodeBackup\*.*"
     RMDir "$SMPROGRAMS\NodeBackup"
 
-    DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\NodeBackup"
+    DeleteRegKey ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}"
     DeleteRegKey HKLM "Software\NodeBackup"
     
 SectionEnd
