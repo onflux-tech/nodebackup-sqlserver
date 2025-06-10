@@ -1,0 +1,12 @@
+backups
+node_modules
+dist
+.env
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+config.enc
+config.json
+NodeBackup.exe

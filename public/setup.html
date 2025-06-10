@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Configuração Inicial - Node-Backup</title>
+  <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="login-page">
+  <div id="toast-container"></div>
+  <main class="login-main">
+    <img src="logo.png" alt="Node-Backup Logo" class="logo">
+    <form id="setupForm" autocomplete="off">
+      <h2>Criar conta administrador</h2>
+      <p>Por favor, defina suas credenciais.</p>
+      <div class="form-group">
+        <label for="username">Usuário</label>
+        <input type="text" id="username" placeholder="Usuário admin" required>
+      </div>
+      <div class="form-group">
+        <label for="password">Senha</label>
+        <input type="password" id="password" placeholder="Mínimo 6 caracteres" required>
+      </div>
+      <div class="form-group">
+        <label for="confirmPassword">Confirmar Senha</label>
+        <input type="password" id="confirmPassword" placeholder="Repita a senha" required>
+      </div>
+      <div class="form-group">
+        <button type="submit" id="setupButton" class="btn btn-primary btn-full">
+          <span class="btn-text">Salvar e Continuar</span>
+          <div class="spinner" style="display: none;"></div>
+        </button>
+      </div>
+    </form>
+  </main>
+  <script src="setup.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Configuração de Backup</title>
+  <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+  <div id="toast-container"></div>
+  <div class="container">
+    <div class="header">
+      <h2>Configuração de Backup</h2>
+    </div>
+
+    <form id="configForm" autocomplete="off">
+      <div class="grid-container">
+        <fieldset class="panel">
+          <legend>Banco de Dados</legend>
+          <div class="form-group">
+            <label for="dbServer">Servidor SQL</label>
+            <input type="text" id="dbServer" placeholder="localhost\SQLEXPRESS">
+            <small>Ex: localhost ou NOME_PC\SQLEXPRESS</small>
+          </div>
+          <div class="form-group">
+            <label for="dbUser">Usuário</label>
+            <input type="text" id="dbUser" placeholder="sa">
+          </div>
+          <div class="form-group">
+            <label for="dbPass">Senha</label>
+            <input type="password" id="dbPass" placeholder="••••••••">
+          </div>
+          <div class="form-group">
+            <button type="button" id="btnListDatabases" class="btn btn-primary btn-full">
+              <span class="btn-text">Listar Bancos</span>
+              <div class="spinner"></div>
+            </button>
+          </div>
+          <div class="form-group">
+            <label for="dbList">Selecionar Bancos</label>
+            <select id="dbList" multiple size="4"></select>
+            <small>Segure CTRL (ou CMD) para selecionar múltiplos.</small>
+          </div>
+        </fieldset>
+
+        <fieldset class="panel">
+          <legend>Configurações FTP</legend>
+          <div class="form-group">
+            <label for="ftpHost">Host</label>
+            <input type="text" id="ftpHost" placeholder="ftp.meuservidor.com">
+            <small>Opcional: Deixe em branco para não usar FTP.</small>
+          </div>
+          <div class="form-group">
+            <label for="ftpPort">Porta</label>
+            <input type="number" id="ftpPort" placeholder="21">
+          </div>
+          <div class="form-group">
+            <label for="ftpUser">Usuário</label>
+            <input type="text" id="ftpUser" placeholder="ftp_user">
+          </div>
+          <div class="form-group">
+            <label for="ftpPass">Senha</label>
+            <input type="password" id="ftpPass" placeholder="••••••••">
+          </div>
+          <div class="form-group">
+            <label for="ftpRemoteDir">Diretório Remoto</label>
+            <input type="text" id="ftpRemoteDir" placeholder="/backups_sql/">
+          </div>
+          <div class="form-group">
+            <button type="button" id="btnTestFtp" class="btn btn-primary btn-full">
+              <span class="btn-text">Testar Conexão FTP</span>
+              <div class="spinner"></div>
+            </button>
+          </div>
+        </fieldset>
+
+        <fieldset class="panel">
+          <legend>Horários de Backup</legend>
+          <div id="scheduleInputs">
+
+          </div>
+          <button type="button" id="addSchedule" class="btn btn-primary" aria-label="Adicionar novo horário">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+              <path
+                d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z" />
+            </svg>
+            Adicionar
+          </button>
+          <small>Defina um ou mais horários no formato HH:MM para os backups.</small>
+        </fieldset>
+      </div>
+
+      <div class="button-group">
+        <button type="submit" id="saveButton" class="btn btn-primary">
+          <span class="btn-text">Salvar Configurações</span>
+          <div class="spinner"></div>
+        </button>
+        <button type="button" id="logoutButton" class="btn btn-secondary">
+          Sair
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+
+</html>

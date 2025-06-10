@@ -1,0 +1,36 @@
+name: Build e Release do Executável
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    name: Gerar NodeBackup.exe
+    runs-on: windows-latest
+
+    steps:
+      - name: Clonar o repositório
+        uses: actions/checkout@v3
+
+      - name: Configurar Node.js v12
+        uses: actions/setup-node@v3
+        with:
+          node-version: '12'
+          cache: 'npm'
+
+      - name: Instalar dependências
+        run: npm install
+
+      - name: Compilar o executável
+        run: npm run build
+
+      - name: Fazer upload do executável para a release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./NodeBackup.exe
+          asset_name: NodeBackup.exe
+          asset_content_type: application/octet-stream 

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login - Node-Backup</title>
+  <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="login-page">
+  <div id="toast-container"></div>
+  <main class="login-main">
+    <img src="logo.png" alt="Node-Backup Logo" class="logo">
+    <form id="loginForm" autocomplete="off">
+      <div class="form-group">
+        <label for="username">Usuário</label>
+        <input type="text" id="username" placeholder="Seu usuário" required>
+      </div>
+      <div class="form-group">
+        <label for="password">Senha</label>
+        <input type="password" id="password" placeholder="••••••••" required>
+      </div>
+      <div class="form-group">
+        <button type="submit" id="loginButton" class="btn btn-primary btn-full">
+          <span class="btn-text">Entrar</span>
+          <div class="spinner" style="display: none;"></div>
+        </button>
+      </div>
+    </form>
+    <div class="login-footer">
+      <button id="openChangePasswordModal" class="btn-link">Alterar senha</button>
+    </div>
+  </main>
+  <div id="changePasswordModal" class="modal">
+    <div class="modal-content">
+      <header class="modal-header">
+        <h2>Alterar Senha</h2>
+        <button id="closeModal" class="close-button">&times;</button>
+      </header>
+      <form id="changePasswordForm" autocomplete="off">
+        <div class="form-group">
+          <label for="cp-username">Usuário</label>
+          <input type="text" id="cp-username" required>
+        </div>
+        <div class="form-group">
+          <label for="cp-oldPassword">Senha Antiga</label>
+          <input type="password" id="cp-oldPassword" required>
+        </div>
+        <div class="form-group">
+          <label for="cp-newPassword">Nova Senha</label>
+          <input type="password" id="cp-newPassword" required>
+        </div>
+        <div class="form-group">
+          <label for="cp-confirmNewPassword">Confirmar Nova Senha</label>
+          <input type="password" id="cp-confirmNewPassword" required>
+        </div>
+        <div class="form-group">
+          <button type="submit" id="changePasswordButton" class="btn btn-primary btn-full">
+            <span class="btn-text">Salvar Nova Senha</span>
+            <div class="spinner" style="display: none;"></div>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <script src="login.js"></script>
+</body>
+
+</html>
