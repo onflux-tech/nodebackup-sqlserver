@@ -1,7 +1,7 @@
 const schedule = require('node-schedule');
 const logger = require('../utils/logger');
 const { getConfig } = require('../config');
-const { performBackup } = require('./database');
+const { performConsolidatedBackup } = require('./database');
 
 let scheduledJobs = [];
 
@@ -16,6 +16,7 @@ function startScheduler() {
   const dbList = (config.database && config.database.databases) || [];
   const dbConfig = config.database;
   const ftpConfig = config.ftp;
+  const clientName = config.clientName || 'Backup';
 
   if (scheduleList.length === 0) {
     logger.warn('Nenhum horário de backup configurado. O agendador não iniciará jobs.');
@@ -30,18 +31,18 @@ function startScheduler() {
     logger.warn(`Horários de backup duplicados foram removidos. Agendamentos ativos: ${scheduleList.join(', ')}`);
   }
 
-  scheduleList.forEach(time => {
+  scheduleList.forEach((time, index) => {
     const [hour, minute] = time.split(':');
     const rule = new schedule.RecurrenceRule();
     rule.hour = parseInt(hour, 10);
     rule.minute = parseInt(minute, 10);
     rule.tz = 'local';
 
+    const backupNumber = index + 1;
+
     const job = schedule.scheduleJob(rule, () => {
-      logger.info(`Disparando backup agendado para as ${time}. Bancos: ${dbList.join(', ')}`);
-      dbList.forEach(dbName => {
-        performBackup(dbName, dbConfig, ftpConfig);
-      });
+      logger.info(`Disparando backup consolidado #${backupNumber} para as ${time}. Bancos: ${dbList.join(', ')}`);
+      performConsolidatedBackup(dbList, clientName, backupNumber, dbConfig, ftpConfig);
     });
 
     if (job) {

@@ -34,14 +34,21 @@ async function uploadToFtp(localFilePath, ftpConfig) {
       remotePath = remoteFileName;
     }
 
+    try {
+      logger.info(`Verificando e removendo versão anterior do backup no FTP: ${remotePath}`);
+      await client.remove(remotePath);
+      logger.info('Versão anterior removida com sucesso.');
+    } catch (err) {
+      if (err.code === 550) {
+        logger.info('Nenhuma versão anterior do backup encontrada no FTP. Prosseguindo com o upload.');
+      } else {
+        throw err;
+      }
+    }
+
     logger.info(`Enviando arquivo ${localFilePath} para ${host}:${remotePath}...`);
     await client.uploadFrom(localFilePath, remotePath);
     logger.info('Upload FTP concluído.');
-
-    fs.unlink(localFilePath, (err) => {
-      if (err) logger.error(`Erro ao excluir arquivo local pós-upload: ${localFilePath}`, err);
-      else logger.info(`Arquivo local excluído com sucesso: ${localFilePath}`);
-    });
 
   } catch (err) {
     logFriendlyFTPError(err, 'Erro durante a operação FTP');

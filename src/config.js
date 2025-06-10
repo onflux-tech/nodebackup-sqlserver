@@ -18,6 +18,7 @@ function getDefaultConfig() {
       sessionSecret: require('crypto').randomBytes(32).toString('hex'),
       isInitialSetup: true
     },
+    clientName: 'Cliente',
     database: {
       server: '',
       user: '',

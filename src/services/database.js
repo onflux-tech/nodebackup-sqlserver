@@ -8,67 +8,104 @@ const { uploadToFtp } = require('./ftp');
 const { logFriendlyError } = require('../utils/errorHandler');
 
 const sevenZipAsset = path.join(baseDir, '7za.exe');
-const backupDir = path.join(baseDir, 'backups');
 
-if (!fs.existsSync(backupDir)) {
-  fs.mkdirSync(backupDir, { recursive: true });
-}
+function performSingleBackup(dbName, backupNumber, backupDir, dbConfig) {
+  return new Promise((resolve, reject) => {
+    const { server, user, password } = dbConfig;
+    const backupFileName = `${dbName}-${backupNumber}.bak`;
+    const backupFilePath = path.join(backupDir, backupFileName);
 
-function getSafeTimeString(time) {
-  return time.replace(/:/g, '_');
-}
+    const sqlCmd = `sqlcmd -S "${server}" -U "${user}" -P "${password}" -Q "BACKUP DATABASE [${dbName}] TO DISK = N'${backupFilePath}' WITH NOINIT, NOUNLOAD, NAME = N'${dbName} full backup', NOSKIP, STATS = 10, NOREWIND"`;
 
-async function performBackup(dbName, dbConfig, ftpConfig) {
-  const { server, user, password } = dbConfig;
-  const time = new Date().toLocaleTimeString('pt-BR', { hour12: false });
-  const safeTime = getSafeTimeString(time);
-  const backupFileName = `${dbName}_${new Date().toISOString().split('T')[0]}_${safeTime}.bak`;
-  const backupFilePath = path.join(backupDir, backupFileName);
-  const zipFileName = `${path.basename(backupFileName, '.bak')}.7z`;
-  const zipFilePath = path.join(backupDir, zipFileName);
-
-  const sqlCmd = `sqlcmd -S "${server}" -U "${user}" -P "${password}" -Q "BACKUP DATABASE [${dbName}] TO DISK = N'${backupFilePath}' WITH NOINIT, NOUNLOAD, NAME = N'${dbName} full backup', NOSKIP, STATS = 10, NOREWIND"`;
-
-  logger.info(`Executando backup do banco de dados ${dbName}...`);
-
-  exec(sqlCmd, (error, stdout, stderr) => {
-    if (error) {
-      logger.error(`Erro ao executar backup do ${dbName}`, error);
-      logger.error(`Stderr: ${stderr}`);
-      return;
-    }
-    if (stderr && stderr.length > 0) {
-      logger.warn(`sqlcmd stderr (${dbName}): ${stderr}`);
-    }
-    logger.info(`Backup do banco de dados ${dbName} concluído: ${backupFilePath}`);
-    compressAndUpload(backupFilePath, zipFilePath, ftpConfig);
+    logger.info(`-> Gerando backup para o banco: ${dbName}`);
+    exec(sqlCmd, (error, stdout, stderr) => {
+      if (error) {
+        logger.error(`Erro ao executar backup do ${dbName}`, { error: error.message, stderr });
+        return reject(error);
+      }
+      if (stderr && stderr.length > 0) {
+        logger.warn(`sqlcmd stderr (${dbName}): ${stderr}`);
+      }
+      logger.info(`-> Backup de ${dbName} concluído: ${backupFilePath}`);
+      resolve(backupFilePath);
+    });
   });
 }
 
-function compressAndUpload(backupFilePath, zipFilePath, ftpConfig) {
-  const zipCmd = `"${sevenZipAsset}" a -t7z -mx=9 "${zipFilePath}" "${backupFilePath}"`;
-  logger.info(`Compactando arquivo de backup para ${zipFilePath}...`);
+async function performConsolidatedBackup(dbList, clientName, backupNumber, dbConfig, ftpConfig) {
+  const finalZipName = `${clientName}-${backupNumber}.7z`;
+  const backupsDir = path.join(baseDir, 'backups');
+  const finalZipPath = path.join(backupsDir, finalZipName);
+  const backupFilePaths = [];
 
-  exec(zipCmd, (error, stdout, stderr) => {
-    if (error) {
-      logger.error(`Erro ao compactar backup`, error);
-      return;
-    }
-    if (stderr && stderr.length > 0) {
-      logger.warn(`7za stderr: ${stderr}`);
-    }
-    logger.info(`Backup compactado com sucesso: ${zipFilePath}`);
+  try {
+    fs.mkdirSync(backupsDir, { recursive: true });
 
-    fs.unlink(backupFilePath, (err) => {
-      if (err) logger.error(`Erro ao excluir arquivo .bak: ${backupFilePath}`, err);
+    logger.info(`Iniciando rotina de limpeza para o backup #${backupNumber}...`);
+    const filesInBackupDir = fs.readdirSync(backupsDir);
+    for (const file of filesInBackupDir) {
+      if (file.endsWith(`-${backupNumber}.bak`)) {
+        const orphanPath = path.join(backupsDir, file);
+        logger.warn(`Arquivo .bak órfão encontrado: ${orphanPath}. Excluindo...`);
+        try {
+          fs.unlinkSync(orphanPath);
+          logger.info(`Arquivo .bak órfão excluído: ${orphanPath}`);
+        } catch (err) {
+          logger.error(`Falha ao excluir arquivo .bak órfão: ${orphanPath}`, err);
+        }
+      }
+    }
+
+    if (fs.existsSync(finalZipPath)) {
+      logger.info(`Arquivo de backup .7z existente encontrado: ${finalZipPath}. Excluindo antes de prosseguir.`);
+      try {
+        fs.unlinkSync(finalZipPath);
+        logger.info(`Arquivo .7z anterior excluído com sucesso.`);
+      } catch (err) {
+        logger.error(`Falha ao excluir o arquivo .7z existente: ${finalZipPath}`, err);
+      }
+    }
+
+    logger.info(`Iniciando backups individuais na pasta: ${backupsDir}`);
+
+    for (const dbName of dbList) {
+      const backupPath = await performSingleBackup(dbName, backupNumber, backupsDir, dbConfig);
+      backupFilePaths.push(backupPath);
+    }
+
+    logger.info('Todos os backups individuais foram concluídos com sucesso.');
+    logger.info(`Compactando todos os bancos em um único arquivo: ${finalZipPath}`);
+
+    const filesToCompress = backupFilePaths.map(p => `"${p}"`).join(' ');
+    const zipCmd = `"${sevenZipAsset}" a -t7z -mx=9 "${finalZipPath}" ${filesToCompress}`;
+
+    exec(zipCmd, (error, stdout, stderr) => {
+      if (error) {
+        logger.error(`Erro ao compactar o backup consolidado`, { error: error.message, stderr });
+        return;
+      }
+      if (stderr && stderr.length > 0) {
+        logger.warn(`7za stderr: ${stderr}`);
+      }
+      logger.info(`Backup consolidado compactado com sucesso: ${finalZipPath}`);
+
+      backupFilePaths.forEach(filePath => {
+        fs.unlink(filePath, (err) => {
+          if (err) logger.error(`Erro ao excluir arquivo .bak: ${filePath}`, err);
+          else logger.info(`Arquivo .bak excluído: ${filePath}`);
+        });
+      });
+
+      if (ftpConfig && ftpConfig.host) {
+        uploadToFtp(finalZipPath, ftpConfig);
+      } else {
+        logger.info('FTP não configurado, backup consolidado mantido localmente.');
+      }
     });
 
-    if (ftpConfig && ftpConfig.host) {
-      uploadToFtp(zipFilePath, ftpConfig);
-    } else {
-      logger.info('FTP não configurado, backup mantido localmente.');
-    }
-  });
+  } catch (error) {
+    logger.error('Falha no processo de backup consolidado. A operação foi abortada.', { stack: error.stack });
+  }
 }
 
 async function listDatabases(dbConfig) {
@@ -101,6 +138,6 @@ async function listDatabases(dbConfig) {
 }
 
 module.exports = {
-  performBackup,
+  performConsolidatedBackup,
   listDatabases,
 }; 
