@@ -1,11 +1,11 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const { getConfig, setConfig, saveConfig } = require('../config');
-const { listDatabases } = require('../services/database');
+const { listDatabases, cleanupOldBackups } = require('../services/database');
 const { reschedule } = require('../services/scheduler');
 const logger = require('../utils/logger');
 const { translateDatabaseError, translateFTPError } = require('../utils/errorHandler');
-const { testFtpConnection } = require('../services/ftp');
+const { testFtpConnection, cleanupFtpBackups } = require('../services/ftp');
 
 const router = express.Router();
 
@@ -164,6 +164,84 @@ router.post('/logout', (req, res) => {
     res.clearCookie('connect.sid');
     res.status(200).json({ message: 'Logout bem-sucedido.' });
   });
+});
+
+router.post('/cleanup-local', async (req, res) => {
+  const config = getConfig();
+  const retentionConfig = config.retention;
+
+  if (!retentionConfig || !retentionConfig.enabled) {
+    return res.status(400).json({
+      error: 'Política de retenção não está habilitada',
+      details: 'Ative a política de retenção nas configurações para usar esta funcionalidade'
+    });
+  }
+
+  try {
+    const clientName = config.clientName || 'Backup';
+    const result = await cleanupOldBackups(retentionConfig.localDays, clientName);
+
+    logger.info(`Limpeza manual local executada: ${result.removed} arquivo(s) removido(s), ${result.errors} erro(s)`);
+
+    res.json({
+      message: `Limpeza local concluída: ${result.removed} arquivo(s) removido(s)`,
+      data: {
+        removed: result.removed,
+        errors: result.errors,
+        retentionDays: retentionConfig.localDays
+      }
+    });
+  } catch (error) {
+    logger.error('Erro na limpeza manual local', error);
+    res.status(500).json({
+      error: 'Erro durante a limpeza local',
+      details: error.message
+    });
+  }
+});
+
+router.post('/cleanup-ftp', async (req, res) => {
+  const config = getConfig();
+  const retentionConfig = config.retention;
+  const ftpConfig = config.ftp;
+
+  if (!retentionConfig || !retentionConfig.enabled) {
+    return res.status(400).json({
+      error: 'Política de retenção não está habilitada',
+      details: 'Ative a política de retenção nas configurações para usar esta funcionalidade'
+    });
+  }
+
+  if (!ftpConfig || !ftpConfig.host) {
+    return res.status(400).json({
+      error: 'FTP não configurado',
+      details: 'Configure as credenciais FTP antes de executar a limpeza remota'
+    });
+  }
+
+  try {
+    const clientName = config.clientName || 'Backup';
+    const result = await cleanupFtpBackups(ftpConfig, retentionConfig.ftpDays, clientName);
+
+    logger.info(`Limpeza manual FTP executada: ${result.removed} arquivo(s) removido(s), ${result.errors} erro(s)`);
+
+    res.json({
+      message: `Limpeza FTP concluída: ${result.removed} arquivo(s) removido(s)`,
+      data: {
+        removed: result.removed,
+        errors: result.errors,
+        retentionDays: retentionConfig.ftpDays
+      }
+    });
+  } catch (error) {
+    const errorInfo = translateFTPError(error);
+    logger.error('Erro na limpeza manual FTP', error);
+    res.status(500).json({
+      error: errorInfo.friendly,
+      details: errorInfo.details,
+      suggestions: errorInfo.suggestions
+    });
+  }
 });
 
 module.exports = router; 

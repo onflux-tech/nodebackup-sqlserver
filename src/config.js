@@ -32,7 +32,13 @@ function getDefaultConfig() {
       password: '',
       remoteDir: '/'
     },
-    backupSchedule: ['00:00']
+    backupSchedule: ['00:00'],
+    retention: {
+      enabled: true,
+      localDays: 7,
+      ftpDays: 30,
+      autoCleanup: true
+    }
   };
 }
 
@@ -57,6 +63,12 @@ function loadConfig() {
       if (!config.app) {
         const defaultConfig = getDefaultConfig();
         config.app = defaultConfig.app;
+      }
+
+      if (!config.retention) {
+        const defaultConfig = getDefaultConfig();
+        config.retention = defaultConfig.retention;
+        logger.info('Configuração de retenção adicionada com valores padrão.');
       }
 
       saveConfig();

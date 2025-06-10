@@ -4,7 +4,7 @@ const fs = require('fs');
 const mssql = require('mssql');
 const logger = require('../utils/logger');
 const { baseDir } = require('../config');
-const { uploadToFtp } = require('./ftp');
+const { uploadToFtp, cleanupFtpBackups } = require('./ftp');
 const { logFriendlyError } = require('../utils/errorHandler');
 
 const sevenZipAsset = path.join(baseDir, '7za.exe');
@@ -32,7 +32,7 @@ function performSingleBackup(dbName, backupNumber, backupDir, dbConfig) {
   });
 }
 
-async function performConsolidatedBackup(dbList, clientName, backupNumber, dbConfig, ftpConfig) {
+async function performConsolidatedBackup(dbList, clientName, backupNumber, dbConfig, ftpConfig, retentionConfig) {
   const finalZipName = `${clientName}-${backupNumber}.7z`;
   const backupsDir = path.join(baseDir, 'backups');
   const finalZipPath = path.join(backupsDir, finalZipName);
@@ -79,7 +79,7 @@ async function performConsolidatedBackup(dbList, clientName, backupNumber, dbCon
     const filesToCompress = backupFilePaths.map(p => `"${p}"`).join(' ');
     const zipCmd = `"${sevenZipAsset}" a -t7z -mx=9 "${finalZipPath}" ${filesToCompress}`;
 
-    exec(zipCmd, (error, stdout, stderr) => {
+    exec(zipCmd, async (error, stdout, stderr) => {
       if (error) {
         logger.error(`Erro ao compactar o backup consolidado`, { error: error.message, stderr });
         return;
@@ -100,6 +100,30 @@ async function performConsolidatedBackup(dbList, clientName, backupNumber, dbCon
         uploadToFtp(finalZipPath, ftpConfig);
       } else {
         logger.info('FTP não configurado, backup consolidado mantido localmente.');
+      }
+
+      if (retentionConfig && retentionConfig.enabled && retentionConfig.autoCleanup) {
+        logger.info('Iniciando limpeza automática de backups antigos...');
+
+        try {
+          if (retentionConfig.localDays > 0) {
+            const localCleanup = await cleanupOldBackups(retentionConfig.localDays, clientName);
+            if (localCleanup.removed > 0) {
+              logger.info(`Limpeza local: ${localCleanup.removed} arquivo(s) removido(s)`);
+            }
+          }
+
+          if (ftpConfig && ftpConfig.host && retentionConfig.ftpDays > 0) {
+            const ftpCleanup = await cleanupFtpBackups(ftpConfig, retentionConfig.ftpDays, clientName);
+            if (ftpCleanup.removed > 0) {
+              logger.info(`Limpeza FTP: ${ftpCleanup.removed} arquivo(s) removido(s)`);
+            }
+          }
+
+          logger.info('Limpeza automática concluída');
+        } catch (cleanupError) {
+          logger.error('Erro durante a limpeza automática', cleanupError);
+        }
       }
     });
 
@@ -137,7 +161,64 @@ async function listDatabases(dbConfig) {
   }
 }
 
+async function cleanupOldBackups(retentionDays, clientName) {
+  const backupsDir = path.join(baseDir, 'backups');
+  const cutoffDate = new Date();
+  cutoffDate.setDate(cutoffDate.getDate() - retentionDays);
+
+  logger.info(`Iniciando limpeza de backups locais anteriores a ${cutoffDate.toISOString().split('T')[0]} (${retentionDays} dias)`);
+
+  try {
+    if (!fs.existsSync(backupsDir)) {
+      logger.info('Diretório de backups não existe, nada para limpar.');
+      return { removed: 0, errors: 0 };
+    }
+
+    const files = fs.readdirSync(backupsDir);
+    const backupFiles = files.filter(file =>
+      file.endsWith('.7z') &&
+      (clientName ? file.startsWith(clientName) : true)
+    );
+
+    let removedCount = 0;
+    let errorCount = 0;
+
+    for (const file of backupFiles) {
+      const filePath = path.join(backupsDir, file);
+
+      try {
+        const stats = fs.statSync(filePath);
+        const fileDate = stats.mtime;
+
+        if (fileDate < cutoffDate) {
+          const fileSizeMB = (stats.size / (1024 * 1024)).toFixed(2);
+
+          fs.unlinkSync(filePath);
+          logger.info(`Backup antigo removido: ${file} (${fileSizeMB} MB, data: ${fileDate.toISOString().split('T')[0]})`);
+          removedCount++;
+        }
+      } catch (error) {
+        logger.error(`Erro ao processar arquivo ${file}`, error);
+        errorCount++;
+      }
+    }
+
+    if (removedCount > 0) {
+      logger.info(`Limpeza concluída: ${removedCount} arquivo(s) removido(s), ${errorCount} erro(s)`);
+    } else {
+      logger.info('Nenhum backup antigo encontrado para remoção');
+    }
+
+    return { removed: removedCount, errors: errorCount };
+
+  } catch (error) {
+    logger.error('Erro durante a limpeza de backups locais', error);
+    throw error;
+  }
+}
+
 module.exports = {
   performConsolidatedBackup,
   listDatabases,
+  cleanupOldBackups
 }; 

@@ -668,6 +668,59 @@ legend {
     box-shadow var(--transition-speed) ease;
 }
 
+.checkbox-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.checkbox-group input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+  accent-color: var(--primary-color);
+}
+
+.checkbox-group label {
+  margin-bottom: 0;
+  font-weight: 500;
+  color: var(--text-primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.checkbox-group input[type="checkbox"]:focus {
+  outline: 2px solid rgba(67, 97, 238, 0.3);
+  outline-offset: 2px;
+}
+
+.cleanup-buttons {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.cleanup-buttons .btn {
+  flex: 1;
+  min-width: auto;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.85rem;
+}
+
+.cleanup-buttons .btn-text {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+@media (max-width: 600px) {
+  .cleanup-buttons {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+
 @media (max-width: 768px) {
   .theme-toggle {
     top: 10px;

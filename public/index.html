@@ -109,6 +109,47 @@
           </button>
           <small>Defina um ou mais horários no formato HH:MM para os backups.</small>
         </fieldset>
+
+        <fieldset class="panel">
+          <legend>Política de Retenção</legend>
+          <div class="form-group">
+            <div class="checkbox-group">
+              <input type="checkbox" id="retentionEnabled" checked>
+              <label for="retentionEnabled">Ativar limpeza automática de backups antigos</label>
+            </div>
+            <small>Habilita a remoção automática de arquivos de backup mais antigos.</small>
+          </div>
+          <div class="form-group">
+            <label for="localRetentionDays">Retenção Local (dias)</label>
+            <input type="number" id="localRetentionDays" min="1" max="365" value="7" placeholder="7">
+            <small>Número de dias para manter os backups no disco local.</small>
+          </div>
+          <div class="form-group">
+            <label for="ftpRetentionDays">Retenção FTP (dias)</label>
+            <input type="number" id="ftpRetentionDays" min="1" max="365" value="30" placeholder="30">
+            <small>Número de dias para manter os backups no servidor FTP (opcional).</small>
+          </div>
+          <div class="form-group">
+            <div class="checkbox-group">
+              <input type="checkbox" id="autoCleanup" checked>
+              <label for="autoCleanup">Executar limpeza automaticamente após cada backup</label>
+            </div>
+            <small>Remove automaticamente os arquivos antigos após cada rotina de backup.</small>
+          </div>
+          <div class="form-group">
+            <div class="cleanup-buttons">
+              <button type="button" id="btnCleanupLocal" class="btn btn-secondary">
+                <span class="btn-text">🗑️ Limpar Local</span>
+                <div class="spinner"></div>
+              </button>
+              <button type="button" id="btnCleanupFtp" class="btn btn-secondary">
+                <span class="btn-text">🌐 Limpar FTP</span>
+                <div class="spinner"></div>
+              </button>
+            </div>
+            <small>Execute a limpeza manual de backups antigos conforme a política configurada.</small>
+          </div>
+        </fieldset>
       </div>
 
       <div class="button-group">

@@ -17,6 +17,7 @@ function startScheduler() {
   const dbConfig = config.database;
   const ftpConfig = config.ftp;
   const clientName = config.clientName || 'Backup';
+  const retentionConfig = config.retention;
 
   if (scheduleList.length === 0) {
     logger.warn('Nenhum horário de backup configurado. O agendador não iniciará jobs.');
@@ -42,7 +43,7 @@ function startScheduler() {
 
     const job = schedule.scheduleJob(rule, () => {
       logger.info(`Disparando backup consolidado #${backupNumber} para as ${time}. Bancos: ${dbList.join(', ')}`);
-      performConsolidatedBackup(dbList, clientName, backupNumber, dbConfig, ftpConfig);
+      performConsolidatedBackup(dbList, clientName, backupNumber, dbConfig, ftpConfig, retentionConfig);
     });
 
     if (job) {

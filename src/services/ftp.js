@@ -98,7 +98,91 @@ async function testFtpConnection(ftpConfig) {
   }
 }
 
+async function cleanupFtpBackups(ftpConfig, retentionDays, clientName) {
+  const { host, port, user, password, remoteDir } = ftpConfig;
+
+  if (!host || !user || !password) {
+    logger.info('Configurações de FTP incompletas. Limpeza FTP cancelada.');
+    return { removed: 0, errors: 0 };
+  }
+
+  const cutoffDate = new Date();
+  cutoffDate.setDate(cutoffDate.getDate() - retentionDays);
+
+  logger.info(`Iniciando limpeza de backups FTP anteriores a ${cutoffDate.toISOString().split('T')[0]} (${retentionDays} dias)`);
+
+  const client = new ftp.Client();
+  let removedCount = 0;
+  let errorCount = 0;
+
+  try {
+    client.ftp.timeout = 15000;
+
+    logger.info(`Conectando ao servidor FTP ${host}:${port} para limpeza...`);
+    await client.access({
+      host,
+      port: port || 21,
+      user,
+      password,
+    });
+
+    const targetDir = remoteDir || '/';
+    if (targetDir && targetDir !== '/') {
+      await client.cd(targetDir);
+    }
+
+    logger.info(`Listando arquivos no diretório FTP: ${targetDir}`);
+    const files = await client.list();
+
+    const backupFiles = files.filter(file =>
+      file.type === 1 &&
+      file.name.endsWith('.7z') &&
+      (clientName ? file.name.startsWith(clientName) : true)
+    );
+
+    logger.info(`Encontrados ${backupFiles.length} arquivo(s) de backup no FTP`);
+
+    for (const file of backupFiles) {
+      try {
+        const fileDate = new Date(file.modifiedAt);
+
+        if (fileDate < cutoffDate) {
+          const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+
+          await client.remove(file.name);
+          logger.info(`Backup FTP antigo removido: ${file.name} (${fileSizeMB} MB, data: ${fileDate.toISOString().split('T')[0]})`);
+          removedCount++;
+        } else {
+          logger.debug(`Mantendo backup FTP: ${file.name} (data: ${fileDate.toISOString().split('T')[0]})`);
+        }
+      } catch (error) {
+        logger.error(`Erro ao processar arquivo FTP ${file.name}`, error);
+        errorCount++;
+      }
+    }
+
+    if (removedCount > 0) {
+      logger.info(`Limpeza FTP concluída: ${removedCount} arquivo(s) removido(s), ${errorCount} erro(s)`);
+    } else {
+      logger.info('Nenhum backup FTP antigo encontrado para remoção');
+    }
+
+    return { removed: removedCount, errors: errorCount };
+
+  } catch (error) {
+    logger.error('Erro durante a limpeza de backups FTP', error);
+    errorCount++;
+    return { removed: removedCount, errors: errorCount };
+  } finally {
+    if (client.closed === false) {
+      client.close();
+      logger.info('Conexão FTP de limpeza fechada.');
+    }
+  }
+}
+
 module.exports = {
   uploadToFtp,
-  testFtpConnection
+  testFtpConnection,
+  cleanupFtpBackups
 }; 

@@ -51,6 +51,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const dbListSelect = document.getElementById('dbList');
   const btnTestFtp = document.getElementById('btnTestFtp');
   const logoutButton = document.getElementById('logoutButton');
+  const btnCleanupLocal = document.getElementById('btnCleanupLocal');
+  const btnCleanupFtp = document.getElementById('btnCleanupFtp');
 
   document.querySelectorAll('.btn').forEach(button => {
     button.addEventListener('mousedown', function (e) {
@@ -140,6 +142,17 @@ document.addEventListener('DOMContentLoaded', () => {
     dbServerInput.value = (config.database && config.database.server) || '';
     dbUserInput.value = (config.database && config.database.user) || '';
     dbPassInput.value = (config.database && config.database.password) || '';
+
+    const retentionConfig = config.retention || {};
+    const retentionEnabledInput = document.getElementById('retentionEnabled');
+    const localRetentionDaysInput = document.getElementById('localRetentionDays');
+    const ftpRetentionDaysInput = document.getElementById('ftpRetentionDays');
+    const autoCleanupInput = document.getElementById('autoCleanup');
+
+    if (retentionEnabledInput) retentionEnabledInput.checked = retentionConfig.enabled !== false;
+    if (localRetentionDaysInput) localRetentionDaysInput.value = retentionConfig.localDays || 7;
+    if (ftpRetentionDaysInput) ftpRetentionDaysInput.value = retentionConfig.ftpDays || 30;
+    if (autoCleanupInput) autoCleanupInput.checked = retentionConfig.autoCleanup !== false;
 
     const selectedDbs = (config.database && config.database.databases) || [];
     dbListSelect.innerHTML = '';
@@ -395,6 +408,97 @@ document.addEventListener('DOMContentLoaded', () => {
 
   btnTestFtp.addEventListener('click', testFtpConnection);
 
+  async function cleanupLocal() {
+    const retentionEnabledInput = document.getElementById('retentionEnabled');
+
+    if (!retentionEnabledInput || !retentionEnabledInput.checked) {
+      showToast('Política de retenção não está habilitada.', 'error');
+      return;
+    }
+
+    toggleButtonLoading(btnCleanupLocal, true);
+
+    try {
+      const response = await fetch('/api/cleanup-local', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        if (data.suggestions && data.suggestions.length > 0) {
+          showDetailedErrorToast(data.error, data.details, data.suggestions);
+        } else {
+          throw new Error(data.error || 'Erro desconhecido na limpeza local.');
+        }
+        return;
+      }
+
+      const removed = data.data ? data.data.removed : 0;
+      if (removed > 0) {
+        showToast(`${data.message} (${data.data.retentionDays} dias de retenção)`, 'success');
+      } else {
+        showToast('Nenhum backup antigo encontrado para remoção local.', 'success');
+      }
+    } catch (err) {
+      console.error('Erro na limpeza local:', err);
+      showToast(`Erro na limpeza local: ${err.message}`, 'error');
+    } finally {
+      toggleButtonLoading(btnCleanupLocal, false);
+    }
+  }
+
+  async function cleanupFtp() {
+    const retentionEnabledInput = document.getElementById('retentionEnabled');
+
+    if (!retentionEnabledInput || !retentionEnabledInput.checked) {
+      showToast('Política de retenção não está habilitada.', 'error');
+      return;
+    }
+
+    const ftpHost = ftpHostInput.value.trim();
+    if (!ftpHost) {
+      showToast('Configure o FTP antes de executar a limpeza remota.', 'error');
+      return;
+    }
+
+    toggleButtonLoading(btnCleanupFtp, true);
+
+    try {
+      const response = await fetch('/api/cleanup-ftp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        if (data.suggestions && data.suggestions.length > 0) {
+          showDetailedErrorToast(data.error, data.details, data.suggestions);
+        } else {
+          throw new Error(data.error || 'Erro desconhecido na limpeza FTP.');
+        }
+        return;
+      }
+
+      const removed = data.data ? data.data.removed : 0;
+      if (removed > 0) {
+        showToast(`${data.message} (${data.data.retentionDays} dias de retenção)`, 'success');
+      } else {
+        showToast('Nenhum backup antigo encontrado para remoção no FTP.', 'success');
+      }
+    } catch (err) {
+      console.error('Erro na limpeza FTP:', err);
+      showToast(`Erro na limpeza FTP: ${err.message}`, 'error');
+    } finally {
+      toggleButtonLoading(btnCleanupFtp, false);
+    }
+  }
+
+  btnCleanupLocal.addEventListener('click', cleanupLocal);
+  btnCleanupFtp.addEventListener('click', cleanupFtp);
+
   logoutButton.addEventListener('click', async () => {
     try {
       const response = await fetch('/api/logout', { method: 'POST' });
@@ -443,6 +547,32 @@ document.addEventListener('DOMContentLoaded', () => {
       .map(input => input.value.trim())
       .filter(value => /^\d{2}:\d{2}$/.test(value));
 
+    const retentionEnabledInput = document.getElementById('retentionEnabled');
+    const localRetentionDaysInput = document.getElementById('localRetentionDays');
+    const ftpRetentionDaysInput = document.getElementById('ftpRetentionDays');
+    const autoCleanupInput = document.getElementById('autoCleanup');
+
+    const localDays = parseInt(localRetentionDaysInput.value, 10);
+    const ftpDays = parseInt(ftpRetentionDaysInput.value, 10);
+
+    if (retentionEnabledInput.checked) {
+      if (isNaN(localDays) || localDays < 1 || localDays > 365) {
+        showToast('Retenção local deve ser entre 1 e 365 dias.', 'error');
+        toggleButtonLoading(saveButton, false);
+        localRetentionDaysInput.classList.add('error');
+        setTimeout(() => localRetentionDaysInput.classList.remove('error'), 2000);
+        return;
+      }
+
+      if (isNaN(ftpDays) || ftpDays < 1 || ftpDays > 365) {
+        showToast('Retenção FTP deve ser entre 1 e 365 dias.', 'error');
+        toggleButtonLoading(saveButton, false);
+        ftpRetentionDaysInput.classList.add('error');
+        setTimeout(() => ftpRetentionDaysInput.classList.remove('error'), 2000);
+        return;
+      }
+    }
+
     if (dbConfig.databases.length === 0) {
       showToast('Selecione ao menos um banco de dados para backup.', 'error');
       toggleButtonLoading(saveButton, false);
@@ -451,11 +581,19 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
+    const retentionConfig = {
+      enabled: retentionEnabledInput.checked,
+      localDays: localDays || 7,
+      ftpDays: ftpDays || 30,
+      autoCleanup: autoCleanupInput.checked
+    };
+
     const updatedConfig = {
       clientName: clientNameInput.value.trim(),
       ftp: ftpConfig,
       database: dbConfig,
       backupSchedule: scheduleTimes,
+      retention: retentionConfig
     };
 
     try {
