@@ -1,4 +1,36 @@
 document.addEventListener('DOMContentLoaded', () => {
+  const themeToggle = document.getElementById('themeToggle');
+  const sunIcon = document.querySelector('.sun-icon');
+  const moonIcon = document.querySelector('.moon-icon');
+
+  const savedTheme = localStorage.getItem('theme') || 'light';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  updateThemeUI(savedTheme);
+
+  themeToggle.addEventListener('click', () => {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    updateThemeUI(newTheme);
+
+    themeToggle.style.transform = 'scale(0.95)';
+    setTimeout(() => {
+      themeToggle.style.transform = '';
+    }, 150);
+  });
+
+  function updateThemeUI(theme) {
+    if (theme === 'dark') {
+      sunIcon.style.display = 'none';
+      moonIcon.style.display = 'block';
+    } else {
+      sunIcon.style.display = 'block';
+      moonIcon.style.display = 'none';
+    }
+  }
+
   const configForm = document.getElementById('configForm');
   const scheduleInputsDiv = document.getElementById('scheduleInputs');
   const addScheduleButton = document.getElementById('addSchedule');
@@ -159,15 +191,15 @@ document.addEventListener('DOMContentLoaded', () => {
     removeBtn.className = 'btn-icon remove';
     removeBtn.title = 'Remover horário';
     removeBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#f56565" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8z"/></svg>`;
-    
+
     removeBtn.addEventListener('click', function () {
       if (scheduleInputsDiv.querySelectorAll('.form-group').length <= 1) {
         showToast('É necessário ter pelo menos um horário.', 'error');
         return;
       }
-      
+
       formGroup.classList.add('removing');
-      
+
       setTimeout(() => {
         formGroup.remove();
         updateScheduleLabels();
@@ -182,7 +214,7 @@ document.addEventListener('DOMContentLoaded', () => {
     formGroup.appendChild(inputContainer);
 
     scheduleInputsDiv.appendChild(formGroup);
-    
+
     if (value === '') {
       setTimeout(() => input.focus(), 100);
     }
@@ -236,7 +268,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (data.suggestions && data.suggestions.length > 0) {
           showDetailedErrorToast(data.error, data.details, data.suggestions);
         } else {
-        throw new Error(data.error || 'Erro desconhecido ao listar bancos.');
+          throw new Error(data.error || 'Erro desconhecido ao listar bancos.');
         }
         return;
       }

@@ -6,7 +6,7 @@ on:
 
 jobs:
   build:
-    name: Gerar NodeBackup.exe e Instalador
+    name: Gerar Binario e Instalador
     runs-on: windows-latest
 
     steps:
