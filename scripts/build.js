@@ -45,7 +45,9 @@ async function build() {
     process.exit(1);
   } finally {
     console.log('Limpando arquivos temporários...');
-    await fs.remove(buildScriptPath);
+    if (fs.existsSync(buildScriptPath)) {
+      fs.unlinkSync(buildScriptPath);
+    }
     console.log('Limpeza concluída.');
   }
 }
