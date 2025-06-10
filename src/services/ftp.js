@@ -1,10 +1,9 @@
 const ftp = require('basic-ftp');
-const fs = require('fs');
 const path = require('path');
 const logger = require('../utils/logger');
 const { logFriendlyFTPError } = require('../utils/errorHandler');
 
-async function uploadToFtp(localFilePath, ftpConfig) {
+async function uploadToFtp(localFilePath, ftpConfig, shouldOverwrite = true) {
   const { host, port, user, password, remoteDir } = ftpConfig;
   const remoteFileName = path.basename(localFilePath);
 
@@ -34,16 +33,20 @@ async function uploadToFtp(localFilePath, ftpConfig) {
       remotePath = remoteFileName;
     }
 
-    try {
-      logger.info(`Verificando e removendo versão anterior do backup no FTP: ${remotePath}`);
-      await client.remove(remotePath);
-      logger.info('Versão anterior removida com sucesso.');
-    } catch (err) {
-      if (err.code === 550) {
-        logger.info('Nenhuma versão anterior do backup encontrada no FTP. Prosseguindo com o upload.');
-      } else {
-        throw err;
+    if (shouldOverwrite) {
+      try {
+        logger.info(`Verificando e removendo versão anterior do backup no FTP: ${remotePath}`);
+        await client.remove(remotePath);
+        logger.info('Versão anterior removida com sucesso.');
+      } catch (err) {
+        if (err.code === 550) {
+          logger.info('Nenhuma versão anterior do backup encontrada no FTP. Prosseguindo com o upload.');
+        } else {
+          throw err;
+        }
       }
+    } else {
+      logger.info('Modo retenção ativo: não removendo versões anteriores, política de retenção gerenciará a limpeza.');
     }
 
     logger.info(`Enviando arquivo ${localFilePath} para ${host}:${remotePath}...`);
@@ -98,7 +101,7 @@ async function testFtpConnection(ftpConfig) {
   }
 }
 
-async function cleanupFtpBackups(ftpConfig, retentionDays, clientName) {
+async function cleanupFtpBackups(ftpConfig, retentionDays) {
   const { host, port, user, password, remoteDir } = ftpConfig;
 
   if (!host || !user || !password) {
@@ -114,6 +117,97 @@ async function cleanupFtpBackups(ftpConfig, retentionDays, clientName) {
   const client = new ftp.Client();
   let removedCount = 0;
   let errorCount = 0;
+
+  function getFileDate(file) {
+    logger.debug(`Processando arquivo: ${file.name}, modifiedAt: ${file.modifiedAt}, rawModifiedAt: ${JSON.stringify(file.rawModifiedAt)}`);
+
+    if (file.modifiedAt) {
+      try {
+        const date = new Date(file.modifiedAt);
+        if (!isNaN(date.getTime())) {
+          logger.debug(`Data obtida via modifiedAt: ${date.toISOString()}`);
+          return date;
+        }
+      } catch (err) {
+        logger.debug(`Erro ao parsear modifiedAt: ${err.message}`);
+      }
+    }
+
+    if (file.rawModifiedAt) {
+      try {
+        let dateStr = file.rawModifiedAt.trim();
+
+        const noYearMatch = dateStr.match(/^(\w{3})\s+(\d{1,2})\s+(\d{1,2}):(\d{2})$/);
+        if (noYearMatch) {
+          const [, month, day, hour, minute] = noYearMatch;
+          const currentYear = new Date().getFullYear();
+
+          dateStr = `${month} ${day} ${currentYear} ${hour}:${minute}`;
+          logger.debug(`Formato sem ano detectado, assumindo ano atual: ${dateStr}`);
+        }
+
+        const date = new Date(dateStr);
+        if (!isNaN(date.getTime())) {
+          logger.debug(`Data obtida via rawModifiedAt: ${date.toISOString()}`);
+          return date;
+        }
+      } catch (err) {
+        logger.debug(`Erro ao parsear rawModifiedAt: ${err.message}`);
+      }
+    }
+
+    if (file.date) {
+      try {
+        let dateStr = file.date.trim();
+
+        const noYearMatch = dateStr.match(/^(\w{3})\s+(\d{1,2})\s+(\d{1,2}):(\d{2})$/);
+        if (noYearMatch) {
+          const [, month, day, hour, minute] = noYearMatch;
+          const currentYear = new Date().getFullYear();
+
+          dateStr = `${month} ${day} ${currentYear} ${hour}:${minute}`;
+          logger.debug(`Formato sem ano detectado no campo date, assumindo ano atual: ${dateStr}`);
+        }
+
+        const date = new Date(dateStr);
+        if (!isNaN(date.getTime())) {
+          logger.debug(`Data obtida via date: ${date.toISOString()}`);
+          return date;
+        }
+      } catch (err) {
+        logger.debug(`Erro ao parsear date: ${err.message}`);
+      }
+    }
+
+    const timestampMatch = file.name.match(/(\d{4})-(\d{2})-(\d{2})-(\d{6})/);
+    if (timestampMatch) {
+      try {
+        const [, year, month, day, time] = timestampMatch;
+        const hour = time.substring(0, 2);
+        const minute = time.substring(2, 4);
+        const second = time.substring(4, 6);
+
+        const dateFromName = new Date(
+          parseInt(year),
+          parseInt(month) - 1,
+          parseInt(day),
+          parseInt(hour),
+          parseInt(minute),
+          parseInt(second)
+        );
+
+        if (!isNaN(dateFromName.getTime())) {
+          logger.debug(`Data extraída do nome do arquivo: ${dateFromName.toISOString()}`);
+          return dateFromName;
+        }
+      } catch (err) {
+        logger.debug(`Erro ao extrair data do nome do arquivo: ${err.message}`);
+      }
+    }
+
+    logger.warn(`Não foi possível determinar a data do arquivo: ${file.name}`);
+    return null;
+  }
 
   try {
     client.ftp.timeout = 15000;
@@ -135,16 +229,20 @@ async function cleanupFtpBackups(ftpConfig, retentionDays, clientName) {
     const files = await client.list();
 
     const backupFiles = files.filter(file =>
-      file.type === 1 &&
-      file.name.endsWith('.7z') &&
-      (clientName ? file.name.startsWith(clientName) : true)
+      file.type === 1 && file.name.endsWith('.7z')
     );
 
-    logger.info(`Encontrados ${backupFiles.length} arquivo(s) de backup no FTP`);
+    logger.info(`Encontrados ${backupFiles.length} arquivo(s) de backup .7z no FTP`);
 
     for (const file of backupFiles) {
       try {
-        const fileDate = new Date(file.modifiedAt);
+        const fileDate = getFileDate(file);
+
+        if (!fileDate) {
+          logger.warn(`Pulando arquivo ${file.name}: não foi possível determinar a data`);
+          errorCount++;
+          continue;
+        }
 
         if (fileDate < cutoffDate) {
           const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
@@ -156,7 +254,7 @@ async function cleanupFtpBackups(ftpConfig, retentionDays, clientName) {
           logger.debug(`Mantendo backup FTP: ${file.name} (data: ${fileDate.toISOString().split('T')[0]})`);
         }
       } catch (error) {
-        logger.error(`Erro ao processar arquivo FTP ${file.name}`, error);
+        logger.error(`Erro ao processar arquivo FTP ${file.name}: ${error.message}`);
         errorCount++;
       }
     }

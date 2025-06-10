@@ -177,6 +177,17 @@ router.post('/cleanup-local', async (req, res) => {
     });
   }
 
+  if (retentionConfig.mode === 'classic') {
+    return res.status(400).json({
+      error: 'Limpeza manual não disponível no modo clássico',
+      details: 'No modo clássico, os backups são automaticamente sobrescritos. Use o modo retenção para limpeza baseada em dias.',
+      suggestions: [
+        'Altere para "Modo Retenção" nas configurações',
+        'O modo clássico mantém apenas a versão mais recente de cada horário'
+      ]
+    });
+  }
+
   try {
     const clientName = config.clientName || 'Backup';
     const result = await cleanupOldBackups(retentionConfig.localDays, clientName);
@@ -209,6 +220,17 @@ router.post('/cleanup-ftp', async (req, res) => {
     return res.status(400).json({
       error: 'Política de retenção não está habilitada',
       details: 'Ative a política de retenção nas configurações para usar esta funcionalidade'
+    });
+  }
+
+  if (retentionConfig.mode === 'classic') {
+    return res.status(400).json({
+      error: 'Limpeza manual não disponível no modo clássico',
+      details: 'No modo clássico, os backups FTP são automaticamente sobrescritos. Use o modo retenção para limpeza baseada em dias.',
+      suggestions: [
+        'Altere para "Modo Retenção" nas configurações',
+        'O modo clássico substitui automaticamente a versão anterior no FTP'
+      ]
     });
   }
 

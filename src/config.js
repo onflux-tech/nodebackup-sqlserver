@@ -37,7 +37,8 @@ function getDefaultConfig() {
       enabled: true,
       localDays: 7,
       ftpDays: 30,
-      autoCleanup: true
+      autoCleanup: true,
+      mode: 'retention'
     }
   };
 }

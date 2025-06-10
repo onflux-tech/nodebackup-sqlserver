@@ -153,11 +153,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const localRetentionDaysInput = document.getElementById('localRetentionDays');
     const ftpRetentionDaysInput = document.getElementById('ftpRetentionDays');
     const autoCleanupInput = document.getElementById('autoCleanup');
+    const modeClassicInput = document.getElementById('modeClassic');
+    const modeRetentionInput = document.getElementById('modeRetention');
 
     if (retentionEnabledInput) retentionEnabledInput.checked = retentionConfig.enabled !== false;
     if (localRetentionDaysInput) localRetentionDaysInput.value = retentionConfig.localDays || 7;
     if (ftpRetentionDaysInput) ftpRetentionDaysInput.value = retentionConfig.ftpDays || 30;
     if (autoCleanupInput) autoCleanupInput.checked = retentionConfig.autoCleanup !== false;
+
+    const retentionMode = retentionConfig.mode || 'retention';
+    if (modeClassicInput && modeRetentionInput) {
+      if (retentionMode === 'classic') {
+        modeClassicInput.checked = true;
+      } else {
+        modeRetentionInput.checked = true;
+      }
+    }
 
     const selectedDbs = (config.database && config.database.databases) || [];
     dbListSelect.innerHTML = '';
@@ -552,9 +563,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const localRetentionDaysInput = document.getElementById('localRetentionDays');
     const ftpRetentionDaysInput = document.getElementById('ftpRetentionDays');
     const autoCleanupInput = document.getElementById('autoCleanup');
+    const modeClassicInput = document.getElementById('modeClassic');
 
     const localDays = parseInt(localRetentionDaysInput.value, 10);
     const ftpDays = parseInt(ftpRetentionDaysInput.value, 10);
+    const retentionMode = modeClassicInput.checked ? 'classic' : 'retention';
 
     if (retentionEnabledInput.checked) {
       if (isNaN(localDays) || localDays < 1 || localDays > 365) {
@@ -586,7 +599,8 @@ document.addEventListener('DOMContentLoaded', () => {
       enabled: retentionEnabledInput.checked,
       localDays: localDays || 7,
       ftpDays: ftpDays || 30,
-      autoCleanup: autoCleanupInput.checked
+      autoCleanup: autoCleanupInput.checked,
+      mode: retentionMode
     };
 
     const updatedConfig = {
@@ -656,5 +670,57 @@ document.addEventListener('DOMContentLoaded', () => {
   document.head.appendChild(style);
 
   loadConfig();
+
+  function toggleRetentionFields() {
+    const retentionEnabled = document.getElementById('retentionEnabled').checked;
+    const modeClassic = document.getElementById('modeClassic').checked;
+    const localRetentionDays = document.getElementById('localRetentionDays');
+    const ftpRetentionDays = document.getElementById('ftpRetentionDays');
+    const autoCleanup = document.getElementById('autoCleanup');
+    const cleanupButtons = document.querySelector('.cleanup-buttons');
+
+    const enableFields = retentionEnabled;
+
+    if (localRetentionDays) localRetentionDays.disabled = !enableFields;
+    if (ftpRetentionDays) ftpRetentionDays.disabled = !enableFields;
+    if (autoCleanup) autoCleanup.disabled = !enableFields;
+    if (cleanupButtons) {
+      cleanupButtons.style.opacity = enableFields ? '1' : '0.5';
+      cleanupButtons.style.pointerEvents = enableFields ? 'auto' : 'none';
+    }
+
+    if (modeClassic && enableFields) {
+      if (localRetentionDays) {
+        localRetentionDays.disabled = true;
+        localRetentionDays.title = 'No modo clássico, mantém apenas a versão mais recente';
+      }
+      if (ftpRetentionDays) {
+        ftpRetentionDays.disabled = true;
+        ftpRetentionDays.title = 'No modo clássico, sobrescreve automaticamente';
+      }
+      if (autoCleanup) {
+        autoCleanup.disabled = true;
+        autoCleanup.title = 'No modo clássico, limpeza é automática por sobrescrita';
+      }
+      if (cleanupButtons) {
+        cleanupButtons.style.opacity = '0.5';
+        cleanupButtons.style.pointerEvents = 'none';
+      }
+    } else {
+      if (localRetentionDays) localRetentionDays.title = '';
+      if (ftpRetentionDays) ftpRetentionDays.title = '';
+      if (autoCleanup) autoCleanup.title = '';
+    }
+  }
+
+  const retentionEnabled = document.getElementById('retentionEnabled');
+  const modeClassic = document.getElementById('modeClassic');
+  const modeRetention = document.getElementById('modeRetention');
+
+  if (retentionEnabled) retentionEnabled.addEventListener('change', toggleRetentionFields);
+  if (modeClassic) modeClassic.addEventListener('change', toggleRetentionFields);
+  if (modeRetention) modeRetention.addEventListener('change', toggleRetentionFields);
+
+  setTimeout(toggleRetentionFields, 100);
 });
 

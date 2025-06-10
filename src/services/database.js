@@ -33,7 +33,20 @@ function performSingleBackup(dbName, backupNumber, backupDir, dbConfig) {
 }
 
 async function performConsolidatedBackup(dbList, clientName, backupNumber, dbConfig, ftpConfig, retentionConfig) {
-  const finalZipName = `${clientName}-${backupNumber}.7z`;
+  let finalZipName;
+  const useTimestamp = retentionConfig && retentionConfig.enabled && retentionConfig.mode === 'retention';
+
+  if (useTimestamp) {
+    const now = new Date();
+    const dateStr = now.toISOString().split('T')[0];
+    const timeStr = now.toTimeString().split(' ')[0].replace(/:/g, '');
+    finalZipName = `${clientName}-${dateStr}-${timeStr}.7z`;
+    logger.info(`Modo retenção ativo: usando nomenclatura com timestamp ${finalZipName}`);
+  } else {
+    finalZipName = `${clientName}-${backupNumber}.7z`;
+    logger.info(`Modo clássico ativo: usando numeração por horário ${finalZipName}`);
+  }
+
   const backupsDir = path.join(baseDir, 'backups');
   const finalZipPath = path.join(backupsDir, finalZipName);
   const backupFilePaths = [];
@@ -41,10 +54,15 @@ async function performConsolidatedBackup(dbList, clientName, backupNumber, dbCon
   try {
     fs.mkdirSync(backupsDir, { recursive: true });
 
-    logger.info(`Iniciando rotina de limpeza para o backup #${backupNumber}...`);
+    logger.info(`Iniciando rotina de limpeza para o backup...`);
     const filesInBackupDir = fs.readdirSync(backupsDir);
     for (const file of filesInBackupDir) {
-      if (file.endsWith(`-${backupNumber}.bak`)) {
+      const isOrphanBak = file.endsWith('.bak') && (
+        file.endsWith(`-${backupNumber}.bak`) ||
+        file.includes(clientName)
+      );
+
+      if (isOrphanBak) {
         const orphanPath = path.join(backupsDir, file);
         logger.warn(`Arquivo .bak órfão encontrado: ${orphanPath}. Excluindo...`);
         try {
@@ -56,7 +74,7 @@ async function performConsolidatedBackup(dbList, clientName, backupNumber, dbCon
       }
     }
 
-    if (fs.existsSync(finalZipPath)) {
+    if (fs.existsSync(finalZipPath) && !useTimestamp) {
       logger.info(`Arquivo de backup .7z existente encontrado: ${finalZipPath}. Excluindo antes de prosseguir.`);
       try {
         fs.unlinkSync(finalZipPath);
@@ -97,7 +115,8 @@ async function performConsolidatedBackup(dbList, clientName, backupNumber, dbCon
       });
 
       if (ftpConfig && ftpConfig.host) {
-        uploadToFtp(finalZipPath, ftpConfig);
+        const shouldOverwrite = !useTimestamp;
+        uploadToFtp(finalZipPath, ftpConfig, shouldOverwrite);
       } else {
         logger.info('FTP não configurado, backup consolidado mantido localmente.');
       }
@@ -105,24 +124,28 @@ async function performConsolidatedBackup(dbList, clientName, backupNumber, dbCon
       if (retentionConfig && retentionConfig.enabled && retentionConfig.autoCleanup) {
         logger.info('Iniciando limpeza automática de backups antigos...');
 
-        try {
-          if (retentionConfig.localDays > 0) {
-            const localCleanup = await cleanupOldBackups(retentionConfig.localDays, clientName);
-            if (localCleanup.removed > 0) {
-              logger.info(`Limpeza local: ${localCleanup.removed} arquivo(s) removido(s)`);
+        if (retentionConfig.mode === 'classic') {
+          logger.info('Modo clássico ativo: limpeza automática por sobrescrita já foi realizada no upload');
+        } else {
+          try {
+            if (retentionConfig.localDays > 0) {
+              const localCleanup = await cleanupOldBackups(retentionConfig.localDays, clientName);
+              if (localCleanup.removed > 0) {
+                logger.info(`Limpeza local: ${localCleanup.removed} arquivo(s) removido(s)`);
+              }
             }
-          }
 
-          if (ftpConfig && ftpConfig.host && retentionConfig.ftpDays > 0) {
-            const ftpCleanup = await cleanupFtpBackups(ftpConfig, retentionConfig.ftpDays, clientName);
-            if (ftpCleanup.removed > 0) {
-              logger.info(`Limpeza FTP: ${ftpCleanup.removed} arquivo(s) removido(s)`);
+            if (ftpConfig && ftpConfig.host && retentionConfig.ftpDays > 0) {
+              const ftpCleanup = await cleanupFtpBackups(ftpConfig, retentionConfig.ftpDays, clientName);
+              if (ftpCleanup.removed > 0) {
+                logger.info(`Limpeza FTP: ${ftpCleanup.removed} arquivo(s) removido(s)`);
+              }
             }
-          }
 
-          logger.info('Limpeza automática concluída');
-        } catch (cleanupError) {
-          logger.error('Erro durante a limpeza automática', cleanupError);
+            logger.info('Limpeza automática concluída');
+          } catch (cleanupError) {
+            logger.error('Erro durante a limpeza automática', cleanupError);
+          }
         }
       }
     });
@@ -161,12 +184,53 @@ async function listDatabases(dbConfig) {
   }
 }
 
-async function cleanupOldBackups(retentionDays, clientName) {
+async function cleanupOldBackups(retentionDays) {
   const backupsDir = path.join(baseDir, 'backups');
   const cutoffDate = new Date();
   cutoffDate.setDate(cutoffDate.getDate() - retentionDays);
 
   logger.info(`Iniciando limpeza de backups locais anteriores a ${cutoffDate.toISOString().split('T')[0]} (${retentionDays} dias)`);
+
+  function getLocalFileDate(filename, stats) {
+    const timestampMatch = filename.match(/(\d{4})-(\d{2})-(\d{2})-(\d{6})/);
+    if (timestampMatch) {
+      try {
+        const [, year, month, day, time] = timestampMatch;
+        const hour = time.substring(0, 2);
+        const minute = time.substring(2, 4);
+        const second = time.substring(4, 6);
+
+        const dateFromName = new Date(
+          parseInt(year),
+          parseInt(month) - 1,
+          parseInt(day),
+          parseInt(hour),
+          parseInt(minute),
+          parseInt(second)
+        );
+
+        if (!isNaN(dateFromName.getTime())) {
+          logger.debug(`Data extraída do nome do arquivo local: ${dateFromName.toISOString()}`);
+          return dateFromName;
+        }
+      } catch (err) {
+        logger.debug(`Erro ao extrair data do nome do arquivo local: ${err.message}`);
+      }
+    }
+
+    try {
+      const fileDate = stats.mtime;
+      if (fileDate && !isNaN(fileDate.getTime())) {
+        logger.debug(`Data obtida via mtime: ${fileDate.toISOString()}`);
+        return fileDate;
+      }
+    } catch (err) {
+      logger.debug(`Erro ao usar mtime: ${err.message}`);
+    }
+
+    logger.warn(`Não foi possível determinar a data do arquivo local: ${filename}`);
+    return null;
+  }
 
   try {
     if (!fs.existsSync(backupsDir)) {
@@ -175,20 +239,25 @@ async function cleanupOldBackups(retentionDays, clientName) {
     }
 
     const files = fs.readdirSync(backupsDir);
-    const backupFiles = files.filter(file =>
-      file.endsWith('.7z') &&
-      (clientName ? file.startsWith(clientName) : true)
-    );
+    const backupFiles = files.filter(file => file.endsWith('.7z'));
 
     let removedCount = 0;
     let errorCount = 0;
+
+    logger.info(`Encontrados ${backupFiles.length} arquivo(s) de backup .7z local`);
 
     for (const file of backupFiles) {
       const filePath = path.join(backupsDir, file);
 
       try {
         const stats = fs.statSync(filePath);
-        const fileDate = stats.mtime;
+        const fileDate = getLocalFileDate(file, stats);
+
+        if (!fileDate) {
+          logger.warn(`Pulando arquivo ${file}: não foi possível determinar a data`);
+          errorCount++;
+          continue;
+        }
 
         if (fileDate < cutoffDate) {
           const fileSizeMB = (stats.size / (1024 * 1024)).toFixed(2);
@@ -196,9 +265,11 @@ async function cleanupOldBackups(retentionDays, clientName) {
           fs.unlinkSync(filePath);
           logger.info(`Backup antigo removido: ${file} (${fileSizeMB} MB, data: ${fileDate.toISOString().split('T')[0]})`);
           removedCount++;
+        } else {
+          logger.debug(`Mantendo backup local: ${file} (data: ${fileDate.toISOString().split('T')[0]})`);
         }
       } catch (error) {
-        logger.error(`Erro ao processar arquivo ${file}`, error);
+        logger.error(`Erro ao processar arquivo ${file}: ${error.message}`);
         errorCount++;
       }
     }

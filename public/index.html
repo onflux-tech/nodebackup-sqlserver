@@ -222,6 +222,26 @@
                 <small>Habilita a remoção automática de arquivos de backup mais antigos.</small>
               </div>
 
+              <div class="form-group">
+                <label>Modo de Operação</label>
+                <div class="radio-group">
+                  <div class="radio-option">
+                    <input type="radio" id="modeClassic" name="retentionMode" value="classic">
+                    <label for="modeClassic">
+                      <strong>Modo Clássico</strong><br>
+                      <small>Cada horário mantém apenas 1 backup (Cliente-1.7z, Cliente-2.7z, etc.)</small>
+                    </label>
+                  </div>
+                  <div class="radio-option">
+                    <input type="radio" id="modeRetention" name="retentionMode" value="retention" checked>
+                    <label for="modeRetention">
+                      <strong>Modo Retenção</strong><br>
+                      <small>Acumula backups com timestamp (Cliente-2024-01-15-120000.7z) e limpa por data</small>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
               <div class="form-row two-cols">
                 <div class="form-group">
                   <label for="localRetentionDays">Retenção Local (dias)</label>
@@ -244,7 +264,6 @@
               </div>
 
               <div class="form-group">
-                <label>Limpeza Manual</label>
                 <div class="cleanup-buttons">
                   <button type="button" id="btnCleanupLocal" class="btn btn-secondary">
                     <span class="btn-text">🗑️ Limpar Local</span>
