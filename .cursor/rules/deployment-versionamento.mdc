@@ -1,0 +1,230 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Deployment e Versionamento
+
+## 📋 Versionamento Semântico
+
+### Padrão Atual (v0.0.5)
+- **MAJOR** (1.x.x): Mudanças que quebram compatibilidade
+- **MINOR** (0.x.x): Novas funcionalidades compatíveis (pré-release)
+- **PATCH** (x.x.x): Correções de bugs e melhorias
+
+### Próximas Versões Planejadas
+- **v0.1.0**: Fase 1.1 - Política de Retenção de Backups
+- **v0.2.0**: Fase 1.2 - Painel de Histórico (SQLite + Interface)
+- **v0.3.0**: Fase 1.3 - Logs em Tempo Real (WebSocket)
+- **v0.4.0**: Fase 2.1 - Notificações por E-mail (SMTP)
+- **v0.5.0**: Fase 2.2 - Integração Telegram/WhatsApp
+- **v1.0.0**: Release estável com todas funcionalidades base
+- **v1.1.0**: Fase 3 - Backup arquivos + MySQL/PostgreSQL
+- **v2.0.0**: Expansão completa (S3, Google Drive, Restauração)
+
+## 🚀 Processo de Build
+
+### Scripts de Build ([package.json](mdc:package.json))
+```json
+{
+  "scripts": {
+    "start": "node src/app.js",
+    "build": "node scripts/build.js", 
+    "build:installer": "powershell -ExecutionPolicy Bypass -File scripts/build-installer.ps1"
+  }
+}
+```
+
+### Build Process ([scripts/build.js](mdc:scripts/build.js))
+1. **Embarca Assets**: 7za.exe, nssm.exe, public/*
+2. **Gera embedded-assets.js**: Base64 dos arquivos embarcados
+3. **Executa pkg**: Compilação para Windows x64 Node 12
+4. **Cleanup**: Remove arquivos temporários
+5. **Output**: NodeBackup.exe (±57MB)
+
+### Assets Embarcados Obrigatórios
+- **7za.exe** (723KB) - 7-Zip console para compressão
+- **nssm.exe** (288KB) - Non-Sucking Service Manager
+- **public/** - Interface web completa (≈35KB)
+
+## 📦 Estrutura de Release
+
+### Arquivos de Distribuição
+```
+Release/
+├── NodeBackup.exe          # Executável principal
+├── README.txt              # Instruções básicas
+├── LICENSE.txt             # Licença MIT
+└── CHANGELOG.md            # Histórico de versões
+```
+
+### GitHub Releases
+- **Tag**: v0.0.5 (seguir semver exato)
+- **Title**: "NodeBackup v0.0.5 - [Descrição da versão]"
+- **Description**: Changelog detalhado + instruções
+- **Assets**: NodeBackup.exe + NodeBackupInstaller.exe (opcional)
+
+## 🔄 Pipeline de Deploy
+
+### Workflow GitHub Actions (`.github/workflows/release.yml`)
+```yaml
+# Triggers:
+# - Push em tags v*.*.*
+# - Release manual via GitHub
+
+# Steps:
+# 1. Checkout código
+# 2. Setup Node.js 12.x
+# 3. npm install
+# 4. npm run build
+# 5. Upload assets para release
+```
+
+### Validações Pré-Release
+- [ ] **Build Success**: NodeBackup.exe gerado sem erros
+- [ ] **Teste Funcional**: Execução básica funcionando
+- [ ] **Compatibilidade**: Testado em Windows 7, 10, 11
+- [ ] **Tamanho**: Executável < 100MB
+- [ ] **Assets**: 7za.exe e nssm.exe incluídos e funcionais
+
+## 📝 Padrões de Commit
+
+### Conventional Commits (Com Emojis)
+- **feat**: ✨ Novas funcionalidades
+- **fix**: 🐛 Correções de bugs
+- **refactor**: ♻️ Refatoração sem mudança funcional
+- **chore**: 🔧 Mudanças de configuração/build
+- **docs**: 📝 Atualizações de documentação
+- **style**: 💄 Mudanças de formatação/estilo
+- **test**: ✅ Adição ou correção de testes
+- **perf**: ⚡ Melhorias de performance
+- **ci**: 👷 Mudanças de CI/CD
+- **build**: 📦 Mudanças no sistema de build
+- **revert**: ⏪ Reversão de commits
+
+### Exemplos
+```bash
+feat: ✨ adicionar política de retenção para backups antigos
+fix: 🐛 corrigir erro de conexão FTP com SSL
+refactor: ♻️ reorganizar estrutura de serviços
+chore: 🔧 atualizar dependências para Node 12 LTS
+docs: 📝 atualizar README com novas funcionalidades v0.1.0
+```
+
+## 🌍 Instalador Completo (Opcional)
+
+### NSIS Installer ([installer.nsi](mdc:installer.nsi))
+- **Setup Wizard**: Instalação guiada Windows
+- **Service Installation**: Instala automaticamente como serviço
+- **Uninstaller**: Remoção completa + limpeza registry
+- **Target**: Windows 7+ (x64)
+
+### Build Installer ([scripts/build-installer.ps1](mdc:scripts/build-installer.ps1))
+```powershell
+# 1. Verifica se NodeBackup.exe existe
+# 2. Compila installer.nsi com NSIS
+# 3. Gera NodeBackupInstaller.exe
+# 4. Validação básica do instalador
+```
+
+## 📊 Métricas de Qualidade
+
+### Métricas de Build
+- **Build Time**: < 2 minutos
+- **Executable Size**: < 100MB
+- **Memory Usage**: < 200MB em runtime
+- **Startup Time**: < 5 segundos
+
+### Compatibilidade Testada
+- **Windows 7** SP1 x64
+- **Windows 10** (todas as versões)
+- **Windows 11** 
+- **Windows Server 2012+**
+
+### SQL Server Compatibilidade
+- **SQL Server 2008** R2+
+- **SQL Server 2012/2014/2016/2017/2019/2022**
+- **SQL Express** (todas as versões)
+- **Azure SQL** (com sqlcmd configurado)
+
+## 🔍 Checklist de Release
+
+### ✅ Pré-Release
+- [ ] **Versão atualizada** no package.json
+- [ ] **CHANGELOG.md** atualizado com mudanças
+- [ ] **README.md** atualizado se necessário
+- [ ] **Testes locais** executados com sucesso
+- [ ] **Build local** funcional
+- [ ] **Instalação como serviço** testada
+
+### ✅ Durante Release
+- [ ] **Tag git** criado (git tag v1.x.x)
+- [ ] **GitHub Release** criado
+- [ ] **Assets** anexados (exe + installer)
+- [ ] **Descrição** detalhada das mudanças
+- [ ] **Instruções** de upgrade se necessário
+
+### ✅ Pós-Release
+- [ ] **Validação** do download público
+- [ ] **Teste** do executável baixado
+- [ ] **Documentação** atualizada se necessário
+- [ ] **Issues** relacionadas fechadas
+- [ ] **Próxima milestone** planejada
+
+## 🔧 Troubleshooting Build
+
+### Problemas Comuns
+
+#### 🚫 "pkg target node12-win-x64 não encontrado"
+```bash
+# Solução: Instalar pkg globalmente
+npm install -g pkg@5.8.1
+```
+
+#### 🚫 "Assets não embarcados"
+```bash
+# Verificar se arquivos existem:
+# - 7za.exe (root)
+# - nssm.exe (root)  
+# - public/* (pasta public)
+```
+
+#### 🚫 "Executável muito grande (>100MB)"
+```bash
+# Verificar se embedded-assets.js não foi commitado
+# Deve ser gerado apenas durante build
+rm src/embedded-assets.js
+```
+
+#### 🚫 "Falha ao executar como serviço"
+```bash
+# Verificar se nssm.exe está embarcado
+# Testar instalação manual:
+.\NodeBackup.exe --install
+```
+
+## 📈 Roadmap de Deploy
+
+### Melhorias de Infraestrutura
+- [ ] **Auto-build** no GitHub Actions
+- [ ] **Code signing** para executável Windows
+- [ ] **Chocolatey package** para instalação via package manager
+- [ ] **Winget manifest** para Windows Package Manager
+- [ ] **MSI installer** como alternativa ao NSIS
+
+### Métricas e Monitoramento
+- [ ] **Telemetria anônima** de uso (opt-in)
+- [ ] **Crash reporting** (sentry.io)
+- [ ] **Update checker** automático
+- [ ] **Statistics dashboard** de instalações
+
+### Distribuição
+- [ ] **Microsoft Store** (packaging para UWP)
+- [ ] **Auto-updater** interno
+- [ ] **Docker image** para containers Windows
+- [ ] **Portable version** (sem instalação)
+
+
+
+
+

@@ -1,0 +1,142 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Padrões de Desenvolvimento e Compatibilidade
+
+## 🔄 Compatibilidade Node.js 12
+
+### Obrigatório para Todo Desenvolvimento
+- **Target Mínimo**: Node.js 12.x LTS
+- **Build Target**: pkg node12-win-x64 (conforme [scripts/build.js](mdc:scripts/build.js))
+- **Evitar**: Features do Node.js 14+ (optional chaining, nullish coalescing)
+- **Usar**: Sintaxe ES2018 e anterior
+
+### Dependências Compatíveis (package.json)
+- Express 4.19.2 (compatível Node 12)
+- mssql 6.3.2 (última versão compatível)
+- winston 3.3.3 (evitar versões 3.8+)
+- pkg 5.8.1 (suporte a Node 12)
+
+## 📁 Padrões de Estrutura
+
+### Organização de Arquivos
+```
+src/
+├── app.js              # Entry point principal
+├── server.js           # Configuração Express
+├── config.js           # Gerenciamento configuração
+├── api/
+│   └── routes.js       # Todas as rotas REST
+├── services/
+│   ├── database.js     # Operações SQL Server
+│   ├── ftp.js         # Operações FTP
+│   ├── scheduler.js   # Agendamento
+│   └── windowsService.js # Serviço Windows
+└── utils/
+    ├── logger.js       # Sistema logging
+    ├── encryption.js   # Criptografia
+    └── errorHandler.js # Tratamento erros
+```
+
+### Interface Web (public/)
+- **index.html** - Dashboard principal
+- **script.js** - JavaScript principal (manter < 25KB)
+- **styles.css** - CSS principal (manter < 15KB)
+- **login.html/js** - Sistema autenticação
+- **setup.html/js** - Configuração inicial
+
+## 🛠️ Padrões de Código
+
+### Módulos e Imports
+```javascript
+// ✅ Usar CommonJS (Node 12 compatível)
+const express = require('express');
+const { getConfig } = require('./config');
+
+// ❌ Evitar ES Modules
+import express from 'express';
+```
+
+### Tratamento de Erros
+- Sempre usar [src/utils/logger.js](mdc:src/utils/logger.js)
+- Aplicar [src/utils/errorHandler.js](mdc:src/utils/errorHandler.js) para erros de usuário
+- Logs estruturados com níveis apropriados
+
+### Async/Await (Node 12+)
+```javascript
+// ✅ Async/await suportado
+async function performBackup() {
+  try {
+    const result = await backupDatabase();
+    logger.info('Backup concluído');
+    return result;
+  } catch (error) {
+    logger.error('Falha no backup', error);
+    throw error;
+  }
+}
+```
+
+### Configuração Segura
+- Todas as configurações via [src/config.js](mdc:src/config.js)
+- Arquivo config.enc criptografado obrigatório
+- Nunca hardcode credenciais
+
+## 🔒 Padrões de Segurança
+
+### Autenticação (src/api/routes.js)
+- bcryptjs para hash de senhas
+- express-session para sessões
+- Validação obrigatória em todas as rotas protegidas
+
+### Criptografia
+- Usar [src/utils/encryption.js](mdc:src/utils/encryption.js)
+- crypto-js para criptografia simétrica
+- Nunca salvar dados sensíveis em plain text
+
+## 📝 Logging Padrão
+
+### Níveis de Log (winston)
+- **error**: Falhas críticas, exceções
+- **warn**: Situações inesperadas, não críticas
+- **info**: Operações principais, status
+- **debug**: Informações detalhadas (desenvolvimento)
+
+### Formato Padrão
+```javascript
+logger.info('Iniciando backup de bancos: ' + databases.join(', '));
+logger.error('Falha ao conectar FTP', { host: config.ftp.host, error: err.message });
+```
+
+## 🚀 Build e Deployment
+
+### Build Process ([scripts/build.js](mdc:scripts/build.js))
+1. Embarca assets (7za.exe, nssm.exe, public/)
+2. Gera embedded-assets.js temporário
+3. Executa pkg com target node12-win-x64
+4. Limpa arquivos temporários
+
+### Assets Embarcados
+- 7za.exe para compressão
+- nssm.exe para serviço Windows
+- Todos os arquivos public/ para interface web
+
+### Executável Final
+- NodeBackup.exe único (±57MB)
+- Autocontido, sem dependências externas
+- Compatível Windows 7+
+
+## 🔄 Testes e Validação
+
+### Compatibilidade Obrigatória
+- Testar em Node.js 12.x antes de commit
+- Validar build com pkg node12-win-x64
+- Verificar funcionamento como serviço Windows
+
+### Validações de Código
+- Não usar features Node 14+
+- Evitar dependências que quebrem Node 12
+- Manter compatibilidade com sqlcmd legado
+

@@ -1,0 +1,65 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Node-Backup: SQL Server - Visão Geral do Projeto
+
+## Descrição do Projeto
+O Node-Backup é uma aplicação Windows para automatização de backups de bancos SQL Server com interface web segura. A aplicação:
+- Gera backups `.bak` de múltiplos bancos SQL Server
+- Comprime em arquivos `.7z` com alta compressão
+- Envia para servidores FTP automaticamente
+- Funciona como serviço do Windows
+- Interface web com autenticação criptografada
+
+## Arquitetura Principal
+
+### Ponto de Entrada
+- [src/app.js](mdc:src/app.js) - Entry point principal da aplicação
+- [src/server.js](mdc:src/server.js) - Servidor Express
+- [src/config.js](mdc:src/config.js) - Sistema de configuração criptografada
+
+### Serviços Core
+- [src/services/database.js](mdc:src/services/database.js) - Backup e listagem de bancos SQL Server
+- [src/services/ftp.js](mdc:src/services/ftp.js) - Upload para servidores FTP
+- [src/services/scheduler.js](mdc:src/services/scheduler.js) - Agendamento de backups
+- [src/services/windowsService.js](mdc:src/services/windowsService.js) - Instalação como serviço Windows
+
+### Utilitários
+- [src/utils/logger.js](mdc:src/utils/logger.js) - Sistema de logging com rotação diária
+- [src/utils/encryption.js](mdc:src/utils/encryption.js) - Criptografia para configurações
+- [src/utils/errorHandler.js](mdc:src/utils/errorHandler.js) - Tratamento amigável de erros
+
+### Interface Web
+- [public/index.html](mdc:public/index.html) - Dashboard principal
+- [public/login.html](mdc:public/login.html) - Tela de login
+- [public/setup.html](mdc:public/setup.html) - Configuração inicial
+- [public/script.js](mdc:public/script.js) - JavaScript principal (17KB)
+- [public/styles.css](mdc:public/styles.css) - Estilos CSS (12KB)
+
+## Stack Tecnológica
+- **Runtime**: Node.js 12+ (compatibilidade obrigatória)
+- **Framework Web**: Express.js 4.19.2
+- **Banco de Dados**: SQL Server (via mssql 6.3.2 e sqlcmd)
+- **Autenticação**: bcryptjs + express-session
+- **Agendamento**: node-schedule 2.1.1
+- **FTP**: basic-ftp 5.0.5
+- **Logging**: winston 3.3.3 com winston-daily-rotate-file
+- **Criptografia**: crypto-js 4.2.0
+- **Compressão**: 7-Zip (7za.exe embarcado)
+- **Serviço Windows**: NSSM (nssm.exe embarcado)
+- **Build**: pkg 5.8.1 para executável único
+
+## Configuração e Segurança
+- Configurações salvas em [config.enc](mdc:config.enc) criptografadas
+- Primeira execução ativa setup inicial obrigatório
+- Interface protegida por sessões autenticadas
+- Logs rotacionados em [logs/](mdc:logs) com retenção de 3 dias
+
+## Sistema de Build
+- [scripts/build.js](mdc:scripts/build.js) - Embarca assets e gera executável
+- [package.json](mdc:package.json) - Configuração npm e scripts
+- Target: Windows x64 com Node 12 (pkg node12-win-x64)
+- Assets embarcados: 7za.exe, nssm.exe, pasta public/
+

@@ -1,0 +1,125 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# 📋 Índice das Regras do Cursor - NodeBackup
+
+## 🎯 Visão Geral
+
+Este conjunto de regras fornece diretrizes completas para desenvolvimento da aplicação **NodeBackup SQL Server** - uma solução de backup automatizado compatível com **Node.js 12** e distribuída como executável único para Windows.
+
+## 📚 Regras Disponíveis
+
+### 1. 🏗️ [Visão Geral do Projeto](mdc:projeto-nodebackup.mdc)
+**Escopo**: Arquitetura, tecnologias e estrutura geral
+- Descrição completa do projeto
+- Stack tecnológica (Node 12, Express, SQL Server)
+- Mapeamento de arquivos principais
+- Sistema de configuração criptografada
+- Processo de build com assets embarcados
+
+### 2. 🛠️ [Padrões de Desenvolvimento](mdc:padroes-desenvolvimento.mdc)
+**Escopo**: Compatibilidade Node 12, estrutura de código e boas práticas
+- Compatibilidade obrigatória com Node.js 12.x
+- Padrões de estrutura de arquivos
+- CommonJS vs ES Modules
+- Tratamento de erros e logging
+- Configuração segura e criptografia
+- Validações de build
+
+### 3. 🌐 [Frontend e API](mdc:frontend-api-patterns.mdc)
+**Escopo**: Interface web, padrões de API REST e UX
+- Estrutura da interface web (JavaScript Vanilla + CSS)
+- Padrões de API REST consistentes
+- Componentes reutilizáveis da UI
+- Performance e compatibilidade browser
+- Segurança frontend (XSS, validação)
+- Responsividade e acessibilidade
+
+### 4. 🚀 [Deployment e Versionamento](mdc:deployment-versionamento.mdc)
+**Escopo**: Build, releases e distribuição
+- Versionamento semântico (v0.0.5 atual)
+- Processo de build com pkg
+- Assets embarcados (7za.exe, nssm.exe)
+- GitHub Releases e CI/CD
+- Instalador NSIS opcional
+- Troubleshooting de build
+
+### 5. 📈 [Roadmap e Tasklist](mdc:roadmap-tasklist.mdc)
+**Escopo**: Próximas implementações e plano de desenvolvimento
+- Estado atual vs futuras funcionalidades
+- 5 fases de desenvolvimento planejadas
+- Tasklist detalhada por feature
+- Estimativas de tempo e prioridades
+- Melhorias de infraestrutura
+- Critérios de qualidade
+
+## 🎯 Como Usar Estas Regras
+
+### Para Desenvolvimento Ativo
+1. **Consulte** [padroes-desenvolvimento.mdc](mdc:padroes-desenvolvimento.mdc) para compatibilidade Node 12
+2. **Verifique** [frontend-api-patterns.mdc](mdc:frontend-api-patterns.mdc) para mudanças na interface
+3. **Siga** os padrões de commit em [deployment-versionamento.mdc](mdc:deployment-versionamento.mdc)
+
+### Para Novas Features
+1. **Consulte** [roadmap-tasklist.mdc](mdc:roadmap-tasklist.mdc) para ver se já está planejado
+2. **Mantenha** compatibilidade conforme [padroes-desenvolvimento.mdc](mdc:padroes-desenvolvimento.mdc)
+3. **Teste** o build conforme [deployment-versionamento.mdc](mdc:deployment-versionamento.mdc)
+
+### Para Entendimento Geral
+1. **Comece** com [projeto-nodebackup.mdc](mdc:projeto-nodebackup.mdc) para overview
+2. **Explore** arquivos mencionados nas regras para entender implementação
+3. **Consulte** [roadmap-tasklist.mdc](mdc:roadmap-tasklist.mdc) para contexto futuro
+
+## ⚠️ Restrições Importantes
+
+### 🔴 Compatibilidade Crítica
+- **Node.js 12.x**: Nunca quebrar compatibilidade
+- **Windows 7+**: Executável deve funcionar em sistemas antigos
+- **SQL Server 2008+**: Manter suporte a versões legadas
+- **Assets Embarcados**: 7za.exe e nssm.exe obrigatórios
+
+### 🟡 Limitações Técnicas
+- **Tamanho Executável**: < 100MB
+- **Interface Web**: < 50KB total (JavaScript + CSS)
+- **Dependências**: Evitar bibliotecas que exijam Node 14+
+- **Build Target**: pkg node12-win-x64 obrigatório
+
+## 🚀 Estado Atual vs Próximos Passos
+
+### ✅ Implementado (v0.0.5)
+- Setup inicial interativo
+- Interface web com autenticação
+- Backup SQL Server automatizado
+- Compressão 7-Zip + Upload FTP
+- Serviço Windows + Logs rotacionados
+
+### 🎯 Próxima Prioridade (v0.1.0 - Fase 1.1)
+- **Política de Retenção**: Limpeza automática de backups antigos
+- **Configuração**: Interface para definir dias de retenção
+- **Limpeza Automática**: Local e FTP opcional
+
+### 🔮 Roadmap v0.x.x
+- **v0.2.0**: Painel de Histórico (SQLite + Interface)
+- **v0.3.0**: Logs em Tempo Real (WebSocket)
+- **v0.4.0**: Notificações por E-mail
+- **v0.5.0**: Integração Telegram/WhatsApp
+- **v1.0.0**: Release estável completo
+
+## 📞 Quando Consultar Cada Regra
+
+| Situação | Regra Principal | Regras Secundárias |
+|----------|-----------------|-------------------|
+| **Novo no projeto** | [projeto-nodebackup.mdc](mdc:projeto-nodebackup.mdc) | Todas |
+| **Adicionando feature** | [roadmap-tasklist.mdc](mdc:roadmap-tasklist.mdc) | [padroes-desenvolvimento.mdc](mdc:padroes-desenvolvimento.mdc) |
+| **Mudando interface** | [frontend-api-patterns.mdc](mdc:frontend-api-patterns.mdc) | [padroes-desenvolvimento.mdc](mdc:padroes-desenvolvimento.mdc) |
+| **Fazendo release** | [deployment-versionamento.mdc](mdc:deployment-versionamento.mdc) | Todas |
+| **Bug crítico** | [padroes-desenvolvimento.mdc](mdc:padroes-desenvolvimento.mdc) | [projeto-nodebackup.mdc](mdc:projeto-nodebackup.mdc) |
+| **Planejamento** | [roadmap-tasklist.mdc](mdc:roadmap-tasklist.mdc) | [deployment-versionamento.mdc](mdc:deployment-versionamento.mdc) |
+
+---
+
+**💡 Dica**: Use Ctrl+F para buscar tópicos específicos dentro de cada regra, ou consulte os links `[arquivo.ext](mdc:arquivo.ext)` para navegar rapidamente pelos arquivos do projeto.
+
+

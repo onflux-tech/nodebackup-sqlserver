@@ -1,0 +1,335 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Roadmap e Tasklist - Próximas Implementações
+
+## 📍 Estado Atual (v0.0.5)
+**Funcionalidades Implementadas:**
+- ✅ Setup inicial interativo via web
+- ✅ Interface web com autenticação segura
+- ✅ Configuração criptografada (config.enc)
+- ✅ Backup automático SQL Server (.bak)
+- ✅ Compressão 7-Zip (.7z)
+- ✅ Upload FTP automatizado
+- ✅ Agendamento flexível de backups
+- ✅ Instalação como serviço Windows
+- ✅ Sistema de logs rotacionados
+
+## 🚀 Roadmap de Desenvolvimento
+
+> **📌 Foco Atual**: Versões 0.x.x para estabilização e funcionalidades essenciais antes do release v1.0.0 estável.
+
+### 📊 **FASE 1: Gerenciamento e Monitoramento** (v0.1.0 - v0.3.0)
+*Prioridade: Alta | Estimativa: 6-9 semanas total*
+
+#### 🗂️ **1.1 Política de Retenção**
+**Arquivos a modificar:** [src/services/database.js](mdc:src/services/database.js), [src/config.js](mdc:src/config.js)
+
+**Tasklist:**
+- [ ] **Configuração de Retenção**
+  - [ ] Adicionar campo `retentionPolicy` em config.js
+  - [ ] Interface web para configurar dias de retenção
+  - [ ] Validação: mínimo 1 dia, máximo 365 dias
+  
+- [ ] **Limpeza Automática Local**
+  - [ ] Novo método `cleanupOldBackups()` em database.js
+  - [ ] Executar limpeza após cada backup consolidado
+  - [ ] Log detalhado de arquivos removidos
+  
+- [ ] **Limpeza FTP (Opcional)**
+  - [ ] Método `cleanupFtpBackups()` em ftp.js
+  - [ ] Listar e remover arquivos antigos do FTP
+  - [ ] Configuração opcional (manter FTP intacto se desabilitado)
+
+#### 📈 **1.2 Painel de Histórico**
+**Arquivos a criar:** `src/services/history.js`, `public/history.html`, `public/history.js`
+
+**Tasklist:**
+- [ ] **Banco de Dados Histórico**
+  - [ ] Usar SQLite local para armazenar histórico
+  - [ ] Schema: id, timestamp, databases, status, fileSize, duration, errorMessage
+  - [ ] Migração automática na inicialização
+  
+- [ ] **API de Histórico**
+  - [ ] GET `/api/history` - listar backups paginados
+  - [ ] GET `/api/history/stats` - estatísticas gerais
+  - [ ] Filtros: data, status, banco específico
+  
+- [ ] **Interface Web**
+  - [ ] Página history.html com tabela responsiva
+  - [ ] Gráficos de sucesso/falha (Chart.js)
+  - [ ] Visualizar logs em modal
+  - [ ] Exportar histórico CSV
+
+#### 📋 **1.3 Logs em Tempo Real**
+**Arquivos a modificar:** [src/utils/logger.js](mdc:src/utils/logger.js), [public/script.js](mdc:public/script.js)
+
+**Tasklist:**
+- [ ] **WebSocket para Logs**
+  - [ ] Integrar `socket.io` compatível Node 12
+  - [ ] Stream de logs em tempo real
+  - [ ] Filtros por nível (info, warn, error)
+  
+- [ ] **Interface de Logs**
+  - [ ] Seção "Logs ao Vivo" no dashboard
+  - [ ] Auto-scroll e pause manual
+  - [ ] Download de logs atuais
+
+---
+
+### 📧 **FASE 2: Notificações** (v0.4.0 - v0.5.0)
+*Prioridade: Média | Estimativa: 5-7 semanas total*
+
+#### ✉️ **2.1 Alertas por E-mail**
+**Arquivos a criar:** `src/services/notification.js`, configuração SMTP
+
+**Tasklist:**
+- [ ] **Configuração SMTP**
+  - [ ] Adicionar campos SMTP em config.js
+  - [ ] Interface web para configurar e-mail
+  - [ ] Teste de conexão SMTP
+  
+- [ ] **Templates de E-mail**
+  - [ ] Template sucesso: resumo, arquivos, tamanhos
+  - [ ] Template falha: erro detalhado, logs relevantes
+  - [ ] Template HTML responsivo
+  
+- [ ] **Integração com Scheduler**
+  - [ ] Enviar e-mail após cada backup
+  - [ ] Configuração: sempre, só falhas, só sucessos
+  - [ ] Rate limiting (evitar spam)
+
+#### 📱 **2.2 Integração Telegram/WhatsApp**
+**Arquivos a criar:** `src/services/telegram.js`, `src/services/whatsapp.js`
+
+**Tasklist:**
+- [ ] **Bot Telegram**
+  - [ ] Usar `node-telegram-bot-api` (Node 12 compatível)
+  - [ ] Comandos: /status, /lastbackup, /logs
+  - [ ] Configuração via Bot Token
+  
+- [ ] **WhatsApp (API não oficial)**
+  - [ ] Integrar biblioteca WhatsApp Web
+  - [ ] Mensagens de status via número configurado
+  - [ ] Fallback se WhatsApp falhar
+
+---
+
+### 📁 **FASE 3: Expansão das Fontes** (v1.1.0+)
+*Prioridade: Média | Estimativa: 5-7 semanas* (pós v1.0.0)
+
+#### 🗂️ **3.1 Backup de Arquivos e Pastas**
+**Arquivos a criar:** `src/services/fileBackup.js`, interface seleção pastas
+
+**Tasklist:**
+- [ ] **Seleção de Diretórios**
+  - [ ] Interface web para escolher pastas
+  - [ ] Exclusões por extensão/padrão
+  - [ ] Preview do que será incluído
+  
+- [ ] **Inclusão no Backup Consolidado**
+  - [ ] Comprimir pastas junto com .bak
+  - [ ] Manter estrutura de diretórios
+  - [ ] Progress indicator para pastas grandes
+
+#### 🗄️ **3.2 Suporte MySQL e PostgreSQL**
+**Arquivos a criar:** `src/services/mysql.js`, `src/services/postgres.js`
+
+**Tasklist:**
+- [ ] **MySQL Support**
+  - [ ] Usar `mysql2` compatível Node 12
+  - [ ] mysqldump para backup
+  - [ ] Interface configuração MySQL
+  
+- [ ] **PostgreSQL Support**
+  - [ ] Usar `pg` compatível Node 12
+  - [ ] pg_dump para backup
+  - [ ] Interface configuração PostgreSQL
+  
+- [ ] **Seletor de Tipo de Banco**
+  - [ ] Interface multi-banco
+  - [ ] Validação específica por tipo
+  - [ ] Backup consolidado multi-tipo
+
+---
+
+### ☁️ **FASE 4: Expansão dos Destinos** (v1.2.0+)
+*Prioridade: Baixa | Estimativa: 4-6 semanas* (pós v1.0.0)
+
+#### 🪣 **4.1 Integração S3**
+**Arquivos a criar:** `src/services/s3.js`, configuração AWS
+
+**Tasklist:**
+- [ ] **AWS S3 Support**
+  - [ ] Usar `aws-sdk` v2 (Node 12 compatível)
+  - [ ] Upload multipart para arquivos grandes
+  - [ ] Configuração: bucket, região, credenciais
+  
+- [ ] **MinIO/S3 Compatível**
+  - [ ] Support para MinIO e outras S3-likes
+  - [ ] Configuração de endpoint customizada
+  - [ ] Teste de conectividade
+
+#### 📁 **4.2 Google Drive Integration**
+**Arquivos a criar:** `src/services/googleDrive.js`, OAuth setup
+
+**Tasklist:**
+- [ ] **Google Drive API**
+  - [ ] Usar `googleapis` compatível Node 12
+  - [ ] OAuth 2.0 flow para autorização
+  - [ ] Upload para pasta específica
+  
+- [ ] **Interface OAuth**
+  - [ ] Setup inicial via navegador
+  - [ ] Renovação automática de tokens
+  - [ ] Revogação de acesso
+
+---
+
+### 🔄 **FASE 5: Funcionalidades Avançadas** (v2.0.0+)
+*Prioridade: Baixa | Estimativa: 6-8 semanas* (major release)
+
+#### 📂 **5.1 Interface de Restauração**
+**Arquivos a criar:** `src/services/restore.js`, `public/restore.html`
+
+**Tasklist:**
+- [ ] **Listagem de Backups**
+  - [ ] Listar backups locais e remotos
+  - [ ] Preview do conteúdo do .7z
+  - [ ] Informações: data, tamanho, bancos incluídos
+  
+- [ ] **Processo de Restauração**
+  - [ ] Download automático se remoto
+  - [ ] Extração segura do .7z
+  - [ ] Restauração SQL Server com RESTORE DATABASE
+  
+- [ ] **Interface Web Segura**
+  - [ ] Confirmações múltiplas
+  - [ ] Log detalhado da restauração
+  - [ ] Backup atual antes de restaurar
+
+## 🔧 Tarefas de Infraestrutura
+
+### **Melhorias Imediatas**
+- [ ] **Migrar para Node 16 LTS** (quebra compatibilidade)
+- [ ] **Adicionar ESLint** com regras Node 12
+- [ ] **Testes Automatizados** (Jest compatível Node 12)
+- [ ] **GitHub Actions** para build automático
+- [ ] **Documentação API** (JSDoc)
+
+### **Melhorias de Performance**
+- [ ] **Backup Incremental** (só mudanças)
+- [ ] **Compressão Paralela** (múltiplos cores)
+- [ ] **Cache de Configurações** (evitar I/O)
+- [ ] **Connection Pooling** SQL Server
+
+### **Melhorias de UX**
+- [ ] **Wizard de Configuração** passo-a-passo
+- [ ] **Dark Mode** na interface
+- [ ] **Responsividade Mobile** completa
+- [ ] **Ícones e Animações** modernas
+
+## 📝 Notas de Implementação
+
+### **Compatibilidade Node 12**
+- Todas as features devem manter compatibilidade
+- Testar com `pkg node12-win-x64` antes de merge
+- Evitar dependências que exijam Node 14+
+
+### **Ordem de Prioridade**
+1. **Fase 1** (Monitoramento) - Mais solicitado pelos usuários
+2. **Fase 2** (Notificações) - Facilita operação
+3. **Fase 3** (Expansão fontes) - Novos casos de uso
+4. **Fase 4** (Expansão destinos) - Cloud adoption
+5. **Fase 5** (Avançadas) - Features premium
+
+### **Critérios de Qualidade**
+- ✅ Tests unitários para novos serviços
+- ✅ Documentação atualizada no README
+- ✅ Logs apropriados para debugging
+- ✅ Tratamento de erros robusto
+- ✅ Interface responsiva e acessível
+
+## 🗓️ Cronograma Detalhado v0.x.x
+
+### **v0.1.0 - Política de Retenção** (Estimativa: 2-3 semanas)
+**Objetivo**: Implementar limpeza automática de backups antigos
+
+**Sprint 1 (Semana 1)**:
+- [ ] Adicionar campo `retentionPolicy` em [src/config.js](mdc:src/config.js)
+- [ ] Interface web para configurar dias de retenção
+- [ ] Validação: mínimo 1 dia, máximo 365 dias
+
+**Sprint 2 (Semana 2-3)**:
+- [ ] Implementar `cleanupOldBackups()` em [src/services/database.js](mdc:src/services/database.js)
+- [ ] Método `cleanupFtpBackups()` em [src/services/ftp.js](mdc:src/services/ftp.js)
+- [ ] Testes e ajustes finais
+
+### **v0.2.0 - Painel de Histórico** (Estimativa: 3-4 semanas)
+**Objetivo**: Interface completa para visualizar histórico de backups
+
+**Sprint 1 (Semana 1-2)**:
+- [ ] Criar [src/services/history.js](mdc:src/services/history.js) com SQLite
+- [ ] Schema e migração automática
+- [ ] API `/api/history` e `/api/history/stats`
+
+**Sprint 2 (Semana 3-4)**:
+- [ ] Interface [public/history.html](mdc:public/history.html)
+- [ ] Gráficos com Chart.js (Node 12 compatível)
+- [ ] Exportação CSV e modal de logs
+
+### **v0.3.0 - Logs Tempo Real** (Estimativa: 2-3 semanas)
+**Objetivo**: Stream de logs em tempo real via WebSocket
+
+**Sprint 1 (Semana 1-2)**:
+- [ ] Integrar `socket.io` (versão compatível Node 12)
+- [ ] Modificar [src/utils/logger.js](mdc:src/utils/logger.js) para broadcast
+- [ ] Sistema de filtros por nível
+
+**Sprint 2 (Semana 3)**:
+- [ ] Interface "Logs ao Vivo" no dashboard
+- [ ] Auto-scroll, pause manual e download
+
+### **v0.4.0 - Notificações E-mail** (Estimativa: 2-3 semanas)
+**Objetivo**: Alertas automáticos via SMTP
+
+**Sprint 1 (Semana 1-2)**:
+- [ ] Criar [src/services/notification.js](mdc:src/services/notification.js)
+- [ ] Configuração SMTP em config.js
+- [ ] Templates HTML responsivos
+
+**Sprint 2 (Semana 3)**:
+- [ ] Integração com scheduler
+- [ ] Configuração: sempre/só falhas/só sucessos
+- [ ] Rate limiting e testes
+
+### **v0.5.0 - Telegram/WhatsApp** (Estimativa: 3-4 semanas)
+**Objetivo**: Notificações por mensageiros
+
+**Sprint 1 (Semana 1-2)**:
+- [ ] Bot Telegram com `node-telegram-bot-api` (Node 12)
+- [ ] Comandos: /status, /lastbackup, /logs
+- [ ] Interface de configuração Bot Token
+
+**Sprint 2 (Semana 3-4)**:
+- [ ] Integração WhatsApp (biblioteca não oficial)
+- [ ] Fallback e tratamento de erros
+- [ ] Testes integrados
+
+### **v1.0.0 - Release Estável** (Estimativa: 1-2 semanas)
+**Objetivo**: Consolidação e estabilização
+
+- [ ] Refactoring final
+- [ ] Documentação completa
+- [ ] Testes automatizados (Jest Node 12)
+- [ ] Build otimizado e assinado
+- [ ] Release oficial estável
+
+
+
+
+
+
+

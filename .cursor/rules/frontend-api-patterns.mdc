@@ -1,0 +1,286 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Frontend e API - Padrões de Interface
+
+## 🌐 Estrutura da Interface Web
+
+### Arquivos Frontend Principais
+- [public/index.html](mdc:public/index.html) - Dashboard principal (5.8KB)
+- [public/script.js](mdc:public/script.js) - JavaScript principal (17KB, 522 linhas)
+- [public/styles.css](mdc:public/styles.css) - CSS principal (12KB, 684 linhas)
+- [public/login.html](mdc:public/login.html) + [public/login.js](mdc:public/login.js) - Sistema login
+- [public/setup.html](mdc:public/setup.html) + [public/setup.js](mdc:public/setup.js) - Setup inicial
+
+### Limitações e Diretrizes
+- **JavaScript Vanilla**: Sem frameworks pesados (manter compatibilidade e tamanho)
+- **CSS Puro**: Sem preprocessadores, focado em responsividade
+- **Tamanho Total**: Manter < 50KB total (assets embarcados no executável)
+- **Compatibilidade**: IE11+, Chrome 60+, Firefox 55+ (empresas com Windows antigo)
+
+## 🔌 Padrões de API REST
+
+### Estrutura de Rotas ([src/api/routes.js](mdc:src/api/routes.js))
+```javascript
+// ✅ Padrão atual - manter consistência
+GET    /api/config              # Obter configurações
+POST   /api/config              # Salvar configurações
+GET    /api/list-databases       # Listar bancos disponíveis
+POST   /api/test-ftp            # Testar conexão FTP
+POST   /api/setup               # Configuração inicial
+POST   /api/change-password     # Alterar senha
+POST   /api/login               # Autenticação
+POST   /api/logout              # Logout
+```
+
+### Padrões de Resposta
+```javascript
+// ✅ Sucesso
+{
+  "message": "Operação realizada com sucesso",
+  "data": { /* dados opcionais */ }
+}
+
+// ✅ Erro com detalhes amigáveis
+{
+  "error": "Mensagem amigável para o usuário",
+  "details": "Detalhes técnicos",
+  "suggestions": ["Sugestão 1", "Sugestão 2"]
+}
+
+// ❌ Evitar respostas inconsistentes
+{
+  "status": "error",
+  "msg": "Erro",
+  "code": 500
+}
+```
+
+### Middleware de Autenticação
+```javascript
+// Padrão para rotas protegidas
+function requireAuth(req, res, next) {
+  if (!req.session.user) {
+    return res.status(401).json({ error: 'Acesso negado' });
+  }
+  next();
+}
+
+// Aplicar em todas as rotas exceto login, setup e assets
+```
+
+## 🎨 Padrões de Interface
+
+### Design System Atual
+- **Cores Primárias**: Azul (#007bff), Verde (#28a745), Vermelho (#dc3545)
+- **Tipografia**: System fonts (-apple-system, BlinkMacSystemFont, Segoe UI)
+- **Grid**: CSS Grid e Flexbox para layouts responsivos
+- **Ícones**: Font Awesome ou ícones SVG embarcados
+
+### Componentes Reutilizáveis
+
+#### 🔄 Loading States
+```html
+<!-- Padrão para operações assíncronas -->
+<button id="testBtn" class="btn btn-primary">
+  <span class="btn-text">Testar Conexão</span>
+  <span class="btn-loading hidden">
+    <i class="fas fa-spinner fa-spin"></i> Testando...
+  </span>
+</button>
+```
+
+#### ⚠️ Mensagens de Status
+```html
+<!-- Container padrão para mensagens -->
+<div id="messageContainer" class="message-container">
+  <!-- Dinamicamente populado via JavaScript -->
+</div>
+```
+
+#### 📝 Formulários
+```html
+<!-- Padrão para inputs de configuração -->
+<div class="form-group">
+  <label for="serverInput">Servidor SQL:</label>
+  <input type="text" id="serverInput" class="form-control" 
+         placeholder="localhost" required>
+  <small class="form-text text-muted">
+    Endereço do servidor SQL Server
+  </small>
+</div>
+```
+
+### JavaScript Patterns
+
+#### 🔄 Requisições AJAX
+```javascript
+// ✅ Padrão para chamadas de API
+async function callAPI(endpoint, method = 'GET', data = null) {
+  try {
+    const options = {
+      method: method,
+      headers: { 'Content-Type': 'application/json' }
+    };
+    
+    if (data) {
+      options.body = JSON.stringify(data);
+    }
+    
+    const response = await fetch(endpoint, options);
+    const result = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(result.error || 'Erro na requisição');
+    }
+    
+    return result;
+  } catch (error) {
+    console.error('API Error:', error);
+    showMessage(error.message, 'error');
+    throw error;
+  }
+}
+```
+
+#### 📝 Manipulação de Formulários
+```javascript
+// ✅ Padrão para submissão de formulários
+function setupFormSubmission(formId, apiEndpoint, onSuccess) {
+  const form = document.getElementById(formId);
+  
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData);
+    
+    try {
+      setButtonLoading(form.querySelector('button[type="submit"]'), true);
+      const result = await callAPI(apiEndpoint, 'POST', data);
+      
+      showMessage(result.message, 'success');
+      if (onSuccess) onSuccess(result);
+      
+    } catch (error) {
+      // Erro já tratado em callAPI
+    } finally {
+      setButtonLoading(form.querySelector('button[type="submit"]'), false);
+    }
+  });
+}
+```
+
+#### 🎛️ Estado de Loading
+```javascript
+// ✅ Função utilitária para loading states
+function setButtonLoading(button, isLoading) {
+  const textSpan = button.querySelector('.btn-text');
+  const loadingSpan = button.querySelector('.btn-loading');
+  
+  if (isLoading) {
+    textSpan.classList.add('hidden');
+    loadingSpan.classList.remove('hidden');
+    button.disabled = true;
+  } else {
+    textSpan.classList.remove('hidden');
+    loadingSpan.classList.add('hidden');
+    button.disabled = false;
+  }
+}
+```
+
+## 📱 Responsividade e Acessibilidade
+
+### Breakpoints CSS
+```css
+/* Mobile first approach */
+@media (min-width: 576px) { /* SM */ }
+@media (min-width: 768px) { /* MD */ }
+@media (min-width: 992px) { /* LG */ }
+@media (min-width: 1200px) { /* XL */ }
+```
+
+### Padrões de Acessibilidade
+- **Labels**: Sempre associar labels aos inputs
+- **ARIA**: Usar aria-label para botões e ícones
+- **Contraste**: Mínimo 4.5:1 para texto normal
+- **Navegação**: Suporte completo ao teclado
+- **Foco**: Indicadores visuais claros
+
+## 🔒 Segurança Frontend
+
+### Validação Client-Side
+```javascript
+// ✅ Validação (mas sempre revalidar no backend)
+function validatePassword(password) {
+  if (password.length < 6) {
+    throw new Error('Senha deve ter pelo menos 6 caracteres');
+  }
+  return true;
+}
+
+function validateRequired(value, fieldName) {
+  if (!value || value.trim() === '') {
+    throw new Error(`${fieldName} é obrigatório`);
+  }
+  return true;
+}
+```
+
+### Proteção XSS
+```javascript
+// ✅ Escapar HTML em conteúdo dinâmico
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+// Usar sempre que inserir conteúdo dinâmico
+element.innerHTML = escapeHtml(userInput);
+```
+
+## 🚀 Performance Frontend
+
+### Otimizações Atuais
+- **Assets Embarcados**: Tudo incluído no executável (sem CDN)
+- **CSS Minificado**: Compressão manual quando necessário
+- **JavaScript Vanilla**: Sem overhead de frameworks
+- **Imagens Otimizadas**: PNG/JPG comprimidos
+
+### Métricas de Performance
+- **First Paint**: < 500ms (local)
+- **Interatividade**: < 1s para ações básicas
+- **Bundle Size**: < 50KB total frontend
+- **Memory Usage**: < 50MB para interface
+
+## 📋 Checklist para Novas Features Frontend
+
+### ✅ Desenvolvimento
+- [ ] Interface responsiva (mobile-first)
+- [ ] Loading states para operações assíncronas
+- [ ] Validação client-side + backend
+- [ ] Mensagens de erro amigáveis
+- [ ] Tratamento de offline/conectividade
+
+### ✅ Segurança
+- [ ] Validação de inputs
+- [ ] Escape de HTML
+- [ ] CSRF protection (se aplicável)
+- [ ] Rate limiting no backend
+
+### ✅ UX/UI
+- [ ] Feedback visual para ações
+- [ ] Estados de erro claros
+- [ ] Confirmações para ações destrutivas
+- [ ] Tooltips/ajuda contextual
+
+### ✅ Compatibilidade
+- [ ] Testado em IE11+ (empresas)
+- [ ] Funciona sem JavaScript (degradação graceful)
+- [ ] Acessibilidade básica (WCAG AA)
+- [ ] Performance aceitável em hardware antigo
+
