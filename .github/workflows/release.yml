@@ -1,4 +1,4 @@
-name: Build e Release do Executável
+name: Build e Deploy
 
 on:
   release:
@@ -16,8 +16,8 @@ jobs:
       - name: Configurar Node.js v12
         uses: actions/setup-node@v3
         with:
-          node-version: '12'
-          cache: 'npm'
+          node-version: "12"
+          cache: "npm"
 
       - name: Instalar dependências
         run: npm install
@@ -33,4 +33,4 @@ jobs:
           upload_url: ${{ github.event.release.upload_url }}
           asset_path: ./NodeBackup.exe
           asset_name: NodeBackup.exe
-          asset_content_type: application/octet-stream 
+          asset_content_type: application/octet-stream
