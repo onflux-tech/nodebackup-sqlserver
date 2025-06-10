@@ -15,14 +15,14 @@ async function uploadToFtp(localFilePath, ftpConfig) {
 
   const client = new ftp.Client();
   try {
-    logger.log(`Conectando ao servidor FTP ${host}:${port}...`);
+    logger.info(`Conectando ao servidor FTP ${host}:${port}...`);
     await client.access({
       host,
       port,
       user,
       password,
     });
-    logger.log('Conexão FTP bem-sucedida.');
+    logger.info('Conexão FTP bem-sucedida.');
 
     const targetDir = remoteDir || '/';
     let remotePath;
@@ -34,13 +34,13 @@ async function uploadToFtp(localFilePath, ftpConfig) {
       remotePath = remoteFileName;
     }
 
-    logger.log(`Enviando arquivo ${localFilePath} para ${host}:${remotePath}...`);
+    logger.info(`Enviando arquivo ${localFilePath} para ${host}:${remotePath}...`);
     await client.uploadFrom(localFilePath, remotePath);
-    logger.log('Upload FTP concluído.');
+    logger.info('Upload FTP concluído.');
 
     fs.unlink(localFilePath, (err) => {
       if (err) logger.error(`Erro ao excluir arquivo local pós-upload: ${localFilePath}`, err);
-      else logger.log(`Arquivo local excluído com sucesso: ${localFilePath}`);
+      else logger.info(`Arquivo local excluído com sucesso: ${localFilePath}`);
     });
 
   } catch (err) {
@@ -48,7 +48,7 @@ async function uploadToFtp(localFilePath, ftpConfig) {
   } finally {
     if (client.closed === false) {
       client.close();
-      logger.log('Conexão FTP fechada.');
+      logger.info('Conexão FTP fechada.');
     }
   }
 }

@@ -69,7 +69,7 @@ function startServer() {
   });
 
   app.listen(PORT, () => {
-    logger.log(`Servidor web de configuração rodando em http://localhost:${PORT}`);
+    logger.info(`Servidor web de configuração rodando em http://localhost:${PORT}`);
   });
 }
 

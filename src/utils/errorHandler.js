@@ -195,14 +195,14 @@ function logFriendlyError(error, context) {
   const errorInfo = translateDatabaseError(error);
 
   logger.error(`${context} - ${errorInfo.friendly}`);
-  logger.log(`Detalhes: ${errorInfo.details}`);
-  logger.log('Sugestões para resolver o problema:');
+  logger.info(`Detalhes: ${errorInfo.details}`);
+  logger.info('Sugestões para resolver o problema:');
   errorInfo.suggestions.forEach((suggestion, index) => {
-    logger.log(`  ${index + 1}. ${suggestion}`);
+    logger.info(`  ${index + 1}. ${suggestion}`);
   });
 
   if (process.env.DEBUG === 'true') {
-    logger.log(`\nDetalhes técnicos: ${errorInfo.technical}`);
+    logger.debug(`\nDetalhes técnicos: ${errorInfo.technical}`);
   }
 }
 
@@ -214,14 +214,14 @@ function logFriendlyFTPError(error, context) {
   const errorInfo = translateFTPError(error);
 
   logger.error(`${context} - ${errorInfo.friendly}`);
-  logger.log(`Detalhes: ${errorInfo.details}`);
-  logger.log('Sugestões para resolver o problema:');
+  logger.info(`Detalhes: ${errorInfo.details}`);
+  logger.info('Sugestões para resolver o problema:');
   errorInfo.suggestions.forEach((suggestion, index) => {
-    logger.log(`  ${index + 1}. ${suggestion}`);
+    logger.info(`  ${index + 1}. ${suggestion}`);
   });
 
   if (process.env.DEBUG === 'true') {
-    logger.log(`\nDetalhes técnicos: ${errorInfo.technical}`);
+    logger.debug(`\nDetalhes técnicos: ${errorInfo.technical}`);
   }
 }
 

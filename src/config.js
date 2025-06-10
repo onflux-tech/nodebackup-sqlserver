@@ -42,14 +42,14 @@ function loadConfig() {
       const decryptedConfig = decrypt(encryptedData);
       if (decryptedConfig) {
         config = decryptedConfig;
-        logger.log('Configurações criptografadas carregadas com sucesso.');
+        logger.info('Configurações criptografadas carregadas com sucesso.');
       } else {
         logger.error('Falha ao descriptografar o arquivo de configuração. Verifique se o arquivo não está corrompido.');
         config = getDefaultConfig();
         saveConfig();
       }
     } else if (fs.existsSync(configFile)) {
-      logger.log('Arquivo config.json encontrado. Migrando para o formato criptografado...');
+      logger.info('Arquivo config.json encontrado. Migrando para o formato criptografado...');
       const configData = fs.readFileSync(configFile, 'utf8');
       config = JSON.parse(configData);
 
@@ -60,11 +60,11 @@ function loadConfig() {
 
       saveConfig();
       fs.unlinkSync(configFile);
-      logger.log('Migração concluída. O arquivo config.json foi removido por segurança.');
+      logger.info('Migração concluída. O arquivo config.json foi removido por segurança.');
     } else {
       config = getDefaultConfig();
       saveConfig();
-      logger.log('Arquivo de configuração não encontrado. Um novo (config.enc) foi criado.');
+      logger.info('Arquivo de configuração não encontrado. Um novo (config.enc) foi criado.');
       logger.warn('Nenhuma conta de administrador configurada. Acesse a interface web para criar uma.');
     }
     return true;

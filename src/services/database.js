@@ -29,7 +29,7 @@ async function performBackup(dbName, dbConfig, ftpConfig) {
 
   const sqlCmd = `sqlcmd -S "${server}" -U "${user}" -P "${password}" -Q "BACKUP DATABASE [${dbName}] TO DISK = N'${backupFilePath}' WITH NOINIT, NOUNLOAD, NAME = N'${dbName} full backup', NOSKIP, STATS = 10, NOREWIND"`;
 
-  logger.log(`Executando backup do banco de dados ${dbName}...`);
+  logger.info(`Executando backup do banco de dados ${dbName}...`);
 
   exec(sqlCmd, (error, stdout, stderr) => {
     if (error) {
@@ -40,14 +40,14 @@ async function performBackup(dbName, dbConfig, ftpConfig) {
     if (stderr && stderr.length > 0) {
       logger.warn(`sqlcmd stderr (${dbName}): ${stderr}`);
     }
-    logger.log(`Backup do banco de dados ${dbName} concluído: ${backupFilePath}`);
+    logger.info(`Backup do banco de dados ${dbName} concluído: ${backupFilePath}`);
     compressAndUpload(backupFilePath, zipFilePath, ftpConfig);
   });
 }
 
 function compressAndUpload(backupFilePath, zipFilePath, ftpConfig) {
   const zipCmd = `"${sevenZipAsset}" a -t7z -mx=9 "${zipFilePath}" "${backupFilePath}"`;
-  logger.log(`Compactando arquivo de backup para ${zipFilePath}...`);
+  logger.info(`Compactando arquivo de backup para ${zipFilePath}...`);
 
   exec(zipCmd, (error, stdout, stderr) => {
     if (error) {
@@ -57,7 +57,7 @@ function compressAndUpload(backupFilePath, zipFilePath, ftpConfig) {
     if (stderr && stderr.length > 0) {
       logger.warn(`7za stderr: ${stderr}`);
     }
-    logger.log(`Backup compactado com sucesso: ${zipFilePath}`);
+    logger.info(`Backup compactado com sucesso: ${zipFilePath}`);
 
     fs.unlink(backupFilePath, (err) => {
       if (err) logger.error(`Erro ao excluir arquivo .bak: ${backupFilePath}`, err);
@@ -66,7 +66,7 @@ function compressAndUpload(backupFilePath, zipFilePath, ftpConfig) {
     if (ftpConfig && ftpConfig.host) {
       uploadToFtp(zipFilePath, ftpConfig);
     } else {
-      logger.log('FTP não configurado, backup mantido localmente.');
+      logger.info('FTP não configurado, backup mantido localmente.');
     }
   });
 }

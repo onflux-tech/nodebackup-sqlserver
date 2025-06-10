@@ -40,7 +40,7 @@ const { startScheduler } = require('./services/scheduler');
 const windowsService = require('./services/windowsService');
 
 async function main() {
-  logger.log('Iniciando a aplicação de backup...');
+  logger.info('Iniciando a aplicação de backup...');
 
   if (windowsService.handleServiceCommands()) {
     return;

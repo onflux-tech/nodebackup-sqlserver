@@ -7,7 +7,7 @@ let scheduledJobs = [];
 
 function startScheduler() {
   cancelJobs();
-  logger.log('Iniciando o agendador de backups.');
+  logger.info('Iniciando o agendador de backups.');
 
   const config = getConfig();
   const scheduleListRaw = config.backupSchedule || [];
@@ -38,7 +38,7 @@ function startScheduler() {
     rule.tz = 'local';
 
     const job = schedule.scheduleJob(rule, () => {
-      logger.log(`Disparando backup agendado para as ${time}. Bancos: ${dbList.join(', ')}`);
+      logger.info(`Disparando backup agendado para as ${time}. Bancos: ${dbList.join(', ')}`);
       dbList.forEach(dbName => {
         performBackup(dbName, dbConfig, ftpConfig);
       });
@@ -46,24 +46,25 @@ function startScheduler() {
 
     if (job) {
       scheduledJobs.push(job);
-      logger.log(`Backup agendado para ${time}.`);
+      logger.info(`Backup agendado para ${time}.`);
     } else {
       logger.error(`Falha ao agendar backup para as ${time}.`);
     }
   });
 
-  logger.log('Agendador de backups configurado e rodando.');
+  logger.info('Agendador de backups configurado e rodando.');
 }
 
 function cancelJobs() {
-  logger.log('Cancelando todos os trabalhos de backup agendados.');
-  scheduledJobs.forEach(job => job.cancel());
-  scheduledJobs = [];
+  if (scheduledJobs.length > 0) {
+    logger.info('Cancelando todos os trabalhos de backup agendados.');
+    scheduledJobs.forEach(job => job.cancel());
+    scheduledJobs = [];
+  }
 }
 
 function reschedule() {
-  logger.log('Recebida solicitação para reagendar os backups.');
-  cancelJobs();
+  logger.info('Recebendo novas configurações, reagendando os backups...');
   startScheduler();
 }
 
