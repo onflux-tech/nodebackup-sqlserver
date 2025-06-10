@@ -90,6 +90,10 @@ Se desejar modificar ou compilar o projeto:
     npm run build
     ```
 
+### Criando o Instalador (Opcional)
+
+Para gerar um instalador completo (`NodeBackupInstaller.exe`), siga nosso [**Guia de Build do Instalador**](./docs/BUILD_INSTALLER.md).
+
 ## 🤝 Como Contribuir
 
 Contribuições são sempre bem-vindas! Se você tem ideias para melhorar a aplicação, corrigir um bug ou adicionar uma nova funcionalidade, sinta-se à vontade para abrir uma **Issue** ou enviar um **Pull Request**.

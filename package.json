@@ -6,7 +6,8 @@
   "bin": "src/app.js",
   "scripts": {
     "start": "node src/app.js",
-    "build": "node scripts/build.js"
+    "build": "node scripts/build.js",
+    "build:installer": "powershell -ExecutionPolicy Bypass -File scripts/build-installer.ps1"
   },
   "keywords": [
     "backup",
