@@ -54,31 +54,36 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnCleanupLocal = document.getElementById('btnCleanupLocal');
   const btnCleanupFtp = document.getElementById('btnCleanupFtp');
 
-  document.querySelectorAll('.btn').forEach(button => {
-    button.addEventListener('mousedown', function (e) {
-      const x = e.clientX - this.getBoundingClientRect().left;
-      const y = e.clientY - this.getBoundingClientRect().top;
+  const navTabs = document.querySelectorAll('.nav-tab');
+  const tabContents = document.querySelectorAll('.tab-content');
 
-      const ripple = document.createElement('span');
-      ripple.style.position = 'absolute';
-      ripple.style.width = '1px';
-      ripple.style.height = '1px';
-      ripple.style.borderRadius = '50%';
-      ripple.style.backgroundColor = 'rgba(255, 255, 255, 0.7)';
-      ripple.style.transform = 'scale(0)';
-      ripple.style.animation = 'ripple 0.6s linear';
-      ripple.style.left = `${x}px`;
-      ripple.style.top = `${y}px`;
+  function switchTab(targetTab) {
+    navTabs.forEach(tab => tab.classList.remove('active'));
+    tabContents.forEach(content => content.classList.remove('active'));
 
-      this.style.position = 'relative';
-      this.style.overflow = 'hidden';
-      this.appendChild(ripple);
+    const activeNavTab = document.querySelector(`[data-tab="${targetTab}"]`);
+    const activeTabContent = document.getElementById(`tab-${targetTab}`);
 
-      setTimeout(() => {
-        ripple.remove();
-      }, 600);
+    if (activeNavTab && activeTabContent) {
+      activeNavTab.classList.add('active');
+      activeTabContent.classList.add('active');
+
+      localStorage.setItem('activeTab', targetTab);
+    }
+  }
+
+  navTabs.forEach(tab => {
+    tab.addEventListener('click', (e) => {
+      e.preventDefault();
+      const targetTab = tab.getAttribute('data-tab');
+      switchTab(targetTab);
     });
   });
+
+  const savedActiveTab = localStorage.getItem('activeTab') || 'database';
+  switchTab(savedActiveTab);
+
+
 
   function showToast(message, type = 'success') {
     const toast = document.createElement('div');
@@ -180,7 +185,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function addScheduleInput(value = '') {
     const scheduleCount = scheduleInputsDiv.querySelectorAll('.form-group').length + 1;
     const formGroup = document.createElement('div');
-    formGroup.className = 'form-group new-item';
+    formGroup.className = 'form-group';
 
     const label = document.createElement('label');
     label.textContent = `Horário ${scheduleCount}`;
@@ -255,10 +260,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   addScheduleButton.addEventListener('click', () => {
     addScheduleInput();
-    addScheduleButton.style.transform = 'scale(0.95)';
-    setTimeout(() => {
-      addScheduleButton.style.transform = '';
-    }, 150);
   });
 
   async function listDatabases() {

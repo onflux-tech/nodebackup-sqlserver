@@ -15,153 +15,255 @@
 <body>
   <div id="toast-container"></div>
 
-  <div class="theme-toggle" id="themeToggle" title="Alternar tema">
-    <svg class="theme-toggle-icon" id="themeIcon" xmlns="http://www.w3.org/2000/svg" fill="currentColor"
-      viewBox="0 0 16 16">
-      <path class="sun-icon"
-        d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z" />
-      <path class="moon-icon" style="display: none;"
-        d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278z" />
-    </svg>
-  </div>
+
 
   <div class="container">
     <div class="header">
       <h2>Configuração de Backup</h2>
-    </div>
 
-    <form id="configForm" autocomplete="off">
-      <div class="grid-container">
-        <fieldset class="panel">
-          <legend>Banco de Dados</legend>
-          <div class="form-group">
-            <label for="dbServer">Servidor SQL</label>
-            <input type="text" id="dbServer" placeholder="localhost\SQLEXPRESS">
-            <small>Ex: localhost ou NOME_PC\SQLEXPRESS</small>
-          </div>
-          <div class="form-group">
-            <label for="dbUser">Usuário</label>
-            <input type="text" id="dbUser" placeholder="sa">
-          </div>
-          <div class="form-group">
-            <label for="dbPass">Senha</label>
-            <input type="password" id="dbPass" placeholder="••••••••">
-          </div>
-          <div class="form-group">
-            <button type="button" id="btnListDatabases" class="btn btn-primary btn-full">
-              <span class="btn-text">Listar Bancos</span>
-              <div class="spinner"></div>
-            </button>
-          </div>
-          <div class="form-group">
-            <label for="dbList">Selecionar Bancos</label>
-            <select id="dbList" multiple size="4"></select>
-            <small>Segure CTRL (ou CMD) para selecionar múltiplos.</small>
-          </div>
-        </fieldset>
+      <!-- Botões de Ação -->
+      <div class="header-actions">
+        <button type="button" id="themeToggle" class="header-btn theme-toggle" title="Alternar tema">
+          <svg class="theme-toggle-icon" id="themeIcon" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+            fill="currentColor" viewBox="0 0 16 16">
+            <path class="sun-icon"
+              d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z" />
+            <path class="moon-icon" style="display: none;"
+              d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278z" />
+          </svg>
+        </button>
 
-        <fieldset class="panel">
-          <legend>Configurações FTP</legend>
-          <div class="form-group">
-            <label for="ftpHost">Host</label>
-            <input type="text" id="ftpHost" placeholder="ftp.meuservidor.com">
-            <small>Opcional: Deixe em branco para não usar FTP.</small>
-          </div>
-          <div class="form-group">
-            <label for="ftpPort">Porta</label>
-            <input type="number" id="ftpPort" placeholder="21">
-          </div>
-          <div class="form-group">
-            <label for="ftpUser">Usuário</label>
-            <input type="text" id="ftpUser" placeholder="ftp_user">
-          </div>
-          <div class="form-group">
-            <label for="ftpPass">Senha</label>
-            <input type="password" id="ftpPass" placeholder="••••••••">
-          </div>
-          <div class="form-group">
-            <label for="ftpRemoteDir">Diretório Remoto</label>
-            <input type="text" id="ftpRemoteDir" placeholder="/backups_sql/">
-          </div>
-          <div class="form-group">
-            <button type="button" id="btnTestFtp" class="btn btn-primary btn-full">
-              <span class="btn-text">Testar Conexão FTP</span>
-              <div class="spinner"></div>
-            </button>
-          </div>
-        </fieldset>
-
-        <fieldset class="panel">
-          <legend>Horários de Backup</legend>
-          <div class="form-group">
-            <label for="clientName">Nome do Cliente</label>
-            <input type="text" id="clientName" placeholder="Nome do Cliente para o Backup">
-            <small>Este nome será usado nos arquivos de backup.</small>
-          </div>
-          <div id="scheduleInputs">
-          </div>
-          <button type="button" id="addSchedule" class="btn btn-primary" aria-label="Adicionar novo horário">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-              <path
-                d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z" />
-            </svg>
-            Adicionar
-          </button>
-          <small>Defina um ou mais horários no formato HH:MM para os backups.</small>
-        </fieldset>
-
-        <fieldset class="panel">
-          <legend>Política de Retenção</legend>
-          <div class="form-group">
-            <div class="checkbox-group">
-              <input type="checkbox" id="retentionEnabled" checked>
-              <label for="retentionEnabled">Ativar limpeza automática de backups antigos</label>
-            </div>
-            <small>Habilita a remoção automática de arquivos de backup mais antigos.</small>
-          </div>
-          <div class="form-group">
-            <label for="localRetentionDays">Retenção Local (dias)</label>
-            <input type="number" id="localRetentionDays" min="1" max="365" value="7" placeholder="7">
-            <small>Número de dias para manter os backups no disco local.</small>
-          </div>
-          <div class="form-group">
-            <label for="ftpRetentionDays">Retenção FTP (dias)</label>
-            <input type="number" id="ftpRetentionDays" min="1" max="365" value="30" placeholder="30">
-            <small>Número de dias para manter os backups no servidor FTP (opcional).</small>
-          </div>
-          <div class="form-group">
-            <div class="checkbox-group">
-              <input type="checkbox" id="autoCleanup" checked>
-              <label for="autoCleanup">Executar limpeza automaticamente após cada backup</label>
-            </div>
-            <small>Remove automaticamente os arquivos antigos após cada rotina de backup.</small>
-          </div>
-          <div class="form-group">
-            <div class="cleanup-buttons">
-              <button type="button" id="btnCleanupLocal" class="btn btn-secondary">
-                <span class="btn-text">🗑️ Limpar Local</span>
-                <div class="spinner"></div>
-              </button>
-              <button type="button" id="btnCleanupFtp" class="btn btn-secondary">
-                <span class="btn-text">🌐 Limpar FTP</span>
-                <div class="spinner"></div>
-              </button>
-            </div>
-            <small>Execute a limpeza manual de backups antigos conforme a política configurada.</small>
-          </div>
-        </fieldset>
-      </div>
-
-      <div class="button-group">
-        <button type="submit" id="saveButton" class="btn btn-primary">
-          <span class="btn-text">Salvar Configurações</span>
+        <button type="submit" id="saveButton" class="header-btn" title="Salvar Configurações" form="configForm">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+            <path
+              d="M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H9.5a1 1 0 0 0-1 1v7.293l2.646-2.647a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L7.5 8.293V2a2 2 0 0 1 2-2H14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h2.5a.5.5 0 0 1 0 1H2z" />
+          </svg>
           <div class="spinner"></div>
         </button>
-        <button type="button" id="logoutButton" class="btn btn-secondary">
-          Sair
+
+        <button type="button" id="logoutButton" class="header-btn" title="Sair">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+            <path fill-rule="evenodd"
+              d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0v2z" />
+            <path fill-rule="evenodd"
+              d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z" />
+          </svg>
         </button>
       </div>
-    </form>
+    </div>
+
+    <div class="dashboard-layout">
+      <!-- Sidebar -->
+      <nav class="sidebar-nav">
+        <div class="nav-tabs">
+          <button class="nav-tab active" data-tab="database" type="button">
+            <div class="nav-icon">📊</div>
+            <div class="nav-text">
+              <span class="nav-title">Banco de Dados</span>
+              <span class="nav-subtitle">SQL Server</span>
+            </div>
+          </button>
+
+          <button class="nav-tab" data-tab="ftp" type="button">
+            <div class="nav-icon">🌐</div>
+            <div class="nav-text">
+              <span class="nav-title">Configurações FTP</span>
+              <span class="nav-subtitle">Upload remoto</span>
+            </div>
+          </button>
+
+          <button class="nav-tab" data-tab="schedule" type="button">
+            <div class="nav-icon">⏰</div>
+            <div class="nav-text">
+              <span class="nav-title">Horários</span>
+              <span class="nav-subtitle">Agendamento</span>
+            </div>
+          </button>
+
+          <button class="nav-tab" data-tab="retention" type="button">
+            <div class="nav-icon">🗂️</div>
+            <div class="nav-text">
+              <span class="nav-title">Retenção</span>
+              <span class="nav-subtitle">Limpeza automática</span>
+            </div>
+          </button>
+        </div>
+      </nav>
+
+      <main class="main-content">
+        <form id="configForm" autocomplete="off">
+          <!-- Tab: Banco de Dados -->
+          <div class="tab-content active" id="tab-database">
+            <div class="tab-header">
+              <h3>📊 Configuração do Banco de Dados</h3>
+              <p>Configure a conexão com o SQL Server e selecione os bancos para backup.</p>
+            </div>
+
+            <div class="form-section">
+              <div class="form-group">
+                <label for="dbServer">Servidor SQL</label>
+                <input type="text" id="dbServer" placeholder="localhost\SQLEXPRESS">
+                <small>Ex: localhost ou NOME_PC\SQLEXPRESS</small>
+              </div>
+
+              <div class="form-row two-cols">
+                <div class="form-group">
+                  <label for="dbUser">Usuário</label>
+                  <input type="text" id="dbUser" placeholder="sa">
+                </div>
+                <div class="form-group">
+                  <label for="dbPass">Senha</label>
+                  <input type="password" id="dbPass" placeholder="••••••••">
+                </div>
+              </div>
+
+              <div class="form-group">
+                <button type="button" id="btnListDatabases" class="btn btn-primary btn-full">
+                  <span class="btn-text">Listar Bancos</span>
+                  <div class="spinner"></div>
+                </button>
+              </div>
+
+              <div class="form-group">
+                <label for="dbList">Selecionar Bancos</label>
+                <select id="dbList" multiple size="6"></select>
+                <small>Segure CTRL (ou CMD) para selecionar múltiplos.</small>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab: Configurações FTP -->
+          <div class="tab-content" id="tab-ftp">
+            <div class="tab-header">
+              <h3>🌐 Configurações FTP</h3>
+              <p>Configure o servidor FTP para upload automático dos backups (opcional).</p>
+            </div>
+
+            <div class="form-section">
+              <div class="form-row two-cols">
+                <div class="form-group">
+                  <label for="ftpHost">Host</label>
+                  <input type="text" id="ftpHost" placeholder="ftp.meuservidor.com">
+                  <small>Opcional: Deixe em branco para não usar FTP.</small>
+                </div>
+                <div class="form-group">
+                  <label for="ftpPort">Porta</label>
+                  <input type="number" id="ftpPort" placeholder="21">
+                </div>
+              </div>
+
+              <div class="form-row two-cols">
+                <div class="form-group">
+                  <label for="ftpUser">Usuário</label>
+                  <input type="text" id="ftpUser" placeholder="ftp_user">
+                </div>
+                <div class="form-group">
+                  <label for="ftpPass">Senha</label>
+                  <input type="password" id="ftpPass" placeholder="••••••••">
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="ftpRemoteDir">Diretório Remoto</label>
+                <input type="text" id="ftpRemoteDir" placeholder="/backups_sql/">
+              </div>
+
+              <div class="form-group">
+                <button type="button" id="btnTestFtp" class="btn btn-primary btn-full">
+                  <span class="btn-text">Testar Conexão FTP</span>
+                  <div class="spinner"></div>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab: Horários de Backup -->
+          <div class="tab-content" id="tab-schedule">
+            <div class="tab-header">
+              <h3>⏰ Horários de Backup</h3>
+              <p>Configure quando os backups devem ser executados automaticamente.</p>
+            </div>
+
+            <div class="form-section">
+              <div class="form-group">
+                <label for="clientName">Nome do Cliente</label>
+                <input type="text" id="clientName" placeholder="Nome do Cliente para o Backup">
+                <small>Este nome será usado nos arquivos de backup.</small>
+              </div>
+              <div class="form-group">
+                <label>Horários de Execução</label>
+                <div id="scheduleInputs"></div>
+                <button type="button" id="addSchedule" class="btn btn-primary" aria-label="Adicionar novo horário">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                    viewBox="0 0 16 16">
+                    <path
+                      d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z" />
+                  </svg>
+                  Adicionar Horário
+                </button>
+                <small>Defina um ou mais horários no formato HH:MM para os backups.</small>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab: Política de Retenção -->
+          <div class="tab-content" id="tab-retention">
+            <div class="tab-header">
+              <h3>🗂️ Política de Retenção</h3>
+              <p>Configure a limpeza automática de backups antigos para economizar espaço.</p>
+            </div>
+
+            <div class="form-section">
+              <div class="form-group">
+                <div class="checkbox-group">
+                  <input type="checkbox" id="retentionEnabled" checked>
+                  <label for="retentionEnabled">Ativar limpeza automática de backups antigos</label>
+                </div>
+                <small>Habilita a remoção automática de arquivos de backup mais antigos.</small>
+              </div>
+
+              <div class="form-row two-cols">
+                <div class="form-group">
+                  <label for="localRetentionDays">Retenção Local (dias)</label>
+                  <input type="number" id="localRetentionDays" min="1" max="365" value="7" placeholder="7">
+                  <small>Número de dias para manter os backups no disco local.</small>
+                </div>
+                <div class="form-group">
+                  <label for="ftpRetentionDays">Retenção FTP (dias)</label>
+                  <input type="number" id="ftpRetentionDays" min="1" max="365" value="30" placeholder="30">
+                  <small>Número de dias para manter os backups no servidor FTP (opcional).</small>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <div class="checkbox-group">
+                  <input type="checkbox" id="autoCleanup" checked>
+                  <label for="autoCleanup">Executar limpeza automaticamente após cada backup</label>
+                </div>
+                <small>Remove automaticamente os arquivos antigos após cada rotina de backup.</small>
+              </div>
+
+              <div class="form-group">
+                <label>Limpeza Manual</label>
+                <div class="cleanup-buttons">
+                  <button type="button" id="btnCleanupLocal" class="btn btn-secondary">
+                    <span class="btn-text">🗑️ Limpar Local</span>
+                    <div class="spinner"></div>
+                  </button>
+                  <button type="button" id="btnCleanupFtp" class="btn btn-secondary">
+                    <span class="btn-text">🌐 Limpar FTP</span>
+                    <div class="spinner"></div>
+                  </button>
+                </div>
+                <small>Execute a limpeza manual de backups antigos conforme a política configurada.</small>
+              </div>
+            </div>
+          </div>
+
+
+        </form>
+      </main>
+    </div>
   </div>
 
   <script src="script.js"></script>
