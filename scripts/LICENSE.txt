@@ -1,6 +1,6 @@
 ﻿LICENÇA DE SOFTWARE - NodeBackup SQL Server
 
-Copyright (c) 2024 NodeBackup
+Copyright (c) 2025 NodeBackup
 
 Por meio desta, é concedida permissão, gratuitamente, a qualquer pessoa que obtenha uma cópia
 deste software e dos arquivos de documentação associados (o "Software"), para lidar com o
