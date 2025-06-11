@@ -125,6 +125,20 @@ Abaixo estão algumas funcionalidades e melhorias planejadas para o futuro, orga
 - [ ] **Fase 5: Funcionalidades Avançadas**
   - [ ] **Interface de Restauração:** Criar uma funcionalidade segura para restaurar um banco de dados a partir de um arquivo de backup diretamente pela interface web.
 
+## 🔧 Solução de Problemas
+
+### Problemas de Conexão no Windows Server
+
+Se você está tendo problemas para conectar ao SQL Server em ambientes Windows Server, consulte o guia completo: [TROUBLESHOOTING-CONNECTION.md](docs/TROUBLESHOOTING-CONNECTION.md)
+
+**Problemas comuns:**
+- Erro "socket hang up" em Windows Server 2012/2016
+- Falha de autenticação
+- SQL Server não encontrado
+- Problemas com certificados SSL/TLS
+
+**Novo recurso:** Use o botão "Testar Conexão Detalhada" na interface web para obter diagnósticos completos.
+
 ## 📄 Licença
 
 Este projeto está licenciado sob a [Licença MIT](https://github.com/onflux-tech/nodebackup-sqlserver/blob/master/LICENSE).
