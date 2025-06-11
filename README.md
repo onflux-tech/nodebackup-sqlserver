@@ -5,7 +5,7 @@
 <div align="center">
 
 ![🚀 Release](https://github.com/onflux-tech/nodebackup-sqlserver/actions/workflows/release.yml/badge.svg)
-![GitHub release](https://img.shields.io/github/v/release/onflux-tech/nodebackup-sqlserver?style=flat-square&logo=github&label=Release)
+[![GitHub release](https://img.shields.io/github/v/release/onflux-tech/nodebackup-sqlserver?style=flat-square&logo=github&label=Release)](https://github.com/onflux-tech/nodebackup-sqlserver/releases/latest)
 
 </div>
 
@@ -100,30 +100,31 @@ Contribuições são sempre bem-vindas! Se você tem ideias para melhorar a apli
 
 ## 🗺️ Roadmap de Melhorias
 
-Abaixo estão algumas funcionalidades e melhorias planejadas para o futuro, organizadas em uma sequência lógica de desenvolvimento. Contribuições são muito bem-vindas!
+Abaixo estão as funcionalidades planejadas para o futuro. Contribuições são muito bem-vindas!
 
-- [ ] **Fase 1: Gerenciamento e Monitoramento**
+### ✅ **Fase 1.1: Política de Retenção (v0.1.0)**
+- **Status:** Concluído
+- **Funcionalidades:** Sistema completo para gerenciar e limpar backups antigos automaticamente, com modos "Clássico" e "Retenção", limpeza manual e automática, e interface web dedicada.
 
-  - [ ] **Política de Retenção:** Implementar regras para excluir backups antigos automaticamente (ex: manter apenas os últimos 7 dias).
-  - [ ] **Painel de Histórico:** Criar na interface uma área para visualizar o histórico de backups, status (sucesso/falha) e logs em tempo real.
+### 🎯 **Fase 1.2: Painel de Histórico (Próximo)**
+- [ ] Criar na interface uma área para visualizar o histórico de backups, status (sucesso/falha) e logs.
+- [ ] Usar um banco de dados local (SQLite) para persistir o histórico.
+- [ ] Adicionar filtros e estatísticas.
 
-- [ ] **Fase 2: Notificações**
+### Fase 2: Notificações
+- [ ] **Alertas por E-mail:** Enviar notificações sobre o status de cada rotina de backup.
+- [ ] **Integração com Mensageiros:** Adicionar suporte para alertas via Telegram ou WhatsApp.
 
-  - [ ] **Alertas por E-mail:** Enviar notificações sobre o status final de cada rotina de backup.
-  - [ ] **Integração com Mensageiros:** Adicionar suporte para alertas via Telegram ou WhatsApp (usando APIs não oficiais).
+### Fase 3: Expansão das Fontes de Backup
+- [ ] **Backup de Arquivos e Pastas:** Permitir a seleção de diretórios para incluir no backup.
+- [ ] **Suporte a Novos Bancos:** Adicionar compatibilidade com MySQL e PostgreSQL.
 
-- [ ] **Fase 3: Expansão das Fontes de Backup**
+### Fase 4: Expansão dos Destinos de Backup
+- [ ] **Integração com Storage S3:** Adicionar suporte para upload para serviços S3.
+- [ ] **Integração com Google Drive:** Permitir o envio dos backups para o Google Drive.
 
-  - [ ] **Backup de Arquivos e Pastas:** Permitir a seleção de diretórios específicos para incluir no arquivo de backup junto com o banco de dados.
-  - [ ] **Suporte a Novos Bancos:** Adicionar compatibilidade com MySQL e PostgreSQL.
-
-- [ ] **Fase 4: Expansão dos Destinos de Backup**
-
-  - [ ] **Integração com Storage S3:** Adicionar suporte para upload de backups para serviços compatíveis com S3 (Amazon S3, MinIO, etc.).
-  - [ ] **Integração com Google Drive:** Permitir o envio dos backups para uma pasta no Google Drive.
-
-- [ ] **Fase 5: Funcionalidades Avançadas**
-  - [ ] **Interface de Restauração:** Criar uma funcionalidade segura para restaurar um banco de dados a partir de um arquivo de backup diretamente pela interface web.
+### Fase 5: Funcionalidades Avançadas
+- [ ] **Interface de Restauração:** Criar uma funcionalidade segura para restaurar um banco de dados a partir de um backup.
 
 ## 🔧 Solução de Problemas
 
