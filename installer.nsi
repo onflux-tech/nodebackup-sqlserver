@@ -10,7 +10,7 @@ Var isUpdate
 
 ; Informações da Versão
 !define PRODUCT_NAME "NodeBackup SQL Server"
-!define PRODUCT_VERSION "0.1.0"
+!define PRODUCT_VERSION "0.2.0"
 !define PRODUCT_PUBLISHER "Onflux Tech"
 !define PRODUCT_WEB_SITE "https://github.com/onflux-tech/nodebackup-sqlserver"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
@@ -23,8 +23,8 @@ InstallDirRegKey HKLM "Software\NodeBackup" "Install_Dir"
 RequestExecutionLevel admin
 
 ; Informações de Versão do Arquivo
-VIProductVersion "0.1.0.0"
-VIFileVersion "0.1.0.0"
+VIProductVersion "0.2.0.0"
+VIFileVersion "0.2.0.0"
 VIAddVersionKey "ProductName" "${PRODUCT_NAME}"
 VIAddVersionKey "Comments" "Backup automático SQL Server"
 VIAddVersionKey "CompanyName" "${PRODUCT_PUBLISHER}"
