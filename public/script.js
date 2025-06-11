@@ -83,20 +83,51 @@ document.addEventListener('DOMContentLoaded', () => {
   const savedActiveTab = localStorage.getItem('activeTab') || 'database';
   switchTab(savedActiveTab);
 
-
-
-  function showToast(message, type = 'success') {
+  function showToast(message, type = 'success', duration = 4000) {
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
-    toast.textContent = message;
+
+    const toastContent = document.createElement('div');
+    toastContent.className = 'toast-message';
+    toastContent.textContent = message;
+
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'toast-close';
+    closeBtn.innerHTML = '×';
+    closeBtn.setAttribute('aria-label', 'Fechar');
+
+    toast.appendChild(toastContent);
+    toast.appendChild(closeBtn);
     toastContainer.appendChild(toast);
+
+    const removeToast = () => {
+      toast.classList.remove('show');
+      setTimeout(() => {
+        if (toast.parentNode) {
+          toast.remove();
+        }
+      }, 300);
+    };
+
+    closeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      removeToast();
+    });
 
     setTimeout(() => toast.classList.add('show'), 10);
 
-    setTimeout(() => {
-      toast.classList.remove('show');
-      toast.addEventListener('transitionend', () => toast.remove());
-    }, 4000);
+    let autoCloseTimer = setTimeout(removeToast, duration);
+    let mouseLeaveTimer = null;
+
+    toast.addEventListener('mouseenter', () => {
+      clearTimeout(autoCloseTimer);
+      clearTimeout(mouseLeaveTimer);
+    });
+
+    toast.addEventListener('mouseleave', () => {
+      clearTimeout(mouseLeaveTimer);
+      mouseLeaveTimer = setTimeout(removeToast, 1000);
+    });
   }
 
   function toggleButtonLoading(button, isLoading) {
@@ -138,15 +169,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function populateForm(config) {
     clientNameInput.value = config.clientName || '';
-    ftpHostInput.value = (config.ftp && config.ftp.host) || '';
-    ftpPortInput.value = (config.ftp && config.ftp.port) || 21;
-    ftpUserInput.value = (config.ftp && config.ftp.user) || '';
-    ftpPassInput.value = (config.ftp && config.ftp.password) || '';
-    ftpRemoteDirInput.value = (config.ftp && config.ftp.remoteDir) || '';
 
-    dbServerInput.value = (config.database && config.database.server) || '';
-    dbUserInput.value = (config.database && config.database.user) || '';
-    dbPassInput.value = (config.database && config.database.password) || '';
+    if (config.database) {
+      dbServerInput.value = config.database.server || '';
+      dbUserInput.value = config.database.user || '';
+      dbPassInput.value = config.database.password || '';
+    }
+
+    if (config.ftp) {
+      ftpHostInput.value = config.ftp.host || '';
+      ftpPortInput.value = config.ftp.port || 21;
+      ftpUserInput.value = config.ftp.user || '';
+      ftpPassInput.value = config.ftp.password || '';
+      ftpRemoteDirInput.value = config.ftp.remoteDir || '/';
+    }
 
     const retentionConfig = config.retention || {};
     const retentionEnabledInput = document.getElementById('retentionEnabled');
@@ -364,18 +400,180 @@ document.addEventListener('DOMContentLoaded', () => {
       content.appendChild(suggestionsDiv);
     }
 
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'toast-close';
+    closeBtn.innerHTML = '×';
+    closeBtn.setAttribute('aria-label', 'Fechar');
+
     toast.appendChild(content);
+    toast.appendChild(closeBtn);
     toastContainer.appendChild(toast);
+
+    const removeToast = () => {
+      toast.classList.remove('show');
+      setTimeout(() => {
+        if (toast.parentNode) {
+          toast.remove();
+        }
+      }, 300);
+    };
+
+    closeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      removeToast();
+    });
 
     setTimeout(() => toast.classList.add('show'), 10);
 
-    setTimeout(() => {
-      toast.classList.remove('show');
-      toast.addEventListener('transitionend', () => toast.remove());
-    }, 10000);
+    let autoCloseTimer = setTimeout(removeToast, 15000);
+    let mouseLeaveTimer = null;
+
+    toast.addEventListener('mouseenter', () => {
+      clearTimeout(autoCloseTimer);
+      clearTimeout(mouseLeaveTimer);
+    });
+
+    toast.addEventListener('mouseleave', () => {
+      clearTimeout(mouseLeaveTimer);
+      mouseLeaveTimer = setTimeout(removeToast, 2000);
+    });
   }
 
   btnListDbs.addEventListener('click', listDatabases);
+
+  async function testDatabaseConnection() {
+    const server = dbServerInput.value.trim();
+    const user = dbUserInput.value.trim();
+    const pass = dbPassInput.value.trim();
+
+    if (!server || !user) {
+      showToast('Por favor, preencha o servidor e usuário.', 'error');
+      return;
+    }
+
+    let btnTestDb = document.getElementById('btnTestDatabase');
+    if (!btnTestDb) {
+      btnTestDb = document.createElement('button');
+      btnTestDb.id = 'btnTestDatabase';
+      btnTestDb.type = 'button';
+      btnTestDb.className = 'btn btn-secondary btn-full';
+      btnTestDb.innerHTML = '<span class="btn-text">Testar Conexão Detalhada</span><div class="spinner"></div>';
+      btnTestDb.style.marginTop = '10px';
+      btnListDbs.parentNode.insertBefore(btnTestDb, btnListDbs.nextSibling);
+      btnTestDb.addEventListener('click', testDatabaseConnection);
+    }
+
+    toggleButtonLoading(btnTestDb, true);
+
+    try {
+      const response = await fetch('/api/test-database', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ server, user, password: pass })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        let errorMessage = `<strong>${data.error}</strong><br><br>`;
+        errorMessage += `<em>${data.details}</em><br><br>`;
+
+        if (data.diagnostics) {
+          errorMessage += '<strong>Diagnóstico:</strong><br>';
+          errorMessage += `Servidor: ${data.diagnostics.serverName}<br>`;
+          errorMessage += `Código de erro: ${data.diagnostics.errorCode || 'N/A'}<br>`;
+          errorMessage += `Tipo de erro: ${data.diagnostics.errorName || 'N/A'}<br>`;
+        }
+
+        if (data.suggestions && data.suggestions.length > 0) {
+          errorMessage += '<br><strong>Sugestões:</strong><ul>';
+          data.suggestions.forEach(suggestion => {
+            errorMessage += `<li>${suggestion}</li>`;
+          });
+          errorMessage += '</ul>';
+        }
+
+        showDetailedMessage(errorMessage, 'error');
+      } else {
+        let successMessage = `<strong>${data.message}</strong><br><br>`;
+        successMessage += '<strong>Informações do Servidor:</strong><br>';
+        successMessage += `SQL Server: ${data.diagnostics.sqlVersion}<br>`;
+        successMessage += `Método: ${data.diagnostics.connectionMethod}<br>`;
+        successMessage += `Criptografia: ${data.diagnostics.encryptionEnabled ? 'Habilitada' : 'Desabilitada'}<br><br>`;
+        successMessage += '<strong>Permissões:</strong><br>';
+        successMessage += `Ver estado do servidor: ${data.diagnostics.permissions.canViewServerState ? '✓' : '✗'}<br>`;
+        successMessage += `Ver bancos de dados: ${data.diagnostics.permissions.canViewDatabases ? '✓' : '✗'}`;
+
+        showDetailedMessage(successMessage, 'success');
+      }
+    } catch (err) {
+      console.error('Erro ao testar conexão:', err);
+      showToast(`Falha na requisição: ${err.message}`, 'error');
+    } finally {
+      toggleButtonLoading(btnTestDb, false);
+    }
+  }
+
+  function showDetailedMessage(htmlContent, type) {
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type} toast-detailed`;
+    toast.style.maxWidth = '600px';
+    toast.style.whiteSpace = 'normal';
+
+    const content = document.createElement('div');
+    content.className = 'toast-content';
+    content.innerHTML = htmlContent;
+
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'toast-close';
+    closeBtn.innerHTML = '×';
+    closeBtn.setAttribute('aria-label', 'Fechar');
+
+    toast.appendChild(content);
+    toast.appendChild(closeBtn);
+    toastContainer.appendChild(toast);
+
+    const removeToast = () => {
+      toast.classList.remove('show');
+      setTimeout(() => {
+        if (toast.parentNode) {
+          toast.remove();
+        }
+      }, 300);
+    };
+
+    closeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      removeToast();
+    });
+
+    setTimeout(() => toast.classList.add('show'), 10);
+
+    let autoCloseTimer = setTimeout(removeToast, 3000);
+    let mouseLeaveTimer = null;
+
+    toast.addEventListener('mouseenter', () => {
+      clearTimeout(autoCloseTimer);
+      clearTimeout(mouseLeaveTimer);
+    });
+
+    toast.addEventListener('mouseleave', () => {
+      clearTimeout(mouseLeaveTimer);
+      mouseLeaveTimer = setTimeout(removeToast, 2000);
+    });
+  }
+
+  window.addEventListener('load', () => {
+    const btnContainer = btnListDbs.parentNode;
+    const btnTestDb = document.createElement('button');
+    btnTestDb.id = 'btnTestDatabase';
+    btnTestDb.type = 'button';
+    btnTestDb.className = 'btn btn-secondary btn-full';
+    btnTestDb.innerHTML = '<span class="btn-text">Testar Conexão Detalhada</span><div class="spinner"></div>';
+    btnTestDb.style.marginTop = '10px';
+    btnContainer.insertBefore(btnTestDb, btnListDbs.nextSibling);
+    btnTestDb.addEventListener('click', testDatabaseConnection);
+  });
 
   async function testFtpConnection() {
     const host = ftpHostInput.value.trim();

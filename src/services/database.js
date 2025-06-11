@@ -15,7 +15,7 @@ function performSingleBackup(dbName, backupNumber, backupDir, dbConfig) {
     const backupFileName = `${dbName}-${backupNumber}.bak`;
     const backupFilePath = path.join(backupDir, backupFileName);
 
-    const sqlCmd = `sqlcmd -S "${server}" -U "${user}" -P "${password}" -Q "BACKUP DATABASE [${dbName}] TO DISK = N'${backupFilePath}' WITH NOINIT, NOUNLOAD, NAME = N'${dbName} full backup', NOSKIP, STATS = 10, NOREWIND"`;
+    const sqlCmd = `sqlcmd -S "${server}" -U "${user}" -P "${password}" -C -Q "BACKUP DATABASE [${dbName}] TO DISK = N'${backupFilePath}' WITH NOINIT, NOUNLOAD, NAME = N'${dbName} full backup', NOSKIP, STATS = 10, NOREWIND"`;
 
     logger.info(`-> Gerando backup para o banco: ${dbName}`);
     exec(sqlCmd, (error, stdout, stderr) => {
@@ -157,6 +157,7 @@ async function performConsolidatedBackup(dbList, clientName, backupNumber, dbCon
 
 async function listDatabases(dbConfig) {
   const { server, user, password } = dbConfig;
+
   const sqlConfig = {
     user,
     password,
@@ -164,23 +165,49 @@ async function listDatabases(dbConfig) {
     options: {
       trustServerCertificate: true,
       enableArithAbort: true,
+      encrypt: false,
     },
     pool: {
       max: 10,
       min: 0,
       idleTimeoutMillis: 30000,
     },
+    connectionTimeout: 30000,
+    requestTimeout: 30000
   };
+
+  logger.info(`Tentando conectar ao SQL Server: ${server}`);
+  logger.debug('Configuração de conexão (sem senha):', {
+    server: sqlConfig.server,
+    user: sqlConfig.user,
+    encrypt: sqlConfig.options.encrypt
+  });
 
   try {
     await mssql.connect(sqlConfig);
+    logger.info('Conexão estabelecida com sucesso ao SQL Server');
+
     const result = await mssql.query`SELECT name FROM sys.databases WHERE name NOT IN ('master', 'tempdb', 'model', 'msdb') ORDER BY name`;
+    logger.info(`Bancos de dados encontrados: ${result.recordset.length}`);
+
     return result.recordset.map(r => r.name);
   } catch (err) {
+    logger.error('Erro detalhado de conexão:', {
+      message: err.message,
+      code: err.code,
+      name: err.name,
+      originalError: (err.originalError && err.originalError.message) || 'N/A'
+    });
+
     logFriendlyError(err, 'Erro ao conectar ou listar bancos de dados');
     throw err;
   } finally {
-    await mssql.close();
+    try {
+      await mssql.close();
+      logger.debug('Conexão SQL Server fechada');
+    } catch (closeErr) {
+      logger.warn('Erro ao fechar conexão:', closeErr.message);
+    }
   }
 }
 

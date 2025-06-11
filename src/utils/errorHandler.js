@@ -62,6 +62,45 @@ function translateDatabaseError(error) {
         'Confirme se o servidor está na rede',
         'Tente usar o endereço IP ao invés do nome'
       ]
+    },
+    'ESOCKET': {
+      friendly: 'Erro de socket durante a conexão.',
+      details: 'A conexão foi interrompida inesperadamente. Pode ser um problema de certificado SSL/TLS.',
+      suggestions: [
+        'Se estiver usando Windows Server 2012/2016, pode ser um problema com certificados SHA1',
+        'Verifique se o SQL Server tem um certificado válido',
+        'Tente desabilitar a criptografia temporariamente para teste',
+        'Verifique os logs do SQL Server para mais detalhes'
+      ]
+    },
+    'self signed certificate': {
+      friendly: 'Certificado autoassinado detectado.',
+      details: 'O SQL Server está usando um certificado autoassinado que pode não ser confiável.',
+      suggestions: [
+        'A configuração já está definida para confiar em certificados autoassinados',
+        'Considere instalar um certificado válido no SQL Server',
+        'Para ambientes de produção, use certificados emitidos por uma CA confiável'
+      ]
+    },
+    'socket hang up': {
+      friendly: 'Conexão interrompida durante handshake SSL/TLS.',
+      details: 'Problema comum em Windows Server 2012/2016 com certificados antigos.',
+      suggestions: [
+        'O SQL Server pode estar usando um certificado SHA1 incompatível',
+        'Tente atualizar o certificado do SQL Server',
+        'Verifique se o SQL Server suporta TLS 1.2',
+        'Como solução temporária, a aplicação já está configurada para aceitar certificados antigos'
+      ]
+    },
+    'ConnectionError': {
+      friendly: 'Erro geral de conexão com o banco de dados.',
+      details: 'Não foi possível estabelecer uma conexão com o SQL Server.',
+      suggestions: [
+        'Verifique todos os parâmetros de conexão',
+        'Teste a conexão usando SQL Server Management Studio',
+        'Verifique os logs do Windows Event Viewer',
+        'Confirme se não há políticas de segurança bloqueando a conexão'
+      ]
     }
   };
 

@@ -41,18 +41,51 @@ document.addEventListener('DOMContentLoaded', () => {
   const changePasswordForm = document.getElementById('changePasswordForm');
   const changePasswordButton = document.getElementById('changePasswordButton');
 
-  function showToast(message, type = 'error') {
+  function showToast(message, type = 'error', duration = 4000) {
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
-    toast.textContent = message;
+
+    const toastContent = document.createElement('div');
+    toastContent.className = 'toast-message';
+    toastContent.textContent = message;
+
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'toast-close';
+    closeBtn.innerHTML = '×';
+    closeBtn.setAttribute('aria-label', 'Fechar');
+
+    toast.appendChild(toastContent);
+    toast.appendChild(closeBtn);
     toastContainer.appendChild(toast);
+
+    const removeToast = () => {
+      toast.classList.remove('show');
+      setTimeout(() => {
+        if (toast.parentNode) {
+          toast.remove();
+        }
+      }, 300);
+    };
+
+    closeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      removeToast();
+    });
 
     setTimeout(() => toast.classList.add('show'), 10);
 
-    setTimeout(() => {
-      toast.classList.remove('show');
-      toast.addEventListener('transitionend', () => toast.remove());
-    }, 4000);
+    let autoCloseTimer = setTimeout(removeToast, duration);
+    let mouseLeaveTimer = null;
+
+    toast.addEventListener('mouseenter', () => {
+      clearTimeout(autoCloseTimer);
+      clearTimeout(mouseLeaveTimer);
+    });
+
+    toast.addEventListener('mouseleave', () => {
+      clearTimeout(mouseLeaveTimer);
+      mouseLeaveTimer = setTimeout(removeToast, 1000);
+    });
   }
 
   function toggleButtonLoading(button, isLoading) {
