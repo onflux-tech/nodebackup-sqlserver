@@ -39,7 +39,7 @@ Este conjunto de regras fornece diretrizes completas para desenvolvimento da apl
 
 ### 4. 🚀 [Deployment e Versionamento](mdc:deployment-versionamento.mdc)
 **Escopo**: Build, releases e distribuição
-- Versionamento semântico (v0.0.5 atual)
+- Versionamento semântico (v0.1.0 atual)
 - Processo de build com pkg
 - Assets embarcados (7za.exe, nssm.exe)
 - GitHub Releases e CI/CD
@@ -88,17 +88,16 @@ Este conjunto de regras fornece diretrizes completas para desenvolvimento da apl
 
 ## 🚀 Estado Atual vs Próximos Passos
 
-### ✅ Implementado (v0.0.5)
-- Setup inicial interativo
-- Interface web com autenticação
-- Backup SQL Server automatizado
-- Compressão 7-Zip + Upload FTP
-- Serviço Windows + Logs rotacionados
+### ✅ Implementado (v0.1.0)
+- Todas as funcionalidades da v0.0.5
+- **Política de Retenção**: Limpeza automática de backups antigos (local e FTP)
+- **Modos de Retenção**: Clássico (sobrescrita) e Retenção (timestamp)
+- **Interface Web**: Nova aba para configurar a política de retenção
+- **Limpeza Manual**: Botões para execução imediata via API
 
-### 🎯 Próxima Prioridade (v0.1.0 - Fase 1.1)
-- **Política de Retenção**: Limpeza automática de backups antigos
-- **Configuração**: Interface para definir dias de retenção
-- **Limpeza Automática**: Local e FTP opcional
+### 🎯 Próxima Prioridade (v0.2.0 - Fase 1.2)
+- **Painel de Histórico**: Visualização do histórico de backups com SQLite
+- **Interface**: Nova página para o histórico com filtros e estatísticas
 
 ### 🔮 Roadmap v0.x.x
 - **v0.2.0**: Painel de Histórico (SQLite + Interface)

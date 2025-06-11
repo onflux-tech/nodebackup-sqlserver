@@ -5,7 +5,7 @@ alwaysApply: true
 ---
 # Roadmap e Tasklist - Próximas Implementações
 
-## 📍 Estado Atual (v0.0.5)
+## 📍 Estado Atual (v0.1.0)
 **Funcionalidades Implementadas:**
 - ✅ Setup inicial interativo via web
 - ✅ Interface web com autenticação segura
@@ -16,6 +16,12 @@ alwaysApply: true
 - ✅ Agendamento flexível de backups
 - ✅ Instalação como serviço Windows
 - ✅ Sistema de logs rotacionados
+- ✅ **Política de Retenção de Backups** (v0.1.0)
+  - ✅ Modo Clássico (sobrescrita) e Modo Retenção (timestamp)
+  - ✅ Limpeza automática local e FTP configurável
+  - ✅ Interface web completa para configuração
+  - ✅ Botões de limpeza manual
+  - ✅ Documentação completa em `docs/RETENTION_POLICY.md`
 
 ## 🚀 Roadmap de Desenvolvimento
 
@@ -24,24 +30,33 @@ alwaysApply: true
 ### 📊 **FASE 1: Gerenciamento e Monitoramento** (v0.1.0 - v0.3.0)
 *Prioridade: Alta | Estimativa: 6-9 semanas total*
 
-#### 🗂️ **1.1 Política de Retenção**
-**Arquivos a modificar:** [src/services/database.js](mdc:src/services/database.js), [src/config.js](mdc:src/config.js)
+#### ✅ **1.1 Política de Retenção** (IMPLEMENTADO v0.1.0)
+**Arquivos modificados:** [src/services/database.js](mdc:src/services/database.js), [src/config.js](mdc:src/config.js), [src/services/ftp.js](mdc:src/services/ftp.js), [src/api/routes.js](mdc:src/api/routes.js)
 
-**Tasklist:**
-- [ ] **Configuração de Retenção**
-  - [ ] Adicionar campo `retentionPolicy` em config.js
-  - [ ] Interface web para configurar dias de retenção
-  - [ ] Validação: mínimo 1 dia, máximo 365 dias
+**Implementações concluídas:**
+- ✅ **Configuração de Retenção**
+  - ✅ Campo `retention` em config.js com enabled, localDays, ftpDays, autoCleanup, mode
+  - ✅ Interface web completa na aba "Política de Retenção"
+  - ✅ Validação: mínimo 1 dia, máximo 365 dias
+  - ✅ Dois modos: Clássico (sobrescrita) e Retenção (timestamp)
   
-- [ ] **Limpeza Automática Local**
-  - [ ] Novo método `cleanupOldBackups()` em database.js
-  - [ ] Executar limpeza após cada backup consolidado
-  - [ ] Log detalhado de arquivos removidos
+- ✅ **Limpeza Automática Local**
+  - ✅ Método `cleanupOldBackups()` em database.js
+  - ✅ Execução após cada backup consolidado (se habilitado)
+  - ✅ Log detalhado de arquivos removidos
+  - ✅ Parsing inteligente de datas (nome do arquivo e mtime)
   
-- [ ] **Limpeza FTP (Opcional)**
-  - [ ] Método `cleanupFtpBackups()` em ftp.js
-  - [ ] Listar e remover arquivos antigos do FTP
-  - [ ] Configuração opcional (manter FTP intacto se desabilitado)
+- ✅ **Limpeza FTP (Opcional)**
+  - ✅ Método `cleanupFtpBackups()` em ftp.js
+  - ✅ Listagem e remoção de arquivos antigos do FTP
+  - ✅ Configuração opcional (pode manter FTP intacto)
+  - ✅ Parsing inteligente de datas FTP (múltiplos formatos)
+
+- ✅ **Interface de Limpeza Manual**
+  - ✅ Rotas `/api/cleanup-local` e `/api/cleanup-ftp`
+  - ✅ Botões "🗑️ Limpar Local" e "🌐 Limpar FTP"
+  - ✅ Feedback detalhado com contagem de arquivos removidos
+  - ✅ Validações e mensagens de erro amigáveis
 
 #### 📈 **1.2 Painel de Histórico**
 **Arquivos a criar:** `src/services/history.js`, `public/history.html`, `public/history.js`
@@ -61,7 +76,6 @@ alwaysApply: true
   - [ ] Página history.html com tabela responsiva
   - [ ] Gráficos de sucesso/falha (Chart.js)
   - [ ] Visualizar logs em modal
-  - [ ] Exportar histórico CSV
 
 #### 📋 **1.3 Logs em Tempo Real**
 **Arquivos a modificar:** [src/utils/logger.js](mdc:src/utils/logger.js), [public/script.js](mdc:public/script.js)
@@ -254,18 +268,20 @@ alwaysApply: true
 
 ## 🗓️ Cronograma Detalhado v0.x.x
 
-### **v0.1.0 - Política de Retenção** (Estimativa: 2-3 semanas)
+### ✅ **v0.1.0 - Política de Retenção** (CONCLUÍDO)
 **Objetivo**: Implementar limpeza automática de backups antigos
 
-**Sprint 1 (Semana 1)**:
-- [ ] Adicionar campo `retentionPolicy` em [src/config.js](mdc:src/config.js)
-- [ ] Interface web para configurar dias de retenção
-- [ ] Validação: mínimo 1 dia, máximo 365 dias
-
-**Sprint 2 (Semana 2-3)**:
-- [ ] Implementar `cleanupOldBackups()` em [src/services/database.js](mdc:src/services/database.js)
-- [ ] Método `cleanupFtpBackups()` em [src/services/ftp.js](mdc:src/services/ftp.js)
-- [ ] Testes e ajustes finais
+**Implementações concluídas:**
+- ✅ Campo `retention` completo em [src/config.js](mdc:src/config.js)
+- ✅ Interface web completa com aba "Política de Retenção"
+- ✅ Validação: mínimo 1 dia, máximo 365 dias
+- ✅ Dois modos: Clássico (sobrescrita) e Retenção (timestamp)
+- ✅ Método `cleanupOldBackups()` em [src/services/database.js](mdc:src/services/database.js)
+- ✅ Método `cleanupFtpBackups()` em [src/services/ftp.js](mdc:src/services/ftp.js)
+- ✅ Rotas API `/api/cleanup-local` e `/api/cleanup-ftp`
+- ✅ Botões de limpeza manual na interface
+- ✅ Documentação completa em `docs/RETENTION_POLICY.md`
+- ✅ Testes e ajustes finais realizados
 
 ### **v0.2.0 - Painel de Histórico** (Estimativa: 3-4 semanas)
 **Objetivo**: Interface completa para visualizar histórico de backups

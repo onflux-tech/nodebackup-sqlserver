@@ -7,7 +7,7 @@ alwaysApply: true
 
 ## 📋 Versionamento Semântico
 
-### Padrão Atual (v0.0.5)
+### Padrão Atual (v0.1.0)
 - **MAJOR** (1.x.x): Mudanças que quebram compatibilidade
 - **MINOR** (0.x.x): Novas funcionalidades compatíveis (pré-release)
 - **PATCH** (x.x.x): Correções de bugs e melhorias
@@ -59,8 +59,8 @@ Release/
 ```
 
 ### GitHub Releases
-- **Tag**: v0.0.5 (seguir semver exato)
-- **Title**: "NodeBackup v0.0.5 - [Descrição da versão]"
+- **Tag**: v0.1.0 (seguir semver exato)
+- **Title**: "NodeBackup v0.1.0 - Política de Retenção de Backups"
 - **Description**: Changelog detalhado + instruções
 - **Assets**: NodeBackup.exe + NodeBackupInstaller.exe (opcional)
 
