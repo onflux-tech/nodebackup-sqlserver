@@ -36,7 +36,7 @@ ensureAssets();
 
 const { loadConfig } = require('./config');
 const { startServer } = require('./server');
-const { startScheduler } = require('./services/scheduler');
+const { scheduleBackups } = require('./services/scheduler');
 const windowsService = require('./services/windowsService');
 
 async function main() {
@@ -52,7 +52,7 @@ async function main() {
   }
 
   startServer();
-  startScheduler();
+  scheduleBackups();
 }
 
 main(); 

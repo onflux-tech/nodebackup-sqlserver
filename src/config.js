@@ -25,12 +25,19 @@ function getDefaultConfig() {
       password: '',
       databases: []
     },
-    ftp: {
-      host: '',
-      port: 21,
-      user: '',
-      password: '',
-      remoteDir: '/'
+    storage: {
+      ftp: {
+        enabled: false,
+        host: '',
+        port: 21,
+        user: '',
+        password: '',
+        remoteDir: '/'
+      },
+      networkPath: {
+        enabled: false,
+        path: ''
+      }
     },
     backupSchedule: ['00:00'],
     retention: {
@@ -50,6 +57,29 @@ function loadConfig() {
       const decryptedConfig = decrypt(encryptedData);
       if (decryptedConfig) {
         config = decryptedConfig;
+
+        if (config.ftp && !config.storage) {
+          logger.warn('MIGRATION: Configuração de FTP antiga detectada. Migrando para o novo formato de Armazenamento.');
+          config.storage = {
+            ftp: {
+              enabled: !!config.ftp.host,
+              host: config.ftp.host || '',
+              port: config.ftp.port || 21,
+              user: config.ftp.user || '',
+              password: config.ftp.password || '',
+              remoteDir: config.ftp.remoteDir || '/'
+            },
+            networkPath: {
+              enabled: false,
+              path: ''
+            }
+          };
+          delete config.ftp;
+          saveConfig();
+        } else if (!config.storage) {
+          config.storage = getDefaultConfig().storage;
+        }
+
         logger.info('Configurações criptografadas carregadas com sucesso.');
       } else {
         logger.error('Falha ao descriptografar o arquivo de configuração. Verifique se o arquivo não está corrompido.');
@@ -64,6 +94,25 @@ function loadConfig() {
       if (!config.app) {
         const defaultConfig = getDefaultConfig();
         config.app = defaultConfig.app;
+      }
+
+      if (config.ftp && !config.storage) {
+        logger.warn('MIGRATION: Configuração de FTP antiga (JSON) detectada. Migrando para o novo formato de Armazenamento.');
+        config.storage = {
+          ftp: {
+            enabled: !!config.ftp.host,
+            host: config.ftp.host || '',
+            port: config.ftp.port || 21,
+            user: config.ftp.user || '',
+            password: config.ftp.password || '',
+            remoteDir: config.ftp.remoteDir || '/'
+          },
+          networkPath: {
+            enabled: false,
+            path: ''
+          }
+        };
+        delete config.ftp;
       }
 
       if (!config.retention) {

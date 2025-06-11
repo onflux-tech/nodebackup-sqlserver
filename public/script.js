@@ -38,6 +38,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const saveButton = document.getElementById('saveButton');
   const clientNameInput = document.getElementById('clientName');
 
+  const ftpEnabledCheckbox = document.getElementById('ftpEnabled');
+  const ftpForm = document.getElementById('ftpForm');
+  const networkPathEnabledCheckbox = document.getElementById('networkPathEnabled');
+  const networkPathForm = document.getElementById('networkPathForm');
+  const networkPathInput = document.getElementById('networkPath');
+  const browsePathBtn = document.getElementById('browsePathBtn');
+
   const ftpHostInput = document.getElementById('ftpHost');
   const ftpPortInput = document.getElementById('ftpPort');
   const ftpUserInput = document.getElementById('ftpUser');
@@ -80,7 +87,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  const savedActiveTab = localStorage.getItem('activeTab') || 'database';
+  let savedActiveTab = localStorage.getItem('activeTab') || 'database';
+  if (savedActiveTab === 'ftp') {
+    savedActiveTab = 'storage';
+    localStorage.setItem('activeTab', 'storage');
+  }
   switchTab(savedActiveTab);
 
   function showToast(message, type = 'success', duration = 4000) {
@@ -176,12 +187,31 @@ document.addEventListener('DOMContentLoaded', () => {
       dbPassInput.value = config.database.password || '';
     }
 
-    if (config.ftp) {
+    if (config.storage) {
+      if (config.storage.ftp) {
+        const ftpConfig = config.storage.ftp;
+        ftpEnabledCheckbox.checked = !!ftpConfig.enabled;
+        ftpHostInput.value = ftpConfig.host || '';
+        ftpPortInput.value = ftpConfig.port || 21;
+        ftpUserInput.value = ftpConfig.user || '';
+        ftpPassInput.value = ftpConfig.password || '';
+        ftpRemoteDirInput.value = ftpConfig.remoteDir || '/';
+        toggleStorageForm(ftpEnabledCheckbox, ftpForm);
+      }
+      if (config.storage.networkPath) {
+        const networkConfig = config.storage.networkPath;
+        networkPathEnabledCheckbox.checked = !!networkConfig.enabled;
+        if (networkPathInput) networkPathInput.value = networkConfig.path || '';
+        toggleStorageForm(networkPathEnabledCheckbox, networkPathForm);
+      }
+    } else if (config.ftp && config.ftp.host) {
+      ftpEnabledCheckbox.checked = true;
       ftpHostInput.value = config.ftp.host || '';
       ftpPortInput.value = config.ftp.port || 21;
       ftpUserInput.value = config.ftp.user || '';
       ftpPassInput.value = config.ftp.password || '';
       ftpRemoteDirInput.value = config.ftp.remoteDir || '/';
+      toggleStorageForm(ftpEnabledCheckbox, ftpForm);
     }
 
     const retentionConfig = config.retention || {};
@@ -576,6 +606,11 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   async function testFtpConnection() {
+    if (!ftpEnabledCheckbox.checked) {
+      showToast('Para testar, habilite primeiro o armazenamento FTP.', 'error');
+      return;
+    }
+
     const host = ftpHostInput.value.trim();
     const port = parseInt(ftpPortInput.value, 10) || 21;
     const user = ftpUserInput.value.trim();
@@ -667,9 +702,14 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
+    if (!ftpEnabledCheckbox.checked) {
+      showToast('Armazenamento FTP não está habilitado. A limpeza remota não será executada.', 'error');
+      return;
+    }
+
     const ftpHost = ftpHostInput.value.trim();
     if (!ftpHost) {
-      showToast('Configure o FTP antes de executar a limpeza remota.', 'error');
+      showToast('Configure o host do FTP antes de executar a limpeza remota.', 'error');
       return;
     }
 
@@ -738,11 +778,22 @@ document.addEventListener('DOMContentLoaded', () => {
     toggleButtonLoading(saveButton, true);
 
     const ftpConfig = {
+      enabled: ftpEnabledCheckbox.checked,
       host: ftpHostInput.value.trim(),
       port: parseInt(ftpPortInput.value, 10) || 21,
       user: ftpUserInput.value.trim(),
       password: ftpPassInput.value.trim(),
       remoteDir: ftpRemoteDirInput.value.trim(),
+    };
+
+    const networkPathConfig = {
+      enabled: networkPathEnabledCheckbox.checked,
+      path: networkPathInput.value.trim()
+    };
+
+    const storageConfig = {
+      ftp: ftpConfig,
+      networkPath: networkPathConfig
     };
 
     const selectedOptions = Array.from(dbListSelect.selectedOptions);
@@ -803,7 +854,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const updatedConfig = {
       clientName: clientNameInput.value.trim(),
-      ftp: ftpConfig,
+      storage: storageConfig,
       database: dbConfig,
       backupSchedule: scheduleTimes,
       retention: retentionConfig
@@ -920,5 +971,190 @@ document.addEventListener('DOMContentLoaded', () => {
   if (modeRetention) modeRetention.addEventListener('change', toggleRetentionFields);
 
   setTimeout(toggleRetentionFields, 100);
-});
 
+  function toggleStorageForm(checkbox, form) {
+    if (!checkbox || !form) return;
+    if (checkbox.checked) {
+      form.classList.add('visible');
+    } else {
+      form.classList.remove('visible');
+    }
+  }
+
+  if (ftpEnabledCheckbox) {
+    ftpEnabledCheckbox.addEventListener('change', () => toggleStorageForm(ftpEnabledCheckbox, ftpForm));
+  }
+  if (networkPathEnabledCheckbox) {
+    networkPathEnabledCheckbox.addEventListener('change', () => toggleStorageForm(networkPathEnabledCheckbox, networkPathForm));
+  }
+
+  if (browsePathBtn) {
+    browsePathBtn.addEventListener('click', () => {
+      folderBrowserModal.classList.add('show');
+      loadAndDisplayPath();
+    });
+  }
+
+  const folderBrowserModal = document.getElementById('folderBrowserModal');
+  const closeFolderBrowserBtn = document.getElementById('closeFolderBrowser');
+  const levelUpBtn = document.getElementById('levelUpBtn');
+  const currentPathInput = document.getElementById('currentPathInput');
+  const folderListDiv = document.getElementById('folderList');
+  const selectFolderBtn = document.getElementById('selectFolderBtn');
+  const newFolderNameInput = document.getElementById('newFolderNameInput');
+  const createNewFolderBtn = document.getElementById('createNewFolderBtn');
+
+  function closeFolderBrowser() {
+    folderBrowserModal.classList.remove('show');
+  }
+
+  async function loadAndDisplayPath(path = '') {
+    try {
+      folderListDiv.innerHTML = '<div class="spinner" style="display: block; margin: 2rem auto;"></div>';
+      currentPathInput.value = path;
+      levelUpBtn.disabled = !path || /^[A-Z]:\\?$/.test(path);
+
+      const url = path ? `/api/browse/list?path=${encodeURIComponent(path)}` : '/api/browse/drives';
+      const response = await fetch(url);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Falha ao carregar');
+      }
+
+      folderListDiv.innerHTML = '';
+      const items = path ? data.directories : data;
+      if (items.length === 0) {
+        folderListDiv.innerHTML = '<p style="text-align:center; color: var(--text-muted);">Nenhuma subpasta encontrada.</p>';
+      }
+
+      items.forEach(item => {
+        const itemEl = document.createElement('div');
+        itemEl.className = 'folder-list-item';
+        itemEl.textContent = item;
+        const newPath = path ? (path.endsWith('\\') ? path + item : path + '\\' + item) : item;
+        itemEl.dataset.path = newPath;
+
+        itemEl.addEventListener('click', () => {
+          const allItems = folderListDiv.querySelectorAll('.folder-list-item');
+          allItems.forEach(el => el.classList.remove('selected'));
+          itemEl.classList.add('selected');
+          currentPathInput.value = itemEl.dataset.path;
+        });
+
+        itemEl.addEventListener('dblclick', () => {
+          loadAndDisplayPath(itemEl.dataset.path);
+        });
+
+        folderListDiv.appendChild(itemEl);
+      });
+
+    } catch (error) {
+      folderListDiv.innerHTML = `<p style="text-align:center; color: var(--toast-error-bg);">${error.message}</p>`;
+    }
+  }
+
+  if (closeFolderBrowserBtn) closeFolderBrowserBtn.addEventListener('click', closeFolderBrowser);
+  if (selectFolderBtn) {
+    selectFolderBtn.addEventListener('click', () => {
+      const selectedItem = folderListDiv.querySelector('.folder-list-item.selected');
+      const finalPath = selectedItem ? selectedItem.dataset.path : currentPathInput.value;
+      if (finalPath) {
+        networkPathInput.value = finalPath;
+        showToast('Pasta selecionada!', 'success');
+      }
+      closeFolderBrowser();
+    });
+  }
+
+  if (levelUpBtn) {
+    levelUpBtn.addEventListener('click', () => {
+      let currentPath = currentPathInput.value;
+      if (!currentPath) return;
+
+      if (/^[A-Z]:\\$/.test(currentPath)) {
+        loadAndDisplayPath('');
+        return;
+      }
+
+      if (currentPath.startsWith('\\\\')) {
+        const slashes = currentPath.split('\\').filter(Boolean);
+        if (slashes.length <= 2) {
+          loadAndDisplayPath('');
+          return;
+        }
+      }
+
+      let parentPath = currentPath.substring(0, currentPath.lastIndexOf('\\'));
+
+      if (!parentPath || /^\\\\[^\\/]+$/.test(parentPath)) {
+        loadAndDisplayPath('');
+        return;
+      }
+
+      if (parentPath.endsWith(':')) {
+        parentPath += '\\';
+      }
+
+      loadAndDisplayPath(parentPath);
+    });
+  }
+
+  if (currentPathInput) {
+    currentPathInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const newPath = currentPathInput.value.trim();
+        if (newPath) {
+          loadAndDisplayPath(newPath);
+        }
+      }
+    });
+  }
+
+  if (createNewFolderBtn) {
+    createNewFolderBtn.addEventListener('click', async () => {
+      const basePath = currentPathInput.value;
+      const newFolderName = newFolderNameInput.value.trim();
+
+      if (!basePath) {
+        showToast('Navegue até um drive ou pasta primeiro.', 'error');
+        return;
+      }
+      if (!newFolderName) {
+        showToast('Digite um nome para a nova pasta.', 'error');
+        newFolderNameInput.focus();
+        return;
+      }
+      toggleButtonLoading(createNewFolderBtn, true);
+      try {
+        const response = await fetch('/api/browse/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ basePath, newFolderName })
+        });
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error || 'Erro desconhecido');
+        }
+        showToast(`Pasta "${newFolderName}" criada com sucesso!`, 'success');
+        newFolderNameInput.value = '';
+        loadAndDisplayPath(basePath);
+      } catch (error) {
+        showToast(`Erro ao criar pasta: ${error.message}`, 'error');
+      } finally {
+        toggleButtonLoading(createNewFolderBtn, false);
+      }
+    });
+  }
+
+  if (newFolderNameInput) {
+    newFolderNameInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        createNewFolderBtn.click();
+      }
+    });
+  }
+
+});

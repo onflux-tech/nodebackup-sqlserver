@@ -15,8 +15,6 @@
 <body>
   <div id="toast-container"></div>
 
-
-
   <div class="container">
     <div class="header">
       <h2>Configuração de Backup</h2>
@@ -64,11 +62,11 @@
             </div>
           </button>
 
-          <button class="nav-tab" data-tab="ftp" type="button">
-            <div class="nav-icon">🌐</div>
+          <button class="nav-tab" data-tab="storage" type="button">
+            <div class="nav-icon">💾</div>
             <div class="nav-text">
-              <span class="nav-title">Configurações FTP</span>
-              <span class="nav-subtitle">Upload remoto</span>
+              <span class="nav-title">Armazenamento</span>
+              <span class="nav-subtitle">Destinos do backup</span>
             </div>
           </button>
 
@@ -132,47 +130,70 @@
             </div>
           </div>
 
-          <!-- Tab: Configurações FTP -->
-          <div class="tab-content" id="tab-ftp">
+          <!-- Tab: Armazenamento -->
+          <div class="tab-content" id="tab-storage">
             <div class="tab-header">
-              <h3>🌐 Configurações FTP</h3>
-              <p>Configure o servidor FTP para upload automático dos backups (opcional).</p>
+              <h3>💾 Armazenamento</h3>
+              <p>Configure um ou mais locais para enviar os backups após a criação.</p>
             </div>
 
-            <div class="form-section">
-              <div class="form-row two-cols">
-                <div class="form-group">
-                  <label for="ftpHost">Host</label>
-                  <input type="text" id="ftpHost" placeholder="ftp.meuservidor.com">
-                  <small>Opcional: Deixe em branco para não usar FTP.</small>
+            <div class="form-section storage-options">
+              <!-- Opção 1: Servidor FTP -->
+              <div class="storage-option">
+                <div class="checkbox-group">
+                  <input type="checkbox" id="ftpEnabled">
+                  <label for="ftpEnabled"><strong>Servidor FTP</strong></label>
                 </div>
-                <div class="form-group">
-                  <label for="ftpPort">Porta</label>
-                  <input type="number" id="ftpPort" placeholder="21">
+                <div id="ftpForm" class="storage-form">
+                  <div class="form-row two-cols">
+                    <div class="form-group">
+                      <label for="ftpHost">Host</label>
+                      <input type="text" id="ftpHost" placeholder="ftp.meuservidor.com">
+                    </div>
+                    <div class="form-group">
+                      <label for="ftpPort">Porta</label>
+                      <input type="number" id="ftpPort" placeholder="21">
+                    </div>
+                  </div>
+                  <div class="form-row two-cols">
+                    <div class="form-group">
+                      <label for="ftpUser">Usuário</label>
+                      <input type="text" id="ftpUser" placeholder="ftp_user">
+                    </div>
+                    <div class="form-group">
+                      <label for="ftpPass">Senha</label>
+                      <input type="password" id="ftpPass" placeholder="••••••••">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="ftpRemoteDir">Diretório Remoto</label>
+                    <input type="text" id="ftpRemoteDir" placeholder="/backups_sql/">
+                  </div>
+                  <div class="form-group">
+                    <button type="button" id="btnTestFtp" class="btn btn-primary btn-full">
+                      <span class="btn-text">Testar Conexão FTP</span>
+                      <div class="spinner"></div>
+                    </button>
+                  </div>
                 </div>
               </div>
 
-              <div class="form-row two-cols">
-                <div class="form-group">
-                  <label for="ftpUser">Usuário</label>
-                  <input type="text" id="ftpUser" placeholder="ftp_user">
+              <!-- Opção 2: Local de Rede -->
+              <div class="storage-option">
+                <div class="checkbox-group">
+                  <input type="checkbox" id="networkPathEnabled">
+                  <label for="networkPathEnabled"><strong>Local de Rede / Pasta Adicional</strong></label>
                 </div>
-                <div class="form-group">
-                  <label for="ftpPass">Senha</label>
-                  <input type="password" id="ftpPass" placeholder="••••••••">
+                <div id="networkPathForm" class="storage-form">
+                  <div class="form-group">
+                    <label for="networkPath">Caminho da Pasta</label>
+                    <div class="input-group">
+                      <input type="text" id="networkPath" placeholder="\\servidor\share\backups ou D:\copia_backups">
+                      <button type="button" id="browsePathBtn" class="btn btn-secondary">Procurar...</button>
+                    </div>
+                    <small>Especifique um caminho local ou de rede (UNC) para copiar o backup.</small>
+                  </div>
                 </div>
-              </div>
-
-              <div class="form-group">
-                <label for="ftpRemoteDir">Diretório Remoto</label>
-                <input type="text" id="ftpRemoteDir" placeholder="/backups_sql/">
-              </div>
-
-              <div class="form-group">
-                <button type="button" id="btnTestFtp" class="btn btn-primary btn-full">
-                  <span class="btn-text">Testar Conexão FTP</span>
-                  <div class="spinner"></div>
-                </button>
               </div>
             </div>
           </div>
@@ -279,9 +300,37 @@
             </div>
           </div>
 
-
         </form>
       </main>
+    </div>
+  </div>
+
+  <div id="folderBrowserModal" class="modal">
+    <div class="modal-content folder-browser">
+      <div class="modal-header">
+        <h4>Selecionar Pasta</h4>
+        <button type="button" class="close-button" id="closeFolderBrowser">&times;</button>
+      </div>
+      <div class="folder-browser-body">
+        <div class="current-path-bar">
+          <button type="button" id="levelUpBtn" class="btn-icon" title="Voltar">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+              <path fill-rule="evenodd"
+                d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z" />
+            </svg>
+          </button>
+          <input type="text" id="currentPathInput" placeholder="Digite um caminho (ex: \\servidor\share) e tecle Enter">
+        </div>
+        <div id="folderList" class="folder-list">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <div class="new-folder-container">
+          <input type="text" id="newFolderNameInput" placeholder="Nome da nova pasta...">
+          <button type="button" id="createNewFolderBtn" class="btn btn-secondary">Criar</button>
+        </div>
+        <button type="button" id="selectFolderBtn" class="btn btn-primary">Selecionar Pasta</button>
+      </div>
     </div>
   </div>
 

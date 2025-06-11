@@ -32,7 +32,7 @@ function performSingleBackup(dbName, backupNumber, backupDir, dbConfig) {
   });
 }
 
-async function performConsolidatedBackup(dbList, clientName, backupNumber, dbConfig, ftpConfig, retentionConfig) {
+async function performConsolidatedBackup(dbList, clientName, backupNumber, dbConfig, storageConfig, retentionConfig) {
   let finalZipName;
   const useTimestamp = retentionConfig && retentionConfig.enabled && retentionConfig.mode === 'retention';
 
@@ -114,11 +114,32 @@ async function performConsolidatedBackup(dbList, clientName, backupNumber, dbCon
         });
       });
 
-      if (ftpConfig && ftpConfig.host) {
+      if (storageConfig && storageConfig.ftp && storageConfig.ftp.enabled && storageConfig.ftp.host) {
         const shouldOverwrite = !useTimestamp;
-        uploadToFtp(finalZipPath, ftpConfig, shouldOverwrite);
+        await uploadToFtp(finalZipPath, storageConfig.ftp, shouldOverwrite);
       } else {
-        logger.info('FTP não configurado, backup consolidado mantido localmente.');
+        logger.info('Armazenamento FTP não configurado ou desabilitado, upload pulado.');
+      }
+
+      if (storageConfig && storageConfig.networkPath && storageConfig.networkPath.enabled && storageConfig.networkPath.path) {
+        try {
+          const destDir = storageConfig.networkPath.path;
+          const fileName = path.basename(finalZipPath);
+          const destPath = path.join(destDir, fileName);
+
+          logger.info(`Copiando backup para o local de rede: ${destPath}`);
+          if (!fs.existsSync(destDir)) {
+            logger.info(`Diretório de destino não existe, criando: ${destDir}`);
+            fs.mkdirSync(destDir, { recursive: true });
+          }
+
+          fs.copyFileSync(finalZipPath, destPath);
+          logger.info(`Arquivo copiado com sucesso para: ${destPath}`);
+        } catch (copyError) {
+          logger.error(`Falha ao copiar arquivo para o local de rede: ${storageConfig.networkPath.path}`, { error: copyError.message });
+        }
+      } else {
+        logger.info('Armazenamento em Local de Rede não configurado ou desabilitado.');
       }
 
       if (retentionConfig && retentionConfig.enabled && retentionConfig.autoCleanup) {
@@ -135,8 +156,8 @@ async function performConsolidatedBackup(dbList, clientName, backupNumber, dbCon
               }
             }
 
-            if (ftpConfig && ftpConfig.host && retentionConfig.ftpDays > 0) {
-              const ftpCleanup = await cleanupFtpBackups(ftpConfig, retentionConfig.ftpDays, clientName);
+            if (storageConfig && storageConfig.ftp && storageConfig.ftp.enabled && storageConfig.ftp.host && retentionConfig.ftpDays > 0) {
+              const ftpCleanup = await cleanupFtpBackups(storageConfig.ftp, retentionConfig.ftpDays, clientName);
               if (ftpCleanup.removed > 0) {
                 logger.info(`Limpeza FTP: ${ftpCleanup.removed} arquivo(s) removido(s)`);
               }

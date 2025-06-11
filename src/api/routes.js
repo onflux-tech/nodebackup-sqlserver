@@ -6,8 +6,39 @@ const { reschedule } = require('../services/scheduler');
 const logger = require('../utils/logger');
 const { translateDatabaseError, translateFTPError } = require('../utils/errorHandler');
 const { testFtpConnection, cleanupFtpBackups } = require('../services/ftp');
+const { exec } = require('child_process');
+const fs = require('fs');
+const path = require('path');
 
 const router = express.Router();
+
+router.post('/browse/create', (req, res) => {
+  const { basePath, newFolderName } = req.body;
+
+  if (!basePath || !newFolderName) {
+    return res.status(400).json({ error: 'O caminho base e o nome da nova pasta são obrigatórios.' });
+  }
+
+  if (newFolderName.includes('..') || newFolderName.includes('/') || newFolderName.includes('\\')) {
+    return res.status(400).json({ error: 'Nome de pasta inválido.' });
+  }
+
+  const fullPath = path.join(basePath, newFolderName);
+  logger.info(`Tentando criar a pasta: ${fullPath}`);
+
+  try {
+    if (fs.existsSync(fullPath)) {
+      return res.status(409).json({ error: 'Uma pasta com este nome já existe no local.' });
+    }
+
+    fs.mkdirSync(fullPath);
+    logger.info(`Pasta criada com sucesso: ${fullPath}`);
+    res.status(201).json({ message: 'Pasta criada com sucesso.', path: fullPath });
+  } catch (error) {
+    logger.error(`Erro ao criar a pasta ${fullPath}`, error);
+    res.status(500).json({ error: 'Não foi possível criar a pasta. Verifique as permissões.' });
+  }
+});
 
 router.get('/config', (req, res) => {
   res.json(getConfig());
@@ -21,6 +52,10 @@ router.post('/config', (req, res) => {
     ...currentConfig,
     ...newConfig
   };
+
+  if (finalConfig.storage && finalConfig.ftp) {
+    delete finalConfig.ftp;
+  }
 
   setConfig(finalConfig);
 
@@ -286,7 +321,7 @@ router.post('/cleanup-local', async (req, res) => {
 router.post('/cleanup-ftp', async (req, res) => {
   const config = getConfig();
   const retentionConfig = config.retention;
-  const ftpConfig = config.ftp;
+  const ftpConfig = config.storage ? config.storage.ftp : null;
 
   if (!retentionConfig || !retentionConfig.enabled) {
     return res.status(400).json({
@@ -306,10 +341,10 @@ router.post('/cleanup-ftp', async (req, res) => {
     });
   }
 
-  if (!ftpConfig || !ftpConfig.host) {
+  if (!ftpConfig || !ftpConfig.enabled || !ftpConfig.host) {
     return res.status(400).json({
-      error: 'FTP não configurado',
-      details: 'Configure as credenciais FTP antes de executar a limpeza remota'
+      error: 'FTP não configurado ou desabilitado',
+      details: 'Configure e habilite o armazenamento FTP antes de executar a limpeza remota'
     });
   }
 
@@ -335,6 +370,41 @@ router.post('/cleanup-ftp', async (req, res) => {
       details: errorInfo.details,
       suggestions: errorInfo.suggestions
     });
+  }
+});
+
+router.get('/browse/drives', (req, res) => {
+  exec('wmic logicaldisk get name', (error, stdout) => {
+    if (error) {
+      logger.error('Erro ao listar drives', error);
+      return res.status(500).json({ error: 'Falha ao listar drives do sistema.' });
+    }
+    const drives = stdout.split('\n')
+      .slice(1)
+      .map(line => line.trim())
+      .filter(line => line.length > 0)
+      .map(drive => `${drive}\\`);
+    res.json(drives);
+  });
+});
+
+router.get('/browse/list', (req, res) => {
+  const dirPath = req.query.path || 'C:\\';
+
+  if (!fs.existsSync(dirPath)) {
+    return res.status(404).json({ error: 'O caminho não existe ou está inacessível.' });
+  }
+
+  try {
+    const items = fs.readdirSync(dirPath, { withFileTypes: true });
+    const directories = items
+      .filter(item => item.isDirectory())
+      .map(item => item.name)
+      .sort();
+    res.json({ path: dirPath, directories });
+  } catch (error) {
+    logger.error(`Erro ao listar o diretório ${dirPath}`, error);
+    res.status(500).json({ error: 'Não foi possível ler o conteúdo da pasta. Verifique as permissões.' });
   }
 });
 
