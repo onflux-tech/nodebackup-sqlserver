@@ -1,0 +1,95 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+Padrão de Commits
+
+Segue uma versão aprimorada do padrão de commits, com a descrição de quando usar cada tipo e exemplos todos com verbos no passado:
+
+1. **feat**: ✨ (Novas funcionalidades)
+   **Quando usar:** para registrar a adição de uma nova funcionalidade ou endpoint, algo que expande o comportamento da aplicação.
+   **Exemplos:**
+
+   * `feat: ✨ adicionado botão de login na página inicial`
+   * `feat: ✨ inserida busca avançada por tags`
+
+2. **fix**: 🐛 (Correções de bugs)
+   **Quando usar:** sempre que você corrigir um defeito ou comportamento inesperado no código.
+   **Exemplos:**
+
+   * `fix: 🐛 corrigido redirecionamento incorreto após logout`
+   * `fix: 🐛 ajustado cálculo de imposto no carrinho de compras`
+
+3. **refactor**: ♻️ (Refatorações)
+   **Quando usar:** para mudanças no código que não adicionam funcionalidades nem corrigem bugs, mas melhoram estrutura, legibilidade ou organização.
+   **Exemplos:**
+
+   * `refactor: ♻️ reorganizada estrutura de diretórios de components`
+   * `refactor: ♻️ extraídas funções utilitárias para módulo separado`
+
+4. **chore**: 🔧 (Tarefas de manutenção)
+   **Quando usar:** para alterações que não afetam o código de produção, como atualização de ferramenta de build, scripts, ou configurações de lint.
+   **Exemplos:**
+
+   * `chore: 🔧 atualizado Node.js para a versão 18`
+   * `chore: 🔧 instalado Husky para hooks de commit`
+
+5. **docs**: 📝 (Documentação)
+   **Quando usar:** ao alterar só o conteúdo de documentação (README, comentários, Wiki).
+   **Exemplos:**
+
+   * `docs: 📝 atualizado README com instruções de deploy`
+   * `docs: 📝 adicionada seção de exemplos de uso na Wiki`
+
+6. **style**: 💄 (Ajustes de estilo)
+   **Quando usar:** para mudanças que não afetam a lógica, apenas o estilo de código (espaçamento, formatação, remoção de ponto-e-vírgula, etc.).
+   **Exemplos:**
+
+   * `style: 💄 ajustada indentação nos componentes React`
+   * `style: 💄 removidos espaços em branco desnecessários`
+
+7. **test**: ✅ (Testes)
+   **Quando usar:** sempre que adicionar ou modificar testes (unitários, integração ou end-to-end).
+   **Exemplos:**
+
+   * `test: ✅ adicionados testes unitários para service de autenticação`
+   * `test: ✅ coberta rota de compra com testes de integração`
+
+8. **perf**: ⚡ (Performance)
+   **Quando usar:** para alterações que melhoram desempenho ou reduzem tempo de carregamento.
+   **Exemplos:**
+
+   * `perf: ⚡ otimizado carregamento de imagens lazy-load`
+   * `perf: ⚡ reduzida complexidade do algoritmo de busca`
+
+9. **ci**: 👷 (Integração contínua)
+   **Quando usar:** para configurações dos pipelines de CI/CD (GitHub Actions, Travis CI, etc.).
+   **Exemplos:**
+
+   * `ci: 👷 configurado GitHub Actions para lint e build`
+   * `ci: 👷 ajustado workflow de deploy para staging`
+
+10. **build**: 📦 (Builds)
+    **Quando usar:** para alterações que afetam o sistema de build ou dependências externas (ex.: Webpack, Babel).
+    **Exemplos:**
+
+    * `build: 📦 adicionada configuração do Webpack para CSS modules`
+    * `build: 📦 atualizado Babel para suporte a novas features`
+
+11. **revert**: ⏪ (Reversões)
+    **Quando usar:** quando precisar reverter um commit anterior que introduziu problemas.
+    **Exemplos:**
+
+    * `revert: ⏪ revertido "feat: ✨ adicionado botão de login na página inicial"`
+    * `revert: ⏪ revertido commit de atualização de dependências`
+
+---
+
+**Dicas adicionais de uso:**
+
+* Use sempre o tempo passado no verbo principal (`adicionado`, `corrigido`, `removido`, `melhorado`, etc.).
+* Mantenha a linha de subject limitada a \~50 caracteres e sem o ponto final.
+* Separe o subject do body com uma linha em branco caso queira detalhar a mudança.
+
+* No body do commit, explique apenas *o que* mudou.
