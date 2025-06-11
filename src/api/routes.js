@@ -374,18 +374,22 @@ router.post('/cleanup-ftp', async (req, res) => {
 });
 
 router.get('/browse/drives', (req, res) => {
-  exec('wmic logicaldisk get name', (error, stdout) => {
-    if (error) {
-      logger.error('Erro ao listar drives', error);
-      return res.status(500).json({ error: 'Falha ao listar drives do sistema.' });
+  const drives = [];
+  const driveLetters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+  for (const letter of driveLetters) {
+    const drivePath = `${letter}:\\`;
+    try {
+      if (fs.existsSync(drivePath)) {
+        drives.push(drivePath);
+      }
+    } catch (e) {
+      logger.debug(`Erro ao verificar o drive ${drivePath}, pulando.`, e);
     }
-    const drives = stdout.split('\n')
-      .slice(1)
-      .map(line => line.trim())
-      .filter(line => line.length > 0)
-      .map(drive => `${drive}\\`);
-    res.json(drives);
-  });
+  }
+
+  logger.info(`Drives listados com sucesso via Node.js fs: ${drives.join(', ')}`);
+  res.json(drives);
 });
 
 router.get('/browse/list', (req, res) => {
