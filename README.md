@@ -9,6 +9,12 @@
 
 </div>
 
+<div align="center">
+
+![NodeBackup Interface](docs/images/nodebackup-interface.png)
+
+</div>
+
 Uma solução segura e leve para automatizar backups de bancos de dados SQL Server, com compressão, envio para FTP e com opção de execução como serviço do Windows.
 
 ## 🌟 Principais Funcionalidades
