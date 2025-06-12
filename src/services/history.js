@@ -26,7 +26,6 @@ async function loadSqlJs() {
       const sqlWasmPath = path.join(testPath, 'sql-wasm.wasm');
       if (fs.existsSync(sqlWasmPath)) {
         workingPath = testPath;
-        logger.info(`sql.js assets encontrados em: ${workingPath}`);
         break;
       }
     }
@@ -59,7 +58,6 @@ async function initializeDatabase() {
       let dbFileBuffer;
       if (fs.existsSync(dbPath)) {
         dbFileBuffer = fs.readFileSync(dbPath);
-        logger.info('Base de dados SQLite carregada do arquivo.');
       } else {
         logger.info('Criando nova base de dados SQLite.');
       }
@@ -82,7 +80,7 @@ async function initializeDatabase() {
       db.run(createTableQuery);
       persist();
       sqliteEnabled = true;
-      logger.info('Serviço de histórico inicializado com SQLite.');
+      logger.info('Serviço de histórico inicializado com sucesso.');
     } else {
       throw new Error('SQLite não disponível');
     }

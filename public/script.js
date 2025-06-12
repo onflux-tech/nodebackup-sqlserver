@@ -1683,41 +1683,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const isSuccess = backup.status === 'success';
     const timestamp = new Date(backup.timestamp).toLocaleString('pt-BR');
 
+    const failedSteps = [];
     const errorMessage = backup.errorMessage || '';
-    const errorLower = errorMessage.toLowerCase();
+    if (!isSuccess) {
+      if (errorMessage.toLowerCase().includes('cópia:')) failedSteps.push('network');
+      if (errorMessage.toLowerCase().includes('ftp:')) failedSteps.push('ftp');
+      if (errorMessage.toLowerCase().includes('limpeza:')) failedSteps.push('cleanup');
+      if (errorMessage.toLowerCase().includes('falha ao limpar .bak:')) failedSteps.push('compression');
 
-    let failedStep = 'database';
-
-    if (errorLower.includes('sqlcmd') || errorLower.includes('login failed') ||
-      errorLower.includes('sql server') || errorLower.includes('backup database') ||
-      errorLower.includes('odbc driver') || errorLower.includes('authentication') ||
-      errorLower.includes('cannot open database') || errorLower.includes('server not found') ||
-      errorLower.includes('network-related') || errorLower.includes('instance-specific')) {
-      failedStep = 'database';
-    }
-    else if (errorLower.includes('compactação') || errorLower.includes('7z') ||
-      errorLower.includes('compression') || errorLower.includes('zip') ||
-      errorLower.includes('archive') || errorLower.includes('compactar') ||
-      errorLower.includes('7za.exe') || errorLower.includes('cannot create archive')) {
-      failedStep = 'compression';
-    }
-    else if ((errorLower.includes('ftp') && !errorLower.includes('sqlcmd')) ||
-      errorLower.includes('upload failed') || errorLower.includes('ftp error') ||
-      errorLower.includes('connection timeout') || errorLower.includes('connection refused') ||
-      (errorLower.includes('host') && errorLower.includes('unreachable')) ||
-      errorLower.includes('530 login') || errorLower.includes('550 permission')) {
-      failedStep = 'ftp';
-    }
-    else if (errorLower.includes('rede') || errorLower.includes('network path') ||
-      errorLower.includes('local de rede') || errorLower.includes('path not found') ||
-      errorLower.includes('pasta') || errorLower.includes('diretório') ||
-      errorLower.includes('directory') || errorLower.includes('copy failed') ||
-      errorLower.includes('access denied') && errorLower.includes('path')) {
-      failedStep = 'network';
-    }
-    else if (errorLower.includes('limpeza') || errorLower.includes('cleanup') ||
-      errorLower.includes('delete failed') || errorLower.includes('remove failed')) {
-      failedStep = 'cleanup';
+      if (failedSteps.length === 0) {
+        if (errorMessage.toLowerCase().includes('compactação') || errorMessage.toLowerCase().includes('7z')) {
+          failedSteps.push('compression');
+        } else {
+          failedSteps.push('database');
+        }
+      }
     }
 
     const headerHtml = `
@@ -1757,7 +1737,7 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
       `;
 
-    const stepsHtml = generateBackupStepsHTML(backup, failedStep);
+    const stepsHtml = generateBackupStepsHTML(backup, failedSteps);
 
     return `
           ${headerHtml}
@@ -1768,82 +1748,98 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
   }
 
-  function generateBackupStepsHTML(backup, failedStep = 'database') {
+  function getErrorMessageForStep(stepId, fullErrorMessage) {
+    if (!fullErrorMessage) return '';
+
+    const errors = fullErrorMessage.split(';').map(e => e.trim());
+    const prefixMap = {
+      network: 'cópia:',
+      ftp: 'ftp:',
+      cleanup: 'limpeza:',
+      compression: 'falha ao limpar .bak:'
+    };
+
+    const prefix = prefixMap[stepId];
+    let stepErrors = [];
+
+    if (prefix) {
+      stepErrors = errors
+        .filter(e => e.toLowerCase().startsWith(prefix))
+        .map(e => e.substring(prefix.length).trim());
+    }
+
+    if (stepErrors.length > 0) {
+      return stepErrors.join('; ');
+    }
+
+    const generalError = errors.find(e =>
+      !e.toLowerCase().startsWith('cópia:') &&
+      !e.toLowerCase().startsWith('ftp:') &&
+      !e.toLowerCase().startsWith('limpeza:') &&
+      !e.toLowerCase().startsWith('falha ao limpar .bak:')
+    );
+
+    if (stepId === 'database' && generalError) {
+      return generalError;
+    }
+
+    return (stepId === 'database') ? fullErrorMessage : '';
+  }
+
+  function generateBackupStepsHTML(backup, failedSteps = []) {
     const isSuccess = backup.status === 'success';
     const details = backup.details || '';
 
-    if (failedStep === 'database' && backup.errorMessage) {
-      const errorLower = backup.errorMessage.toLowerCase();
+    const getStepStatus = (stepId) => {
+      if (failedSteps.includes(stepId)) {
+        return 'failed';
+      }
+      switch (stepId) {
+        case 'database':
+        case 'compression':
+          return 'success';
+        case 'ftp':
+          return details.toLowerCase().includes('ftp') ? 'success' : 'skipped';
+        case 'network':
+          return details.toLowerCase().includes('local de rede') ? 'success' : 'skipped';
+        case 'cleanup':
+          return details.toLowerCase().includes('limpeza') ? 'success' : 'skipped';
+        default:
+          return 'success';
+      }
+    };
 
-      if (errorLower.includes('sqlcmd') || errorLower.includes('login failed') ||
-        errorLower.includes('sql server') || errorLower.includes('backup database') ||
-        errorLower.includes('odbc driver') || errorLower.includes('authentication') ||
-        errorLower.includes('cannot open database') || errorLower.includes('server not found')) {
-        failedStep = 'database';
-      }
-      else if (errorLower.includes('compactação') || errorLower.includes('7z') ||
-        errorLower.includes('compression') || errorLower.includes('7za.exe')) {
-        failedStep = 'compression';
-      }
-      else if ((errorLower.includes('ftp') && !errorLower.includes('sqlcmd')) ||
-        errorLower.includes('upload failed') || errorLower.includes('ftp error')) {
-        failedStep = 'ftp';
-      }
-      else if (errorLower.includes('rede') || errorLower.includes('network path') ||
-        errorLower.includes('local de rede') || errorLower.includes('copy failed')) {
-        failedStep = 'network';
-      }
-      else if (errorLower.includes('limpeza') || errorLower.includes('cleanup')) {
-        failedStep = 'cleanup';
-      }
-    }
-
-    const steps = [
-      {
-        id: 'database',
-        title: 'Backup dos Bancos de Dados',
-        description: `Geração dos arquivos .bak para ${backup.databases.length} banco(s)`,
-        status: isSuccess ? 'success' : (failedStep === 'database' ? 'failed' : 'success'),
-        icon: 'database'
-      },
-      {
-        id: 'compression',
-        title: 'Compactação dos Arquivos',
-        description: 'Criação do arquivo .7z compactado',
-        status: isSuccess ? 'success' :
-          (failedStep === 'compression' ? 'failed' :
-            (failedStep === 'database' ? 'skipped' : 'success')),
-        icon: 'archive'
-      },
-      {
-        id: 'ftp',
-        title: 'Upload para Servidor FTP',
-        description: 'Envio do backup para o servidor remoto',
-        status: isSuccess && details.includes('Upload FTP') ? 'success' :
-          (failedStep === 'ftp' ? 'failed' :
-            (!isSuccess && ['database', 'compression'].includes(failedStep) ? 'skipped' :
-              (details.includes('Upload FTP') ? 'success' : 'skipped'))),
-        icon: 'cloud-upload'
-      },
-      {
-        id: 'network',
-        title: 'Cópia para Local de Rede',
-        description: 'Envio do backup para pasta local ou de rede configurada (se habilitado)',
-        status: isSuccess && details.includes('local de rede') ? 'success' :
-          (failedStep === 'network' ? 'failed' :
-            (!isSuccess && ['database', 'compression'].includes(failedStep) ? 'skipped' :
-              (details.includes('local de rede') ? 'success' : 'skipped'))),
-        icon: 'folder-sync'
-      },
-      {
-        id: 'cleanup',
-        title: 'Limpeza de Backups Antigos',
-        description: 'Remoção automática de arquivos conforme política de retenção',
-        status: isSuccess && details.includes('limpeza') ? 'success' :
-          (failedStep === 'cleanup' ? 'failed' : 'skipped'),
-        icon: 'trash-2'
-      }
-    ];
+    const steps = [{
+      id: 'database',
+      title: 'Backup dos Bancos de Dados',
+      description: `Geração dos arquivos .bak para ${backup.databases.length} banco(s)`,
+      status: getStepStatus('database'),
+      icon: 'database'
+    }, {
+      id: 'compression',
+      title: 'Compactação dos Arquivos',
+      description: 'Criação do arquivo .7z compactado',
+      status: getStepStatus('compression'),
+      icon: 'archive'
+    }, {
+      id: 'ftp',
+      title: 'Upload para Servidor FTP',
+      description: 'Envio do backup para o servidor remoto',
+      status: getStepStatus('ftp'),
+      icon: 'cloud-upload'
+    }, {
+      id: 'network',
+      title: 'Cópia para Local de Rede',
+      description: 'Envio para pasta local ou de rede configurada (se habilitado)',
+      status: getStepStatus('network'),
+      icon: 'folder-sync'
+    }, {
+      id: 'cleanup',
+      title: 'Limpeza de Backups Antigos',
+      description: 'Remoção automática de arquivos conforme política de retenção',
+      status: getStepStatus('cleanup'),
+      icon: 'trash-2'
+    }];
 
     return steps.map(step => {
       let stepClass = step.status;
@@ -1855,12 +1851,15 @@ document.addEventListener('DOMContentLoaded', () => {
                   <span class="step-title">${step.title}</span><span class="step-description">${step.description}</span>
           `;
 
-      if (step.status === 'failed' && backup.errorMessage && step.id === failedStep) {
-        stepContent += `
+      if (step.status === 'failed') {
+        const stepErrorMessage = getErrorMessageForStep(step.id, backup.errorMessage);
+        if (stepErrorMessage) {
+          stepContent += `
                   <div class="step-error">
-                      <strong>Erro:</strong> ${escapeHtml(backup.errorMessage)}
+                      <strong>Erro:</strong> ${escapeHtml(stepErrorMessage)}
                   </div>
               `;
+        }
       }
 
       stepContent += '</div>';

@@ -36,9 +36,10 @@ function performSingleBackup(dbName, backupNumber, backupDir, dbConfig) {
 
 async function performConsolidatedBackup(dbList, clientName, backupNumber, dbConfig, storageConfig, retentionConfig) {
   const startTime = Date.now();
+  let isSuccess = true;
   let historyRecord = {
     databases: dbList,
-    status: 'failed',
+    status: 'pending',
     fileSize: 0,
     duration: 0,
     errorMessage: null,
@@ -84,6 +85,7 @@ async function performConsolidatedBackup(dbList, clientName, backupNumber, dbCon
           logger.info(`Arquivo .bak órfão excluído: ${orphanPath}`);
         } catch (err) {
           logger.error(`Falha ao excluir arquivo .bak órfão: ${orphanPath}`, err);
+          throw new Error(`Não foi possível excluir o arquivo .bak órfão: ${orphanPath}. Verifique as permissões e se o arquivo não está em uso.`);
         }
       }
     }
@@ -95,6 +97,7 @@ async function performConsolidatedBackup(dbList, clientName, backupNumber, dbCon
         logger.info(`Arquivo .7z anterior excluído com sucesso.`);
       } catch (err) {
         logger.error(`Falha ao excluir o arquivo .7z existente: ${finalZipPath}`, err);
+        throw new Error(`Não foi possível excluir o arquivo .7z anterior: ${finalZipPath}. Verifique as permissões e se o arquivo não está em uso.`);
       }
     }
 
@@ -118,17 +121,27 @@ async function performConsolidatedBackup(dbList, clientName, backupNumber, dbCon
     logger.info(`Backup consolidado compactado com sucesso: ${finalZipPath}`);
     historyRecord.details += 'Compactação bem-sucedida. ';
 
-    backupFilePaths.forEach(filePath => {
-      fs.unlink(filePath, (err) => {
-        if (err) logger.error(`Erro ao excluir arquivo .bak: ${filePath}`, err);
-        else logger.info(`Arquivo .bak excluído: ${filePath}`);
-      });
-    });
+    for (const filePath of backupFilePaths) {
+      try {
+        fs.unlinkSync(filePath);
+        logger.info(`Arquivo .bak excluído: ${filePath}`);
+      } catch (err) {
+        isSuccess = false;
+        logger.error(`Erro ao excluir arquivo .bak temporário: ${filePath}`, err);
+        historyRecord.errorMessage = (historyRecord.errorMessage ? historyRecord.errorMessage + '; ' : '') + `Falha ao limpar .bak: ${path.basename(filePath)}`;
+      }
+    }
 
     if (storageConfig && storageConfig.ftp && storageConfig.ftp.enabled && storageConfig.ftp.host) {
       const shouldOverwrite = !useTimestamp;
-      await uploadToFtp(finalZipPath, storageConfig.ftp, shouldOverwrite);
-      historyRecord.details += 'Upload FTP realizado. ';
+      try {
+        await uploadToFtp(finalZipPath, storageConfig.ftp, shouldOverwrite);
+        historyRecord.details += 'Upload FTP realizado. ';
+      } catch (ftpError) {
+        isSuccess = false;
+        historyRecord.errorMessage = `FTP: ${ftpError.message}`;
+        historyRecord.details += `Falha no Upload FTP: ${ftpError.message}. `;
+      }
     } else {
       logger.info('Armazenamento FTP não configurado ou desabilitado, upload pulado.');
     }
@@ -149,7 +162,9 @@ async function performConsolidatedBackup(dbList, clientName, backupNumber, dbCon
         logger.info(`Arquivo copiado com sucesso para: ${destPath}`);
         historyRecord.details += 'Cópia para local de rede bem-sucedida. ';
       } catch (copyError) {
+        isSuccess = false;
         logger.error(`Falha ao copiar arquivo para o local de rede: ${storageConfig.networkPath.path}`, { error: copyError.message });
+        historyRecord.errorMessage = (historyRecord.errorMessage ? historyRecord.errorMessage + '; ' : '') + `Cópia: ${copyError.message}`;
         historyRecord.details += `Falha na cópia para local de rede: ${copyError.message}. `;
       }
     } else {
@@ -166,6 +181,11 @@ async function performConsolidatedBackup(dbList, clientName, backupNumber, dbCon
         try {
           if (retentionConfig.localDays > 0) {
             const localCleanup = await cleanupOldBackups(retentionConfig.localDays, clientName);
+            if (localCleanup.errors > 0) {
+              isSuccess = false;
+              const specificErrors = localCleanup.errorMessages.join(', ');
+              historyRecord.errorMessage = (historyRecord.errorMessage ? historyRecord.errorMessage + '; ' : '') + `Limpeza: ${specificErrors || `${localCleanup.errors} erro(s) na limpeza local.`}`;
+            }
             if (localCleanup.removed > 0) {
               logger.info(`Limpeza local: ${localCleanup.removed} arquivo(s) removido(s)`);
             }
@@ -173,6 +193,11 @@ async function performConsolidatedBackup(dbList, clientName, backupNumber, dbCon
 
           if (storageConfig && storageConfig.ftp && storageConfig.ftp.enabled && storageConfig.ftp.host && retentionConfig.ftpDays > 0) {
             const ftpCleanup = await cleanupFtpBackups(storageConfig.ftp, retentionConfig.ftpDays, clientName);
+            if (ftpCleanup.errors > 0) {
+              isSuccess = false;
+              const specificErrors = ftpCleanup.errorMessages.join(', ');
+              historyRecord.errorMessage = (historyRecord.errorMessage ? historyRecord.errorMessage + '; ' : '') + `Limpeza: ${specificErrors || `${ftpCleanup.errors} erro(s) na limpeza do FTP.`}`;
+            }
             if (ftpCleanup.removed > 0) {
               logger.info(`Limpeza FTP: ${ftpCleanup.removed} arquivo(s) removido(s)`);
             }
@@ -180,22 +205,30 @@ async function performConsolidatedBackup(dbList, clientName, backupNumber, dbCon
 
           logger.info('Limpeza automática concluída');
         } catch (cleanupError) {
+          isSuccess = false;
           logger.error('Erro durante a limpeza automática', cleanupError);
+          historyRecord.errorMessage = (historyRecord.errorMessage ? historyRecord.errorMessage + '; ' : '') + `Limpeza: ${cleanupError.message}`;
         }
       }
     }
 
     const stats = fs.statSync(finalZipPath);
-    historyRecord.status = 'success';
+    historyRecord.status = isSuccess ? 'success' : 'failed';
     historyRecord.fileSize = (stats.size / (1024 * 1024)).toFixed(2);
-    historyRecord.details = 'Backup concluído com sucesso. ' + historyRecord.details;
+    if (isSuccess) {
+      historyRecord.details = 'Backup concluído com sucesso. ' + historyRecord.details;
+    }
 
   } catch (error) {
+    isSuccess = false;
     logger.error('Falha no processo de backup consolidado. A operação foi abortada.', { stack: error.stack });
     historyRecord.status = 'failed';
     historyRecord.errorMessage = error.message;
 
   } finally {
+    if (historyRecord.status === 'pending') {
+      historyRecord.status = isSuccess ? 'success' : 'failed';
+    }
     historyRecord.duration = (Date.now() - startTime) / 1000;
     addHistoryRecord(historyRecord);
     logger.info(`Registro de histórico adicionado: status ${historyRecord.status}`);
@@ -258,7 +291,7 @@ async function listDatabases(dbConfig) {
   }
 }
 
-async function cleanupOldBackups(retentionDays) {
+async function cleanupOldBackups(retentionDays, clientName) {
   const backupsDir = path.join(baseDir, 'backups');
   const cutoffDate = new Date();
   cutoffDate.setDate(cutoffDate.getDate() - retentionDays);
@@ -309,7 +342,7 @@ async function cleanupOldBackups(retentionDays) {
   try {
     if (!fs.existsSync(backupsDir)) {
       logger.info('Diretório de backups não existe, nada para limpar.');
-      return { removed: 0, errors: 0 };
+      return { removed: 0, errors: 0, errorMessages: [] };
     }
 
     const files = fs.readdirSync(backupsDir);
@@ -317,6 +350,7 @@ async function cleanupOldBackups(retentionDays) {
 
     let removedCount = 0;
     let errorCount = 0;
+    const errorMessages = [];
 
     logger.info(`Encontrados ${backupFiles.length} arquivo(s) de backup .7z local`);
 
@@ -330,6 +364,7 @@ async function cleanupOldBackups(retentionDays) {
         if (!fileDate) {
           logger.warn(`Pulando arquivo ${file}: não foi possível determinar a data`);
           errorCount++;
+          errorMessages.push(`Não foi possível determinar a data do arquivo ${file}`);
           continue;
         }
 
@@ -345,6 +380,7 @@ async function cleanupOldBackups(retentionDays) {
       } catch (error) {
         logger.error(`Erro ao processar arquivo ${file}: ${error.message}`);
         errorCount++;
+        errorMessages.push(error.message);
       }
     }
 
@@ -354,7 +390,7 @@ async function cleanupOldBackups(retentionDays) {
       logger.info('Nenhum backup antigo encontrado para remoção');
     }
 
-    return { removed: removedCount, errors: errorCount };
+    return { removed: removedCount, errors: errorCount, errorMessages };
 
   } catch (error) {
     logger.error('Erro durante a limpeza de backups locais', error);

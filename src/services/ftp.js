@@ -55,6 +55,7 @@ async function uploadToFtp(localFilePath, ftpConfig, shouldOverwrite = true) {
 
   } catch (err) {
     logFriendlyFTPError(err, 'Erro durante a operação FTP');
+    throw err;
   } finally {
     if (client.closed === false) {
       client.close();
@@ -106,7 +107,7 @@ async function cleanupFtpBackups(ftpConfig, retentionDays) {
 
   if (!host || !user || !password) {
     logger.info('Configurações de FTP incompletas. Limpeza FTP cancelada.');
-    return { removed: 0, errors: 0 };
+    return { removed: 0, errors: 0, errorMessages: [] };
   }
 
   const cutoffDate = new Date();
@@ -117,6 +118,7 @@ async function cleanupFtpBackups(ftpConfig, retentionDays) {
   const client = new ftp.Client();
   let removedCount = 0;
   let errorCount = 0;
+  const errorMessages = [];
 
   function getFileDate(file) {
     logger.debug(`Processando arquivo: ${file.name}, modifiedAt: ${file.modifiedAt}, rawModifiedAt: ${JSON.stringify(file.rawModifiedAt)}`);
@@ -241,6 +243,7 @@ async function cleanupFtpBackups(ftpConfig, retentionDays) {
         if (!fileDate) {
           logger.warn(`Pulando arquivo ${file.name}: não foi possível determinar a data`);
           errorCount++;
+          errorMessages.push(`Não foi possível determinar a data do arquivo FTP ${file.name}`);
           continue;
         }
 
@@ -256,6 +259,7 @@ async function cleanupFtpBackups(ftpConfig, retentionDays) {
       } catch (error) {
         logger.error(`Erro ao processar arquivo FTP ${file.name}: ${error.message}`);
         errorCount++;
+        errorMessages.push(error.message);
       }
     }
 
@@ -265,12 +269,11 @@ async function cleanupFtpBackups(ftpConfig, retentionDays) {
       logger.info('Nenhum backup FTP antigo encontrado para remoção');
     }
 
-    return { removed: removedCount, errors: errorCount };
+    return { removed: removedCount, errors: errorCount, errorMessages };
 
   } catch (error) {
     logger.error('Erro durante a limpeza de backups FTP', error);
-    errorCount++;
-    return { removed: removedCount, errors: errorCount };
+    throw error;
   } finally {
     if (client.closed === false) {
       client.close();
