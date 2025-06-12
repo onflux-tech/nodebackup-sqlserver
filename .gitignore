@@ -2,5 +2,6 @@ backups
 node_modules
 logs
 config.enc
+history.db
 NodeBackup.exe
-NodeBackupInstaller.exe
+NodeBackupInstaller*.exe

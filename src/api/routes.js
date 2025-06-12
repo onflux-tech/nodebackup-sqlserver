@@ -2,6 +2,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const { getConfig, setConfig, saveConfig } = require('../config');
 const { listDatabases, cleanupOldBackups } = require('../services/database');
+const { getHistory, getHistoryStats } = require('../services/history');
 const { reschedule } = require('../services/scheduler');
 const logger = require('../utils/logger');
 const { translateDatabaseError, translateFTPError } = require('../utils/errorHandler');
@@ -12,7 +13,17 @@ const path = require('path');
 
 const router = express.Router();
 
-router.post('/browse/create', (req, res) => {
+function requireAuth(req, res, next) {
+  if (getConfig().app.isInitialSetup) {
+    return next();
+  }
+  if (req.session && req.session.user) {
+    return next();
+  }
+  res.status(401).json({ error: 'Acesso não autorizado. Faça login novamente.' });
+}
+
+router.post('/browse/create', requireAuth, (req, res) => {
   const { basePath, newFolderName } = req.body;
 
   if (!basePath || !newFolderName) {
@@ -40,11 +51,11 @@ router.post('/browse/create', (req, res) => {
   }
 });
 
-router.get('/config', (req, res) => {
+router.get('/config', requireAuth, (req, res) => {
   res.json(getConfig());
 });
 
-router.post('/config', (req, res) => {
+router.post('/config', requireAuth, (req, res) => {
   const currentConfig = getConfig();
   const newConfig = req.body;
 
@@ -67,7 +78,7 @@ router.post('/config', (req, res) => {
   }
 });
 
-router.get('/list-databases', async (req, res) => {
+router.get('/list-databases', requireAuth, async (req, res) => {
   let { server, user, password } = req.query;
 
   if (!server || !user) {
@@ -95,7 +106,7 @@ router.get('/list-databases', async (req, res) => {
   }
 });
 
-router.post('/test-ftp', async (req, res) => {
+router.post('/test-ftp', requireAuth, async (req, res) => {
   const ftpConfig = req.body;
 
   if (!ftpConfig.host || !ftpConfig.user || !ftpConfig.password) {
@@ -119,7 +130,7 @@ router.post('/test-ftp', async (req, res) => {
   }
 });
 
-router.post('/test-database', async (req, res) => {
+router.post('/test-database', requireAuth, async (req, res) => {
   const { server, user, password } = req.body;
 
   if (!server || !user) {
@@ -215,7 +226,7 @@ router.post('/setup', (req, res) => {
   }
 });
 
-router.post('/change-password', (req, res) => {
+router.post('/change-password', requireAuth, (req, res) => {
   const { username, oldPassword, newPassword, confirmNewPassword } = req.body;
   const config = getConfig();
 
@@ -263,7 +274,7 @@ router.post('/login', (req, res) => {
   }
 });
 
-router.post('/logout', (req, res) => {
+router.post('/logout', requireAuth, (req, res) => {
   req.session.destroy(err => {
     if (err) {
       return res.status(500).json({ message: 'Não foi possível fazer logout.' });
@@ -273,7 +284,41 @@ router.post('/logout', (req, res) => {
   });
 });
 
-router.post('/cleanup-local', async (req, res) => {
+router.get('/history', requireAuth, async (req, res) => {
+  try {
+    const { page, limit, status, sort, order } = req.query;
+    const options = {
+      page: parseInt(page, 10) || 1,
+      limit: parseInt(limit, 10) || 10,
+      status,
+      sort,
+      order
+    };
+    const history = await getHistory(options);
+    res.json(history);
+  } catch (error) {
+    logger.error('Erro ao buscar histórico de backups', error);
+    res.status(500).json({
+      error: 'Erro ao buscar histórico de backups',
+      details: error.message
+    });
+  }
+});
+
+router.get('/history/stats', requireAuth, async (req, res) => {
+  try {
+    const stats = await getHistoryStats();
+    res.json(stats);
+  } catch (error) {
+    logger.error('Erro ao buscar estatísticas do histórico', error);
+    res.status(500).json({
+      error: 'Erro ao buscar estatísticas do histórico',
+      details: error.message
+    });
+  }
+});
+
+router.post('/cleanup-local', requireAuth, async (req, res) => {
   const config = getConfig();
   const retentionConfig = config.retention;
 
@@ -318,7 +363,7 @@ router.post('/cleanup-local', async (req, res) => {
   }
 });
 
-router.post('/cleanup-ftp', async (req, res) => {
+router.post('/cleanup-ftp', requireAuth, async (req, res) => {
   const config = getConfig();
   const retentionConfig = config.retention;
   const ftpConfig = config.storage ? config.storage.ftp : null;
@@ -373,7 +418,7 @@ router.post('/cleanup-ftp', async (req, res) => {
   }
 });
 
-router.get('/browse/drives', (req, res) => {
+router.get('/browse/drives', requireAuth, (req, res) => {
   const drives = [];
   const driveLetters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
@@ -388,11 +433,11 @@ router.get('/browse/drives', (req, res) => {
     }
   }
 
-  logger.info(`Drives listados com sucesso via Node.js fs: ${drives.join(', ')}`);
+  logger.info(`Drives listados com sucesso ${drives.join(', ')}`);
   res.json(drives);
 });
 
-router.get('/browse/list', (req, res) => {
+router.get('/browse/list', requireAuth, (req, res) => {
   const dirPath = req.query.path || 'C:\\';
 
   if (!fs.existsSync(dirPath)) {

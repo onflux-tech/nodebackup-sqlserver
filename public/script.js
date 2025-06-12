@@ -1,11 +1,11 @@
 document.addEventListener('DOMContentLoaded', () => {
   const themeToggle = document.getElementById('themeToggle');
-  const sunIcon = document.querySelector('.sun-icon');
-  const moonIcon = document.querySelector('.moon-icon');
+  const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+  const sidebar = document.getElementById('sidebar');
+  const mobileOverlay = document.getElementById('mobile-overlay');
 
   const savedTheme = localStorage.getItem('theme') || 'light';
   document.documentElement.setAttribute('data-theme', savedTheme);
-  updateThemeUI(savedTheme);
 
   themeToggle.addEventListener('click', () => {
     const currentTheme = document.documentElement.getAttribute('data-theme');
@@ -13,23 +13,40 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.documentElement.setAttribute('data-theme', newTheme);
     localStorage.setItem('theme', newTheme);
-    updateThemeUI(newTheme);
 
-    themeToggle.style.transform = 'scale(0.95)';
     setTimeout(() => {
-      themeToggle.style.transform = '';
-    }, 150);
+      lucide.createIcons();
+    }, 50);
+
+    setTimeout(() => {
+      const historyTab = document.querySelector('[data-tab="history"]');
+      if (historyTab && historyTab.classList.contains('active') && !isHistoryLoading) {
+        lastCalculatedLimit = 0;
+        loadHistory(historyCurrentPage || 1, true);
+      }
+    }, 400);
   });
 
-  function updateThemeUI(theme) {
-    if (theme === 'dark') {
-      sunIcon.style.display = 'none';
-      moonIcon.style.display = 'block';
-    } else {
-      sunIcon.style.display = 'block';
-      moonIcon.style.display = 'none';
-    }
+  function toggleMobileMenu() {
+    sidebar.classList.toggle('show');
+    mobileOverlay.classList.toggle('show');
   }
+
+  function closeMobileMenu() {
+    sidebar.classList.remove('show');
+    mobileOverlay.classList.remove('show');
+  }
+
+  mobileMenuToggle.addEventListener('click', toggleMobileMenu);
+  mobileOverlay.addEventListener('click', closeMobileMenu);
+
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', () => {
+      if (window.innerWidth <= 768) {
+        closeMobileMenu();
+      }
+    });
+  });
 
   const configForm = document.getElementById('configForm');
   const scheduleInputsDiv = document.getElementById('scheduleInputs');
@@ -55,34 +72,76 @@ document.addEventListener('DOMContentLoaded', () => {
   const dbUserInput = document.getElementById('dbUser');
   const dbPassInput = document.getElementById('dbPass');
   const btnListDbs = document.getElementById('btnListDatabases');
-  const dbListSelect = document.getElementById('dbList');
+  const selectedDatabasesContainer = document.getElementById('selectedDatabasesTags');
   const btnTestFtp = document.getElementById('btnTestFtp');
   const logoutButton = document.getElementById('logoutButton');
   const btnCleanupLocal = document.getElementById('btnCleanupLocal');
   const btnCleanupFtp = document.getElementById('btnCleanupFtp');
 
-  const navTabs = document.querySelectorAll('.nav-tab');
+  const databaseSelectorModal = document.getElementById('databaseSelectorModal');
+  const closeDatabaseSelectorBtn = document.getElementById('closeDatabaseSelector');
+  const databaseList = document.getElementById('databaseList');
+  const selectionCount = document.getElementById('selectionCount');
+  const selectAllDbsBtn = document.getElementById('selectAllDbs');
+  const clearAllDbsBtn = document.getElementById('clearAllDbs');
+  const cancelDatabaseSelectionBtn = document.getElementById('cancelDatabaseSelection');
+  const confirmDatabaseSelectionBtn = document.getElementById('confirmDatabaseSelection');
+
+  let availableDatabases = [];
+  let selectedDatabases = [];
+
+  const navItems = document.querySelectorAll('.nav-item');
   const tabContents = document.querySelectorAll('.tab-content');
 
+  const historyTab = document.querySelector('[data-tab="history"]');
+  const historyStats = {
+    total: document.getElementById('stats-total'),
+    success: document.getElementById('stats-success'),
+    failed: document.getElementById('stats-failed'),
+    avgDuration: document.getElementById('stats-avg-duration'),
+    totalSize: document.getElementById('stats-total-size'),
+  };
+  const historyTableBody = document.querySelector('#history-table tbody');
+  const statusFilter = document.getElementById('status-filter');
+  const historyPagination = {
+    prev: document.getElementById('prev-page'),
+    next: document.getElementById('next-page'),
+    info: document.getElementById('page-info'),
+  };
+  const backupDetailsModal = document.getElementById('backupDetailsModal');
+  const backupDetailsContent = document.getElementById('backupDetailsContent');
+  const backupDetailsTitle = document.getElementById('backupDetailsTitle');
+  const closeBackupDetailsModalBtn = document.getElementById('closeBackupDetailsModal');
+  let historyCurrentPage = 1;
+  let historyTotalPages = 1;
+  let historyResizeObserver;
+  let lastCalculatedLimit = 0;
+  let historyDebounceTimer = null;
+  let isHistoryLoading = false;
+
   function switchTab(targetTab) {
-    navTabs.forEach(tab => tab.classList.remove('active'));
+    navItems.forEach(nav => nav.classList.remove('active'));
     tabContents.forEach(content => content.classList.remove('active'));
 
-    const activeNavTab = document.querySelector(`[data-tab="${targetTab}"]`);
+    const activeNavItem = document.querySelector(`[data-tab="${targetTab}"]`);
     const activeTabContent = document.getElementById(`tab-${targetTab}`);
 
-    if (activeNavTab && activeTabContent) {
-      activeNavTab.classList.add('active');
+    if (activeNavItem && activeTabContent) {
+      activeNavItem.classList.add('active');
       activeTabContent.classList.add('active');
 
       localStorage.setItem('activeTab', targetTab);
+
+      if (targetTab === 'history') {
+        loadHistoryTab();
+      }
     }
   }
 
-  navTabs.forEach(tab => {
-    tab.addEventListener('click', (e) => {
+  navItems.forEach(navItem => {
+    navItem.addEventListener('click', (e) => {
       e.preventDefault();
-      const targetTab = tab.getAttribute('data-tab');
+      const targetTab = navItem.getAttribute('data-tab');
       switchTab(targetTab);
     });
   });
@@ -150,13 +209,213 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function updateScheduleLabels() {
-    const allScheduleGroups = scheduleInputsDiv.querySelectorAll('.form-group');
-    allScheduleGroups.forEach((group, index) => {
-      const label = group.querySelector('label');
+    const allScheduleItems = scheduleInputsDiv.querySelectorAll('.schedule-item');
+    allScheduleItems.forEach((item, index) => {
+      const label = item.querySelector('.schedule-label');
       if (label) {
-        label.textContent = `Horário ${index + 1}`;
+        label.textContent = `Horário ${index + 1}:`;
       }
     });
+  }
+
+  function renderSelectedDatabasesTags() {
+    if (selectedDatabases.length === 0) {
+      selectedDatabasesContainer.innerHTML = `
+        <div class="empty-selection">
+          <i data-lucide="database"></i>
+          <span>Nenhum banco selecionado</span>
+          <p>Clique em "Listar Bancos" para selecionar</p>
+        </div>
+      `;
+      selectedDatabasesContainer.classList.remove('has-selection');
+    } else {
+      const tagsHtml = selectedDatabases.map(dbName => `
+        <div class="database-tag">
+          <i data-lucide="database"></i>
+          <span>${dbName}</span>
+          <button type="button" class="tag-remove" data-db="${dbName}" title="Remover ${dbName}">
+            <i data-lucide="x"></i>
+          </button>
+        </div>
+      `).join('');
+
+      selectedDatabasesContainer.innerHTML = `
+        <div class="database-tags">
+          ${tagsHtml}
+        </div>
+      `;
+      selectedDatabasesContainer.classList.add('has-selection');
+
+      selectedDatabasesContainer.querySelectorAll('.tag-remove').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const dbName = e.currentTarget.getAttribute('data-db');
+          removeSelectedDatabase(dbName);
+        });
+      });
+    }
+
+    setTimeout(() => {
+      lucide.createIcons();
+    }, 50);
+  }
+
+  function removeSelectedDatabase(dbName) {
+    selectedDatabases = selectedDatabases.filter(db => db !== dbName);
+    renderSelectedDatabasesTags();
+  }
+
+  function openDatabaseSelectorModal() {
+    databaseSelectorModal.classList.add('show');
+    loadDatabasesInModal();
+    setTimeout(() => {
+      lucide.createIcons();
+    }, 100);
+  }
+
+  function closeDatabaseSelectorModal() {
+    databaseSelectorModal.classList.remove('show');
+  }
+
+  function loadDatabasesInModal() {
+    const server = dbServerInput.value.trim();
+    const user = dbUserInput.value.trim();
+    const pass = dbPassInput.value.trim();
+
+    if (!server || !user) {
+      databaseList.innerHTML = `
+        <div class="loading-databases">
+          <i data-lucide="alert-circle" style="color: var(--error-500);"></i>
+          <p>Preencha servidor e usuário primeiro</p>
+        </div>
+      `;
+      setTimeout(() => lucide.createIcons(), 50);
+      return;
+    }
+
+    databaseList.innerHTML = `
+      <div class="loading-databases">
+        <div class="spinner" style="display: block; margin: 2rem auto;"></div>
+        <p>Carregando bancos de dados...</p>
+      </div>
+    `;
+
+    listDatabasesForModal(server, user, pass);
+  }
+
+  async function listDatabasesForModal(server, user, pass) {
+    try {
+      const response = await fetch(`/api/list-databases?server=${encodeURIComponent(server)}&user=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}`);
+      const data = await response.json();
+
+      if (!response.ok) {
+        if (data.suggestions && data.suggestions.length > 0) {
+          showDetailedErrorToast(data.error, data.details, data.suggestions);
+        } else {
+          throw new Error(data.error || 'Erro desconhecido ao listar bancos.');
+        }
+
+        databaseList.innerHTML = `
+          <div class="loading-databases">
+            <i data-lucide="alert-circle" style="color: var(--error-500);"></i>
+            <p>Erro ao carregar bancos</p>
+          </div>
+        `;
+        return;
+      }
+
+      if (data.databases && data.databases.length > 0) {
+        availableDatabases = data.databases;
+        renderDatabaseList();
+        showToast('Bancos listados com sucesso!', 'success');
+      } else {
+        databaseList.innerHTML = `
+          <div class="loading-databases">
+            <i data-lucide="database" style="color: var(--text-muted);"></i>
+            <p>Nenhum banco de dados encontrado</p>
+          </div>
+        `;
+      }
+    } catch (err) {
+      console.error('Erro ao listar bancos:', err);
+      databaseList.innerHTML = `
+        <div class="loading-databases">
+          <i data-lucide="alert-circle" style="color: var(--error-500);"></i>
+          <p>Falha ao conectar: ${err.message}</p>
+        </div>
+      `;
+    } finally {
+      setTimeout(() => lucide.createIcons(), 50);
+    }
+  }
+
+  function renderDatabaseList() {
+    const listHtml = availableDatabases.map(dbName => {
+      const isSelected = selectedDatabases.includes(dbName);
+      return `
+        <div class="database-list-item ${isSelected ? 'selected' : ''}" data-db="${dbName}">
+          <input type="checkbox" class="database-checkbox" ${isSelected ? 'checked' : ''} data-db="${dbName}">
+          <i data-lucide="database" class="database-icon"></i>
+          <span class="database-name">${dbName}</span>
+        </div>
+      `;
+    }).join('');
+
+    databaseList.innerHTML = listHtml;
+    updateSelectionCount();
+
+    databaseList.querySelectorAll('.database-list-item').forEach(item => {
+      item.addEventListener('click', (e) => {
+        if (e.target.type !== 'checkbox') {
+          const checkbox = item.querySelector('.database-checkbox');
+          checkbox.checked = !checkbox.checked;
+          toggleDatabaseSelection(checkbox);
+        }
+      });
+    });
+
+    databaseList.querySelectorAll('.database-checkbox').forEach(checkbox => {
+      checkbox.addEventListener('change', () => toggleDatabaseSelection(checkbox));
+    });
+
+    setTimeout(() => lucide.createIcons(), 50);
+  }
+
+  function toggleDatabaseSelection(checkbox) {
+    const dbName = checkbox.getAttribute('data-db');
+    const item = checkbox.closest('.database-list-item');
+
+    if (checkbox.checked) {
+      if (!selectedDatabases.includes(dbName)) {
+        selectedDatabases.push(dbName);
+      }
+      item.classList.add('selected');
+    } else {
+      selectedDatabases = selectedDatabases.filter(db => db !== dbName);
+      item.classList.remove('selected');
+    }
+
+    updateSelectionCount();
+  }
+
+  function updateSelectionCount() {
+    const count = selectedDatabases.length;
+    selectionCount.textContent = `${count} banco${count !== 1 ? 's' : ''} selecionado${count !== 1 ? 's' : ''}`;
+  }
+
+  function selectAllDatabases() {
+    selectedDatabases = [...availableDatabases];
+    renderDatabaseList();
+  }
+
+  function clearAllDatabases() {
+    selectedDatabases = [];
+    renderDatabaseList();
+  }
+
+  function confirmDatabaseSelection() {
+    renderSelectedDatabasesTags();
+    closeDatabaseSelectorModal();
+    showToast(`${selectedDatabases.length} banco(s) selecionado(s)`, 'success');
   }
 
   async function loadConfig() {
@@ -170,6 +429,11 @@ document.addEventListener('DOMContentLoaded', () => {
       setTimeout(() => {
         populateForm(config);
         toggleButtonLoading(saveButton, false);
+        setTimeout(() => {
+          if (typeof toggleRetentionFields === 'function') {
+            toggleRetentionFields();
+          }
+        }, 100);
       }, 600);
     } catch (error) {
       console.error('Erro ao carregar configurações:', error);
@@ -231,24 +495,20 @@ document.addEventListener('DOMContentLoaded', () => {
     if (modeClassicInput && modeRetentionInput) {
       if (retentionMode === 'classic') {
         modeClassicInput.checked = true;
+        modeRetentionInput.checked = false;
       } else {
         modeRetentionInput.checked = true;
+        modeClassicInput.checked = false;
       }
+
+      setTimeout(() => {
+        toggleRetentionFields();
+      }, 50);
     }
 
     const selectedDbs = (config.database && config.database.databases) || [];
-    dbListSelect.innerHTML = '';
-    selectedDbs.forEach(dbName => {
-      const opt = document.createElement('option');
-      opt.value = dbName;
-      opt.textContent = dbName;
-      opt.selected = true;
-      dbListSelect.appendChild(opt);
-    });
-
-    if (selectedDbs.length === 0 && config.database && config.database.server && config.database.user) {
-      listDatabases();
-    }
+    selectedDatabases = [...selectedDbs];
+    renderSelectedDatabasesTags();
 
     scheduleInputsDiv.innerHTML = '';
     const schedules = config.backupSchedule || [];
@@ -260,21 +520,23 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function addScheduleInput(value = '') {
-    const scheduleCount = scheduleInputsDiv.querySelectorAll('.form-group').length + 1;
-    const formGroup = document.createElement('div');
-    formGroup.className = 'form-group';
+    const scheduleCount = scheduleInputsDiv.querySelectorAll('.schedule-item').length + 1;
+    const scheduleItem = document.createElement('div');
+    scheduleItem.className = 'schedule-item';
 
     const label = document.createElement('label');
-    label.textContent = `Horário ${scheduleCount}`;
-    const inputId = `schedule-time-${Date.now()}`;
-    label.htmlFor = inputId;
+    label.textContent = `Horário ${scheduleCount}:`;
+    label.className = 'schedule-label';
 
-    const inputContainer = document.createElement('div');
-    inputContainer.className = 'schedule-input-group';
+    const inputWrapper = document.createElement('div');
+    inputWrapper.className = 'input-wrapper';
+
+    const clockIcon = document.createElement('i');
+    clockIcon.setAttribute('data-lucide', 'clock');
+    clockIcon.className = 'input-icon';
 
     const input = document.createElement('input');
     input.type = 'text';
-    input.id = inputId;
     input.className = 'schedule-time';
     input.value = value;
     input.placeholder = 'HH:MM';
@@ -283,32 +545,38 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const removeBtn = document.createElement('button');
     removeBtn.type = 'button';
-    removeBtn.className = 'btn-icon remove';
+    removeBtn.className = 'btn btn-outline btn-sm';
     removeBtn.title = 'Remover horário';
-    removeBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#f56565" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8z"/></svg>`;
+
+    const removeIcon = document.createElement('i');
+    removeIcon.setAttribute('data-lucide', 'trash-2');
+    removeBtn.appendChild(removeIcon);
 
     removeBtn.addEventListener('click', function () {
-      if (scheduleInputsDiv.querySelectorAll('.form-group').length <= 1) {
+      if (scheduleInputsDiv.querySelectorAll('.schedule-item').length <= 1) {
         showToast('É necessário ter pelo menos um horário.', 'error');
         return;
       }
 
-      formGroup.classList.add('removing');
+      scheduleItem.style.opacity = '0';
+      scheduleItem.style.transform = 'translateX(20px)';
 
       setTimeout(() => {
-        formGroup.remove();
+        scheduleItem.remove();
         updateScheduleLabels();
       }, 300);
     });
 
-    formGroup.appendChild(label);
+    inputWrapper.appendChild(clockIcon);
+    inputWrapper.appendChild(input);
 
-    inputContainer.appendChild(input);
-    inputContainer.appendChild(removeBtn);
+    scheduleItem.appendChild(label);
+    scheduleItem.appendChild(inputWrapper);
+    scheduleItem.appendChild(removeBtn);
 
-    formGroup.appendChild(inputContainer);
+    scheduleInputsDiv.appendChild(scheduleItem);
 
-    scheduleInputsDiv.appendChild(formGroup);
+    lucide.createIcons();
 
     if (value === '') {
       setTimeout(() => input.focus(), 100);
@@ -350,52 +618,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     toggleButtonLoading(btnListDbs, true);
-    dbListSelect.innerHTML = '';
 
     try {
-      const response = await fetch(`/api/list-databases?server=${encodeURIComponent(server)}&user=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}`);
-      const data = await response.json();
-      if (!response.ok) {
-        if (data.suggestions && data.suggestions.length > 0) {
-          showDetailedErrorToast(data.error, data.details, data.suggestions);
-        } else {
-          throw new Error(data.error || 'Erro desconhecido ao listar bancos.');
-        }
-        return;
-      }
-      if (data.databases && data.databases.length > 0) {
-        renderDatabaseList(data.databases);
-        showToast('Bancos listados com sucesso!', 'success');
-      } else {
-        showToast('Nenhum banco de dados encontrado.', 'success');
-      }
+      openDatabaseSelectorModal();
     } catch (err) {
-      console.error('Erro ao listar bancos:', err);
+      console.error('Erro ao abrir modal de seleção:', err);
       showToast(`Falha: ${err.message}`, 'error');
     } finally {
       toggleButtonLoading(btnListDbs, false);
     }
   }
 
-  function renderDatabaseList(dbArray) {
-    dbListSelect.innerHTML = '';
-    dbArray.forEach((dbName, index) => {
-      const opt = document.createElement('option');
-      opt.value = dbName;
-      opt.textContent = dbName;
 
-      opt.style.opacity = '0';
-      opt.style.transform = 'translateY(10px)';
-
-      dbListSelect.appendChild(opt);
-
-      setTimeout(() => {
-        opt.style.transition = 'all 0.2s ease';
-        opt.style.opacity = '1';
-        opt.style.transform = 'translateY(0)';
-      }, index * 30);
-    });
-  }
 
   function showDetailedErrorToast(mainError, details, suggestions) {
     const toast = document.createElement('div');
@@ -470,6 +704,32 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   btnListDbs.addEventListener('click', listDatabases);
+
+  if (closeDatabaseSelectorBtn) {
+    closeDatabaseSelectorBtn.addEventListener('click', closeDatabaseSelectorModal);
+  }
+
+  if (cancelDatabaseSelectionBtn) {
+    cancelDatabaseSelectionBtn.addEventListener('click', closeDatabaseSelectorModal);
+  }
+
+  if (confirmDatabaseSelectionBtn) {
+    confirmDatabaseSelectionBtn.addEventListener('click', confirmDatabaseSelection);
+  }
+
+  if (selectAllDbsBtn) {
+    selectAllDbsBtn.addEventListener('click', selectAllDatabases);
+  }
+
+  if (clearAllDbsBtn) {
+    clearAllDbsBtn.addEventListener('click', clearAllDatabases);
+  }
+
+  window.addEventListener('click', (e) => {
+    if (e.target === databaseSelectorModal) {
+      closeDatabaseSelectorModal();
+    }
+  });
 
   async function testDatabaseConnection() {
     const server = dbServerInput.value.trim();
@@ -796,12 +1056,11 @@ document.addEventListener('DOMContentLoaded', () => {
       networkPath: networkPathConfig
     };
 
-    const selectedOptions = Array.from(dbListSelect.selectedOptions);
     const dbConfig = {
       server: dbServerInput.value.trim(),
       user: dbUserInput.value.trim(),
       password: dbPassInput.value.trim(),
-      databases: selectedOptions.map(opt => opt.value),
+      databases: [...selectedDatabases],
     };
 
     const scheduleTimes = Array.from(document.querySelectorAll('.schedule-time'))
@@ -839,8 +1098,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (dbConfig.databases.length === 0) {
       showToast('Selecione ao menos um banco de dados para backup.', 'error');
       toggleButtonLoading(saveButton, false);
-      dbListSelect.classList.add('error');
-      setTimeout(() => dbListSelect.classList.remove('error'), 2000);
+      selectedDatabasesContainer.classList.add('error');
+      setTimeout(() => selectedDatabasesContainer.classList.remove('error'), 2000);
       return;
     }
 
@@ -921,8 +1180,16 @@ document.addEventListener('DOMContentLoaded', () => {
   loadConfig();
 
   function toggleRetentionFields() {
-    const retentionEnabled = document.getElementById('retentionEnabled').checked;
-    const modeClassic = document.getElementById('modeClassic').checked;
+    const retentionEnabledEl = document.getElementById('retentionEnabled');
+    const modeClassicEl = document.getElementById('modeClassic');
+
+    if (!retentionEnabledEl || !modeClassicEl) {
+      console.debug('Elementos de retenção ainda não carregados');
+      return;
+    }
+
+    const retentionEnabled = retentionEnabledEl.checked;
+    const modeClassic = modeClassicEl.checked;
     const localRetentionDays = document.getElementById('localRetentionDays');
     const ftpRetentionDays = document.getElementById('ftpRetentionDays');
     const autoCleanup = document.getElementById('autoCleanup');
@@ -955,10 +1222,23 @@ document.addEventListener('DOMContentLoaded', () => {
         cleanupButtons.style.opacity = '0.5';
         cleanupButtons.style.pointerEvents = 'none';
       }
-    } else {
-      if (localRetentionDays) localRetentionDays.title = '';
-      if (ftpRetentionDays) ftpRetentionDays.title = '';
-      if (autoCleanup) autoCleanup.title = '';
+    } else if (enableFields) {
+      if (localRetentionDays) {
+        localRetentionDays.title = '';
+        localRetentionDays.disabled = false;
+      }
+      if (ftpRetentionDays) {
+        ftpRetentionDays.title = '';
+        ftpRetentionDays.disabled = false;
+      }
+      if (autoCleanup) {
+        autoCleanup.title = '';
+        autoCleanup.disabled = false;
+      }
+      if (cleanupButtons) {
+        cleanupButtons.style.opacity = '1';
+        cleanupButtons.style.pointerEvents = 'auto';
+      }
     }
   }
 
@@ -970,7 +1250,11 @@ document.addEventListener('DOMContentLoaded', () => {
   if (modeClassic) modeClassic.addEventListener('change', toggleRetentionFields);
   if (modeRetention) modeRetention.addEventListener('change', toggleRetentionFields);
 
-  setTimeout(toggleRetentionFields, 100);
+  setTimeout(() => {
+    if (typeof toggleRetentionFields === 'function') {
+      toggleRetentionFields();
+    }
+  }, 200);
 
   function toggleStorageForm(checkbox, form) {
     if (!checkbox || !form) return;
@@ -983,21 +1267,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (ftpEnabledCheckbox) {
     ftpEnabledCheckbox.addEventListener('change', () => toggleStorageForm(ftpEnabledCheckbox, ftpForm));
+    toggleStorageForm(ftpEnabledCheckbox, ftpForm);
   }
   if (networkPathEnabledCheckbox) {
     networkPathEnabledCheckbox.addEventListener('change', () => toggleStorageForm(networkPathEnabledCheckbox, networkPathForm));
+    toggleStorageForm(networkPathEnabledCheckbox, networkPathForm);
   }
 
   if (browsePathBtn) {
     browsePathBtn.addEventListener('click', () => {
       folderBrowserModal.classList.add('show');
       loadAndDisplayPath();
+      setTimeout(() => {
+        lucide.createIcons();
+      }, 100);
     });
   }
 
   const folderBrowserModal = document.getElementById('folderBrowserModal');
   const closeFolderBrowserBtn = document.getElementById('closeFolderBrowser');
   const levelUpBtn = document.getElementById('levelUpBtn');
+  const homeDrivesBtn = document.getElementById('homeDrivesBtn');
   const currentPathInput = document.getElementById('currentPathInput');
   const folderListDiv = document.getElementById('folderList');
   const selectFolderBtn = document.getElementById('selectFolderBtn');
@@ -1013,6 +1303,16 @@ document.addEventListener('DOMContentLoaded', () => {
       folderListDiv.innerHTML = '<div class="spinner" style="display: block; margin: 2rem auto;"></div>';
       currentPathInput.value = path;
       levelUpBtn.disabled = !path || /^[A-Z]:\\?$/.test(path);
+
+      if (homeDrivesBtn) {
+        if (!path) {
+          homeDrivesBtn.disabled = true;
+          homeDrivesBtn.style.opacity = '0.5';
+        } else {
+          homeDrivesBtn.disabled = false;
+          homeDrivesBtn.style.opacity = '1';
+        }
+      }
 
       const url = path ? `/api/browse/list?path=${encodeURIComponent(path)}` : '/api/browse/drives';
       const response = await fetch(url);
@@ -1031,23 +1331,30 @@ document.addEventListener('DOMContentLoaded', () => {
       items.forEach(item => {
         const itemEl = document.createElement('div');
         itemEl.className = 'folder-list-item';
-        itemEl.textContent = item;
+
+        const icon = document.createElement('i');
+        icon.setAttribute('data-lucide', path ? 'folder' : 'hard-drive');
+        icon.className = 'folder-item-icon';
+
+        const label = document.createElement('span');
+        label.textContent = item;
+
+        itemEl.appendChild(icon);
+        itemEl.appendChild(label);
+
         const newPath = path ? (path.endsWith('\\') ? path + item : path + '\\' + item) : item;
         itemEl.dataset.path = newPath;
 
         itemEl.addEventListener('click', () => {
-          const allItems = folderListDiv.querySelectorAll('.folder-list-item');
-          allItems.forEach(el => el.classList.remove('selected'));
-          itemEl.classList.add('selected');
-          currentPathInput.value = itemEl.dataset.path;
-        });
-
-        itemEl.addEventListener('dblclick', () => {
           loadAndDisplayPath(itemEl.dataset.path);
         });
 
         folderListDiv.appendChild(itemEl);
       });
+
+      setTimeout(() => {
+        lucide.createIcons();
+      }, 50);
 
     } catch (error) {
       folderListDiv.innerHTML = `<p style="text-align:center; color: var(--toast-error-bg);">${error.message}</p>`;
@@ -1057,11 +1364,12 @@ document.addEventListener('DOMContentLoaded', () => {
   if (closeFolderBrowserBtn) closeFolderBrowserBtn.addEventListener('click', closeFolderBrowser);
   if (selectFolderBtn) {
     selectFolderBtn.addEventListener('click', () => {
-      const selectedItem = folderListDiv.querySelector('.folder-list-item.selected');
-      const finalPath = selectedItem ? selectedItem.dataset.path : currentPathInput.value;
+      const finalPath = currentPathInput.value;
       if (finalPath) {
         networkPathInput.value = finalPath;
         showToast('Pasta selecionada!', 'success');
+      } else {
+        showToast('Selecione uma pasta válida.', 'error');
       }
       closeFolderBrowser();
     });
@@ -1097,6 +1405,12 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       loadAndDisplayPath(parentPath);
+    });
+  }
+
+  if (homeDrivesBtn) {
+    homeDrivesBtn.addEventListener('click', () => {
+      loadAndDisplayPath('');
     });
   }
 
@@ -1156,5 +1470,421 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+
+  async function apiFetch(endpoint) {
+    try {
+      const response = await fetch(endpoint);
+      if (!response.ok) {
+        if (response.status === 401) {
+          showToast('Sessão expirada. Redirecionando para o login...', 'error');
+          setTimeout(() => window.location.href = '/login.html', 2000);
+        }
+        const data = await response.json();
+        throw new Error(data.error || `Erro na API: ${response.statusText}`);
+      }
+      return response.json();
+    } catch (error) {
+      console.error('Falha na requisição API:', error);
+      showToast(error.message, 'error');
+      throw error;
+    }
+  }
+
+  async function loadHistoryStats() {
+    const data = await apiFetch('/api/history/stats');
+    historyStats.total.textContent = data.total || 0;
+    historyStats.success.textContent = data.success || 0;
+    historyStats.failed.textContent = data.failed || 0;
+    historyStats.avgDuration.textContent = `${(data.avgDuration || 0).toFixed(2)}s`;
+    historyStats.totalSize.textContent = `${(data.totalSize || 0).toFixed(2)} MB`;
+  }
+
+  function calculateRowsPerPage() {
+    try {
+      const tableContainer = document.querySelector('.table-container');
+      if (!tableContainer) return 6;
+
+      const screenHeight = window.innerHeight;
+      const mainContent = document.querySelector('.main-content');
+
+      if (!mainContent) return 6;
+
+      const headerHeight = document.querySelector('.app-header')?.offsetHeight || 80;
+      const pageHeaderHeight = document.querySelector('.page-header')?.offsetHeight || 100;
+      const statsGridHeight = document.querySelector('.stats-grid')?.offsetHeight || 80;
+      const tableHeaderHeight = 50;
+      const paginationHeight = 70;
+      const margins = 120;
+
+      const availableHeight = screenHeight - headerHeight - pageHeaderHeight - statsGridHeight - tableHeaderHeight - paginationHeight - margins;
+
+      const rowHeight = window.innerWidth <= 480 ? 42 : (window.innerWidth <= 768 ? 45 : 48);
+
+      const maxRows = Math.max(Math.floor(availableHeight / rowHeight) - 1, 3);
+
+      let minRows, maxRowsLimit;
+      if (window.innerWidth <= 480) {
+        minRows = 3;
+        maxRowsLimit = 6;
+      } else if (window.innerWidth <= 768) {
+        minRows = 4;
+        maxRowsLimit = 8;
+      } else {
+        minRows = 5;
+        maxRowsLimit = 12;
+      }
+
+      let finalRows = Math.max(Math.min(maxRows, maxRowsLimit), minRows);
+
+      if (availableHeight < 300) {
+        finalRows = Math.min(finalRows, minRows);
+      }
+
+      return finalRows;
+    } catch (error) {
+      console.warn('Erro no cálculo de linhas, usando fallback:', error);
+      if (window.innerWidth <= 480) return 4;
+      if (window.innerWidth <= 768) return 6;
+      return 8;
+    }
+  }
+
+  async function loadHistory(page = 1, forceRecalculate = false) {
+    if (isHistoryLoading) {
+      return;
+    }
+
+    if (historyDebounceTimer) {
+      clearTimeout(historyDebounceTimer);
+    }
+
+    return new Promise((resolve) => {
+      historyDebounceTimer = setTimeout(async () => {
+        try {
+          isHistoryLoading = true;
+
+          if (forceRecalculate || !lastCalculatedLimit) {
+            lastCalculatedLimit = calculateRowsPerPage();
+          }
+
+          const limit = Math.max(lastCalculatedLimit || 8, 3);
+
+          historyCurrentPage = page;
+          const status = statusFilter.value;
+          const url = `/api/history?page=${page}&limit=${limit}${status ? '&status=' + status : ''}`;
+
+          const result = await apiFetch(url);
+
+          historyTableBody.innerHTML = '';
+          if (!result.data || result.data.length === 0) {
+            historyTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Nenhum registro encontrado.</td></tr>';
+          } else {
+            result.data.forEach(item => {
+              const row = document.createElement('tr');
+              const statusClass = item.status === 'success' ? 'status-success' : 'status-failed';
+
+              row.innerHTML = `
+                      <td>${new Date(item.timestamp).toLocaleString('pt-BR')}</td>
+                      <td>${item.databases.join(', ')}</td>
+                      <td><span class="status-badge ${statusClass}">${item.status === 'success' ? 'Sucesso' : 'Falha'}</span></td>
+                      <td>${item.duration.toFixed(2)}s</td>
+                      <td>${item.fileSize} MB</td>
+                      <td>
+                          <button class="btn-view-details" data-backup='${JSON.stringify(item)}'>
+                              <i data-lucide="eye"></i>
+                              Visualizar
+                          </button>
+                      </td>
+                  `;
+              historyTableBody.appendChild(row);
+            });
+          }
+
+          setupDetailsModalButtons();
+          updateHistoryPagination(result.pagination);
+
+          setTimeout(() => {
+            lucide.createIcons();
+          }, 50);
+
+          resolve();
+        } catch (error) {
+          console.error('Erro ao carregar histórico:', error);
+          resolve();
+        } finally {
+          isHistoryLoading = false;
+        }
+      }, 100);
+    });
+  }
+
+  function updateHistoryPagination({ page, totalPages }) {
+    historyTotalPages = totalPages;
+    historyPagination.info.textContent = `Página ${page} de ${totalPages}`;
+    historyPagination.prev.disabled = page <= 1;
+    historyPagination.next.disabled = page >= totalPages;
+  }
+
+  function setupDetailsModalButtons() {
+    historyTableBody.querySelectorAll('.btn-view-details').forEach(button => {
+      button.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        try {
+          const backupData = JSON.parse(e.target.closest('button').dataset.backup);
+          showBackupDetails(backupData);
+        } catch (error) {
+          console.error('Erro ao processar dados do backup:', error);
+          showToast('Erro ao carregar detalhes do backup', 'error');
+        }
+      });
+    });
+  }
+
+  function showBackupDetails(backup) {
+    const isSuccess = backup.status === 'success';
+
+    backupDetailsTitle.innerHTML = `
+          <i data-lucide="${isSuccess ? 'check-circle' : 'alert-circle'}"></i>
+          Detalhes do Backup - ${isSuccess ? 'Sucesso' : 'Falha'}
+      `;
+
+    const detailsHtml = generateBackupDetailsHTML(backup);
+    backupDetailsContent.innerHTML = detailsHtml;
+
+    backupDetailsModal.classList.add('show');
+
+    setTimeout(() => {
+      lucide.createIcons();
+    }, 50);
+  }
+
+  function generateBackupDetailsHTML(backup) {
+    const isSuccess = backup.status === 'success';
+    const timestamp = new Date(backup.timestamp).toLocaleString('pt-BR');
+
+    const headerHtml = `
+          <div class="backup-info-header ${backup.status}">
+              <div class="backup-status-icon ${backup.status}">
+                  <i data-lucide="${isSuccess ? 'check' : 'x'}"></i>
+              </div>
+              <div class="backup-info-text">
+                  <h4>${isSuccess ? 'Backup Realizado com Sucesso' : 'Falha no Backup'}</h4>
+                  <p>Executado em ${timestamp}</p>
+                  <div class="backup-databases">
+                      ${backup.databases.map(db => `
+                          <span class="backup-database-tag">
+                              <i data-lucide="database"></i>
+                              ${db}
+                          </span>
+                      `).join('')}
+                  </div>
+              </div>
+          </div>
+      `;
+
+    const metricsHtml = `
+          <div class="backup-metrics">
+              <div class="metric-item">
+                  <span class="metric-value">${backup.duration.toFixed(2)}s</span>
+                  <span class="metric-label">Duração</span>
+              </div>
+              <div class="metric-item">
+                  <span class="metric-value">${backup.fileSize} MB</span>
+                  <span class="metric-label">Tamanho</span>
+              </div>
+              <div class="metric-item">
+                  <span class="metric-value">${backup.databases.length}</span>
+                  <span class="metric-label">Bancos</span>
+              </div>
+          </div>
+      `;
+
+    const stepsHtml = generateBackupStepsHTML(backup);
+
+    return `
+          ${headerHtml}
+          ${metricsHtml}
+          <div class="backup-steps">
+              ${stepsHtml}
+          </div>
+      `;
+  }
+
+  function generateBackupStepsHTML(backup) {
+    const isSuccess = backup.status === 'success';
+    const details = backup.details || '';
+
+    const steps = [
+      {
+        id: 'database',
+        title: 'Backup dos Bancos de Dados',
+        description: `Geração dos arquivos .bak para ${backup.databases.length} banco(s)`,
+        status: isSuccess ? 'success' : (details.includes('backup') ? 'failed' : 'success'),
+        icon: 'database'
+      },
+      {
+        id: 'compression',
+        title: 'Compactação dos Arquivos',
+        description: 'Criação do arquivo .7z compactado',
+        status: isSuccess ? 'success' : (details.includes('Compactação') ? 'success' : (details.includes('backup') ? 'skipped' : 'failed')),
+        icon: 'archive'
+      },
+      {
+        id: 'ftp',
+        title: 'Upload para Servidor FTP',
+        description: 'Envio do backup para o servidor remoto',
+        status: isSuccess && details.includes('Upload FTP') ? 'success' :
+          (!isSuccess && details.includes('FTP') ? 'failed' : 'skipped'),
+        icon: 'cloud-upload'
+      },
+      {
+        id: 'network',
+        title: 'Cópia para Local de Rede',
+        description: 'Envio para pasta local ou de rede configurada',
+        status: isSuccess && details.includes('local de rede') ? 'success' :
+          (!isSuccess && details.includes('rede') ? 'failed' : 'skipped'),
+        icon: 'folder-sync'
+      },
+      {
+        id: 'cleanup',
+        title: 'Limpeza de Backups Antigos',
+        description: 'Remoção automática de arquivos conforme política de retenção',
+        status: isSuccess && details.includes('limpeza') ? 'success' : 'skipped',
+        icon: 'trash-2'
+      }
+    ];
+
+    return steps.map(step => {
+      let stepClass = step.status;
+      let stepContent = `
+              <div class="step-icon ${step.status}">
+                  <i data-lucide="${getStepIcon(step.status, step.icon)}"></i>
+              </div>
+              <div class="step-content">
+                  <span class="step-title">${step.title}</span><span class="step-description">${step.description}</span>
+          `;
+
+      if (step.status === 'failed' && backup.errorMessage) {
+        stepContent += `
+                  <div class="step-error">
+                      <strong>Erro:</strong> ${backup.errorMessage}
+                  </div>
+              `;
+      }
+
+      stepContent += '</div>';
+
+      return `<div class="backup-step ${stepClass}">${stepContent}</div>`;
+    }).join('');
+  }
+
+  function getStepIcon(status, defaultIcon) {
+    switch (status) {
+      case 'success': return 'check';
+      case 'failed': return 'x';
+      case 'skipped': return 'minus';
+      default: return defaultIcon;
+    }
+  }
+
+  function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  function setupHistoryResizeObserver() {
+    if (historyResizeObserver) {
+      historyResizeObserver.disconnect();
+    }
+
+    let lastWidth = window.innerWidth;
+    let lastHeight = window.innerHeight;
+
+    window.addEventListener('resize', () => {
+      clearTimeout(window.historyResizeTimeout);
+      window.historyResizeTimeout = setTimeout(() => {
+        const currentWidth = window.innerWidth;
+        const currentHeight = window.innerHeight;
+
+        const significantWidthChange = Math.abs(currentWidth - lastWidth) > 50;
+        const significantHeightChange = Math.abs(currentHeight - lastHeight) > 30;
+
+        if (significantWidthChange || significantHeightChange) {
+          const historyTab = document.querySelector('[data-tab="history"]');
+          if (historyTab && historyTab.classList.contains('active')) {
+            lastCalculatedLimit = 0;
+            loadHistory(historyCurrentPage || 1, true);
+
+            lastWidth = currentWidth;
+            lastHeight = currentHeight;
+          }
+        }
+      }, 500);
+    });
+
+    window.addEventListener('orientationchange', () => {
+      setTimeout(() => {
+        const historyTab = document.querySelector('[data-tab="history"]');
+        if (historyTab && historyTab.classList.contains('active')) {
+          lastCalculatedLimit = 0;
+          loadHistory(historyCurrentPage || 1, true);
+
+          lastWidth = window.innerWidth;
+          lastHeight = window.innerHeight;
+        }
+      }, 800);
+    });
+  }
+
+  function loadHistoryTab() {
+    if (isHistoryLoading) {
+      return;
+    }
+
+    loadHistoryStats();
+    setupHistoryResizeObserver();
+
+    setTimeout(() => {
+      lastCalculatedLimit = 0;
+      loadHistory(1, true);
+    }, 500);
+  }
+
+  if (statusFilter) {
+    statusFilter.addEventListener('change', () => {
+      if (!isHistoryLoading) {
+        loadHistory(1, false);
+      }
+    });
+  }
+  if (historyPagination.prev) {
+    historyPagination.prev.addEventListener('click', () => {
+      if (historyCurrentPage > 1 && !isHistoryLoading) {
+        loadHistory(historyCurrentPage - 1, false);
+      }
+    });
+  }
+  if (historyPagination.next) {
+    historyPagination.next.addEventListener('click', () => {
+      if (historyCurrentPage < historyTotalPages && !isHistoryLoading) {
+        loadHistory(historyCurrentPage + 1, false);
+      }
+    });
+  }
+  if (closeBackupDetailsModalBtn) {
+    closeBackupDetailsModalBtn.addEventListener('click', () => backupDetailsModal.classList.remove('show'));
+  }
+  window.addEventListener('click', (e) => {
+    if (e.target === backupDetailsModal) {
+      backupDetailsModal.classList.remove('show');
+    }
+  });
+
+  setTimeout(() => {
+    lucide.createIcons();
+  }, 100);
 
 });

@@ -5,11 +5,26 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
+## [0.2.1] - 11-06-2025
+
+### ✨ Adicionado
+
+- **Painel de Histórico** - Visualização completa do histórico de backups com banco SQLite
+- **Estatísticas de Backups** - Total de backups, sucessos/falhas, duração média e tamanho total
+- **Autenticação Aprimorada** - Middleware de autenticação para rotas protegidas
+- **Cache Control** - Middleware para prevenir cache de respostas da API
+
+### 🔧 Modificado
+
+- **Interface Modernizada** - Tema claro/escuro, fonte Inter, design responsivo e suporte móvel
+- **Interface do Usuário** - Sidebar responsiva, modais aprimorados e navegação mobile
+
 ## [0.1.0] - 10-06-2025
 
 ### ✨ Adicionado
 
 - **Política de Retenção de Backups** - Sistema completo para gerenciar e limpar backups antigos automaticamente
+
   - Dois modos de operação: Clássico (sobrescrita) e Retenção (acumulativo com timestamp)
   - Configuração de dias de retenção separada para local e FTP (1-365 dias)
   - Limpeza automática após cada backup (configurável)
@@ -20,6 +35,7 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
   - Logs detalhados de todas as operações de limpeza
 
 - **Novas APIs REST**
+
   - `POST /api/cleanup-local` - Executa limpeza manual de backups locais
   - `POST /api/cleanup-ftp` - Executa limpeza manual de backups FTP
 
@@ -31,10 +47,12 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 ### 🔧 Modificado
 
 - **Nomenclatura de Backups**
+
   - Modo Retenção usa timestamp completo: `Cliente-2024-01-15-120000.7z`
   - Modo Clássico mantém numeração original: `Cliente-1.7z`, `Cliente-2.7z`
 
 - **Configuração**
+
   - Novo objeto `retention` em config.js com campos: enabled, localDays, ftpDays, autoCleanup, mode
   - Valores padrão: 7 dias local, 30 dias FTP, limpeza automática ativada
 
@@ -71,5 +89,6 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ---
 
+[0.2.1]: https://github.com/onflux-tech/nodebackup-sqlserver/compare/v0.1.0...v0.2.1
 [0.1.0]: https://github.com/onflux-tech/nodebackup-sqlserver/compare/v0.0.5...v0.1.0
-[0.0.5]: https://github.com/onflux-tech/nodebackup-sqlserver/releases/tag/v0.0.5 
+[0.0.5]: https://github.com/onflux-tech/nodebackup-sqlserver/releases/tag/v0.0.5

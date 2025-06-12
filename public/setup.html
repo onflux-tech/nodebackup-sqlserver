@@ -4,53 +4,83 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Configuração Inicial - Node-Backup</title>
+  <title>Configuração Inicial - NodeBackup</title>
   <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 
 <body class="login-page">
-  <div id="toast-container"></div>
+  <div id="toast-container" class="toast-container"></div>
 
-  <div class="theme-toggle" id="themeToggle" title="Alternar tema">
-    <svg class="theme-toggle-icon" id="themeIcon" xmlns="http://www.w3.org/2000/svg" fill="currentColor"
-      viewBox="0 0 16 16">
-      <path class="sun-icon"
-        d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z" />
-      <path class="moon-icon" style="display: none;"
-        d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278z" />
-    </svg>
+  <!-- Theme Toggle -->
+  <button id="themeToggle" class="login-theme-toggle" title="Alternar tema">
+    <i data-lucide="sun" class="theme-icon-light"></i>
+    <i data-lucide="moon" class="theme-icon-dark"></i>
+  </button>
+
+  <div class="login-container">
+    <div class="login-content">
+      <!-- Logo Section -->
+      <div class="login-logo">
+        <div class="logo-icon">
+          <i data-lucide="database"></i>
+        </div>
+        <div class="logo-text">
+          <h1>NodeBackup</h1>
+          <p>Database Backup Manager</p>
+        </div>
+      </div>
+
+      <!-- Setup Form -->
+      <div class="login-card">
+        <div class="login-header">
+          <h2>Configuração Inicial</h2>
+          <p>Crie sua conta de administrador para começar</p>
+        </div>
+
+        <form id="setupForm" class="login-form" autocomplete="off">
+          <div class="form-group">
+            <label for="username">Usuário</label>
+            <div class="input-wrapper">
+              <i data-lucide="user" class="input-icon"></i>
+              <input type="text" id="username" placeholder="Usuário administrador" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="password">Senha</label>
+            <div class="input-wrapper">
+              <i data-lucide="lock" class="input-icon"></i>
+              <input type="password" id="password" placeholder="Mínimo 6 caracteres" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="confirmPassword">Confirmar Senha</label>
+            <div class="input-wrapper">
+              <i data-lucide="key" class="input-icon"></i>
+              <input type="password" id="confirmPassword" placeholder="Repita a senha" required>
+            </div>
+          </div>
+
+          <button type="submit" id="setupButton" class="btn btn-primary btn-full">
+            <i data-lucide="save"></i>
+            <span class="btn-text">Salvar e Continuar</span>
+            <div class="spinner"></div>
+          </button>
+        </form>
+      </div>
+    </div>
   </div>
 
-  <main class="login-main">
-    <img src="logo.png" alt="Node-Backup Logo" class="logo">
-    <form id="setupForm" autocomplete="off">
-      <h2>Criar conta administrador</h2>
-      <p>Por favor, defina suas credenciais.</p>
-      <div class="form-group">
-        <label for="username">Usuário</label>
-        <input type="text" id="username" placeholder="Usuário admin" required>
-      </div>
-      <div class="form-group">
-        <label for="password">Senha</label>
-        <input type="password" id="password" placeholder="Mínimo 6 caracteres" required>
-      </div>
-      <div class="form-group">
-        <label for="confirmPassword">Confirmar Senha</label>
-        <input type="password" id="confirmPassword" placeholder="Repita a senha" required>
-      </div>
-      <div class="form-group">
-        <button type="submit" id="setupButton" class="btn btn-primary btn-full">
-          <span class="btn-text">Salvar e Continuar</span>
-          <div class="spinner" style="display: none;"></div>
-        </button>
-      </div>
-    </form>
-  </main>
   <script src="setup.js"></script>
+  <script>
+    lucide.createIcons();
+  </script>
 </body>
 
 </html>

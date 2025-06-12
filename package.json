@@ -1,6 +1,6 @@
 {
   "name": "node-backup",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Backup automático SQL Server",
   "main": "src/app.js",
   "bin": "src/app.js",
@@ -27,6 +27,7 @@
     "express-session": "^1.18.0",
     "mssql": "^6.3.2",
     "node-schedule": "^2.1.1",
+    "sql.js": "^1.8.0",
     "winston": "^3.3.3",
     "winston-daily-rotate-file": "^4.5.5"
   },
@@ -35,5 +36,9 @@
     "glob": "^8.1.0",
     "pkg": "^5.8.1"
   },
-  "pkg": {}
+  "pkg": {
+    "assets": [
+      "node_modules/sql.js/dist/**/*"
+    ]
+  }
 }

@@ -27,6 +27,11 @@ function startServer() {
 
   const publicPath = path.join(baseDir, 'public');
 
+  app.use('/api', (req, res, next) => {
+    res.set('Cache-Control', 'no-store');
+    next();
+  });
+
   app.use('/api', apiRoutes);
 
   app.get('/', (req, res) => {

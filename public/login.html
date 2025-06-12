@@ -4,82 +4,139 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Login - Node-Backup</title>
+  <title>Login - NodeBackup</title>
   <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 
 <body class="login-page">
-  <div id="toast-container"></div>
+  <div id="toast-container" class="toast-container"></div>
 
-  <div class="theme-toggle" id="themeToggle" title="Alternar tema">
-    <svg class="theme-toggle-icon" id="themeIcon" xmlns="http://www.w3.org/2000/svg" fill="currentColor"
-      viewBox="0 0 16 16">
-      <path class="sun-icon"
-        d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z" />
-      <path class="moon-icon" style="display: none;"
-        d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278z" />
-    </svg>
-  </div>
+  <!-- Theme Toggle -->
+  <button id="themeToggle" class="login-theme-toggle" title="Alternar tema">
+    <i data-lucide="sun" class="theme-icon-light"></i>
+    <i data-lucide="moon" class="theme-icon-dark"></i>
+  </button>
 
-  <main class="login-main">
-    <img src="logo.png" alt="Node-Backup Logo" class="logo">
-    <form id="loginForm" autocomplete="off">
-      <div class="form-group">
-        <label for="username">Usuário</label>
-        <input type="text" id="username" placeholder="Seu usuário" required>
+  <div class="login-container">
+    <div class="login-content">
+      <!-- Logo Section -->
+      <div class="login-logo">
+        <div class="logo-icon">
+          <i data-lucide="database"></i>
+        </div>
+        <div class="logo-text">
+          <h1>NodeBackup</h1>
+          <p>Database Backup Manager</p>
+        </div>
       </div>
-      <div class="form-group">
-        <label for="password">Senha</label>
-        <input type="password" id="password" placeholder="••••••••" required>
-      </div>
-      <div class="form-group">
-        <button type="submit" id="loginButton" class="btn btn-primary btn-full">
-          <span class="btn-text">Entrar</span>
-          <div class="spinner" style="display: none;"></div>
-        </button>
-      </div>
-    </form>
-    <div class="login-footer">
-      <button id="openChangePasswordModal" class="btn-link">Alterar senha</button>
-    </div>
-  </main>
-  <div id="changePasswordModal" class="modal">
-    <div class="modal-content">
-      <header class="modal-header">
-        <h2>Alterar Senha</h2>
-        <button id="closeModal" class="close-button">&times;</button>
-      </header>
-      <form id="changePasswordForm" autocomplete="off">
-        <div class="form-group">
-          <label for="cp-username">Usuário</label>
-          <input type="text" id="cp-username" required>
+
+      <!-- Login Form -->
+      <div class="login-card">
+        <div class="login-header">
+          <h2>Bem-vindo de volta</h2>
+          <p>Entre com suas credenciais para continuar</p>
         </div>
-        <div class="form-group">
-          <label for="cp-oldPassword">Senha Antiga</label>
-          <input type="password" id="cp-oldPassword" required>
-        </div>
-        <div class="form-group">
-          <label for="cp-newPassword">Nova Senha</label>
-          <input type="password" id="cp-newPassword" required>
-        </div>
-        <div class="form-group">
-          <label for="cp-confirmNewPassword">Confirmar Nova Senha</label>
-          <input type="password" id="cp-confirmNewPassword" required>
-        </div>
-        <div class="form-group">
-          <button type="submit" id="changePasswordButton" class="btn btn-primary btn-full">
-            <span class="btn-text">Salvar Nova Senha</span>
-            <div class="spinner" style="display: none;"></div>
+
+        <form id="loginForm" class="login-form" autocomplete="off">
+          <div class="form-group">
+            <label for="username">Usuário</label>
+            <div class="input-wrapper">
+              <i data-lucide="user" class="input-icon"></i>
+              <input type="text" id="username" placeholder="Seu usuário" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="password">Senha</label>
+            <div class="input-wrapper">
+              <i data-lucide="lock" class="input-icon"></i>
+              <input type="password" id="password" placeholder="••••••••" required>
+            </div>
+          </div>
+
+          <button type="submit" id="loginButton" class="btn btn-primary btn-full">
+            <i data-lucide="log-in"></i>
+            <span class="btn-text">Entrar</span>
+            <div class="spinner"></div>
+          </button>
+        </form>
+
+        <div class="login-footer">
+          <button id="openChangePasswordModal" class="link-button">
+            <i data-lucide="key"></i>
+            Alterar senha
           </button>
         </div>
-      </form>
+      </div>
     </div>
   </div>
+
+  <!-- Change Password Modal -->
+  <div id="changePasswordModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <i data-lucide="key"></i>
+          Alterar Senha
+        </h3>
+        <button id="closeModal" class="modal-close">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <form id="changePasswordForm" class="change-password-form" autocomplete="off">
+          <div class="form-group">
+            <label for="cp-username">Usuário</label>
+            <div class="input-wrapper">
+              <i data-lucide="user" class="input-icon"></i>
+              <input type="text" id="cp-username" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="cp-oldPassword">Senha Atual</label>
+            <div class="input-wrapper">
+              <i data-lucide="lock" class="input-icon"></i>
+              <input type="password" id="cp-oldPassword" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="cp-newPassword">Nova Senha</label>
+            <div class="input-wrapper">
+              <i data-lucide="key" class="input-icon"></i>
+              <input type="password" id="cp-newPassword" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="cp-confirmNewPassword">Confirmar Nova Senha</label>
+            <div class="input-wrapper">
+              <i data-lucide="key" class="input-icon"></i>
+              <input type="password" id="cp-confirmNewPassword" required>
+            </div>
+          </div>
+
+          <button type="submit" id="changePasswordButton" class="btn btn-primary btn-full">
+            <i data-lucide="save"></i>
+            <span class="btn-text">Salvar Nova Senha</span>
+            <div class="spinner"></div>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <script src="login.js"></script>
+  <script>
+    lucide.createIcons();
+  </script>
 </body>
 
 </html>

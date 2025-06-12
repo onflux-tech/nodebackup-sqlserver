@@ -38,12 +38,20 @@ const { loadConfig } = require('./config');
 const { startServer } = require('./server');
 const { scheduleBackups } = require('./services/scheduler');
 const windowsService = require('./services/windowsService');
+const { initializeDatabase } = require('./services/history');
 
 async function main() {
   logger.info('Iniciando a aplicação de backup...');
 
   if (windowsService.handleServiceCommands()) {
     return;
+  }
+
+  try {
+    await initializeDatabase();
+  } catch (error) {
+    logger.error('Falha ao inicializar o banco de dados de histórico. A aplicação será encerrada.', error);
+    process.exit(1);
   }
 
   if (!loadConfig()) {

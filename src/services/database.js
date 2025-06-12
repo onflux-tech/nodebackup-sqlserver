@@ -1,4 +1,5 @@
 const { exec } = require('child_process');
+const { promisify } = require('util');
 const path = require('path');
 const fs = require('fs');
 const mssql = require('mssql');
@@ -6,52 +7,65 @@ const logger = require('../utils/logger');
 const { baseDir } = require('../config');
 const { uploadToFtp, cleanupFtpBackups } = require('./ftp');
 const { logFriendlyError } = require('../utils/errorHandler');
+const { addHistoryRecord } = require('./history');
 
+const execAsync = promisify(exec);
 const sevenZipAsset = path.join(baseDir, '7za.exe');
 
 function performSingleBackup(dbName, backupNumber, backupDir, dbConfig) {
-  return new Promise((resolve, reject) => {
-    const { server, user, password } = dbConfig;
-    const backupFileName = `${dbName}-${backupNumber}.bak`;
-    const backupFilePath = path.join(backupDir, backupFileName);
+  const { server, user, password } = dbConfig;
+  const backupFileName = `${dbName}-${backupNumber}.bak`;
+  const backupFilePath = path.join(backupDir, backupFileName);
 
-    const sqlCmd = `sqlcmd -S "${server}" -U "${user}" -P "${password}" -C -Q "BACKUP DATABASE [${dbName}] TO DISK = N'${backupFilePath}' WITH NOINIT, NOUNLOAD, NAME = N'${dbName} full backup', NOSKIP, STATS = 10, NOREWIND"`;
+  const sqlCmd = `sqlcmd -S "${server}" -U "${user}" -P "${password}" -C -Q "BACKUP DATABASE [${dbName}] TO DISK = N'${backupFilePath}' WITH NOINIT, NOUNLOAD, NAME = N'${dbName} full backup', NOSKIP, STATS = 10, NOREWIND"`;
 
-    logger.info(`-> Gerando backup para o banco: ${dbName}`);
-    exec(sqlCmd, (error, stdout, stderr) => {
-      if (error) {
-        logger.error(`Erro ao executar backup do ${dbName}`, { error: error.message, stderr });
-        return reject(error);
-      }
+  logger.info(`-> Gerando backup para o banco: ${dbName}`);
+  return execAsync(sqlCmd)
+    .then(({ stdout, stderr }) => {
       if (stderr && stderr.length > 0) {
         logger.warn(`sqlcmd stderr (${dbName}): ${stderr}`);
       }
       logger.info(`-> Backup de ${dbName} concluído: ${backupFilePath}`);
-      resolve(backupFilePath);
+      return backupFilePath;
+    })
+    .catch(error => {
+      logger.error(`Erro ao executar backup do ${dbName}`, { error: error.message, stderr: error.stderr });
+      throw error;
     });
-  });
 }
 
 async function performConsolidatedBackup(dbList, clientName, backupNumber, dbConfig, storageConfig, retentionConfig) {
-  let finalZipName;
-  const useTimestamp = retentionConfig && retentionConfig.enabled && retentionConfig.mode === 'retention';
-
-  if (useTimestamp) {
-    const now = new Date();
-    const dateStr = now.toISOString().split('T')[0];
-    const timeStr = now.toTimeString().split(' ')[0].replace(/:/g, '');
-    finalZipName = `${clientName}-${dateStr}-${timeStr}.7z`;
-    logger.info(`Modo retenção ativo: usando nomenclatura com timestamp ${finalZipName}`);
-  } else {
-    finalZipName = `${clientName}-${backupNumber}.7z`;
-    logger.info(`Modo clássico ativo: usando numeração por horário ${finalZipName}`);
-  }
+  const startTime = Date.now();
+  let historyRecord = {
+    databases: dbList,
+    status: 'failed',
+    fileSize: 0,
+    duration: 0,
+    errorMessage: null,
+    details: ''
+  };
 
   const backupsDir = path.join(baseDir, 'backups');
-  const finalZipPath = path.join(backupsDir, finalZipName);
-  const backupFilePaths = [];
+  let finalZipPath;
 
   try {
+    const useTimestamp = retentionConfig && retentionConfig.enabled && retentionConfig.mode === 'retention';
+    let finalZipName;
+
+    if (useTimestamp) {
+      const now = new Date();
+      const dateStr = now.toISOString().split('T')[0];
+      const timeStr = now.toTimeString().split(' ')[0].replace(/:/g, '');
+      finalZipName = `${clientName}-${dateStr}-${timeStr}.7z`;
+      logger.info(`Modo retenção ativo: usando nomenclatura com timestamp ${finalZipName}`);
+    } else {
+      finalZipName = `${clientName}-${backupNumber}.7z`;
+      logger.info(`Modo clássico ativo: usando numeração por horário ${finalZipName}`);
+    }
+
+    finalZipPath = path.join(backupsDir, finalZipName);
+    const backupFilePaths = [];
+
     fs.mkdirSync(backupsDir, { recursive: true });
 
     logger.info(`Iniciando rotina de limpeza para o backup...`);
@@ -97,82 +111,94 @@ async function performConsolidatedBackup(dbList, clientName, backupNumber, dbCon
     const filesToCompress = backupFilePaths.map(p => `"${p}"`).join(' ');
     const zipCmd = `"${sevenZipAsset}" a -t7z -mx=9 "${finalZipPath}" ${filesToCompress}`;
 
-    exec(zipCmd, async (error, stdout, stderr) => {
-      if (error) {
-        logger.error(`Erro ao compactar o backup consolidado`, { error: error.message, stderr });
-        return;
-      }
-      if (stderr && stderr.length > 0) {
-        logger.warn(`7za stderr: ${stderr}`);
-      }
-      logger.info(`Backup consolidado compactado com sucesso: ${finalZipPath}`);
+    const { stdout: zipStdout, stderr: zipStderr } = await execAsync(zipCmd);
+    if (zipStderr && zipStderr.length > 0) {
+      logger.warn(`7za stderr: ${zipStderr}`);
+    }
+    logger.info(`Backup consolidado compactado com sucesso: ${finalZipPath}`);
+    historyRecord.details += 'Compactação bem-sucedida. ';
 
-      backupFilePaths.forEach(filePath => {
-        fs.unlink(filePath, (err) => {
-          if (err) logger.error(`Erro ao excluir arquivo .bak: ${filePath}`, err);
-          else logger.info(`Arquivo .bak excluído: ${filePath}`);
-        });
+    backupFilePaths.forEach(filePath => {
+      fs.unlink(filePath, (err) => {
+        if (err) logger.error(`Erro ao excluir arquivo .bak: ${filePath}`, err);
+        else logger.info(`Arquivo .bak excluído: ${filePath}`);
       });
-
-      if (storageConfig && storageConfig.ftp && storageConfig.ftp.enabled && storageConfig.ftp.host) {
-        const shouldOverwrite = !useTimestamp;
-        await uploadToFtp(finalZipPath, storageConfig.ftp, shouldOverwrite);
-      } else {
-        logger.info('Armazenamento FTP não configurado ou desabilitado, upload pulado.');
-      }
-
-      if (storageConfig && storageConfig.networkPath && storageConfig.networkPath.enabled && storageConfig.networkPath.path) {
-        try {
-          const destDir = storageConfig.networkPath.path;
-          const fileName = path.basename(finalZipPath);
-          const destPath = path.join(destDir, fileName);
-
-          logger.info(`Copiando backup para o local de rede: ${destPath}`);
-          if (!fs.existsSync(destDir)) {
-            logger.info(`Diretório de destino não existe, criando: ${destDir}`);
-            fs.mkdirSync(destDir, { recursive: true });
-          }
-
-          fs.copyFileSync(finalZipPath, destPath);
-          logger.info(`Arquivo copiado com sucesso para: ${destPath}`);
-        } catch (copyError) {
-          logger.error(`Falha ao copiar arquivo para o local de rede: ${storageConfig.networkPath.path}`, { error: copyError.message });
-        }
-      } else {
-        logger.info('Armazenamento em Local de Rede não configurado ou desabilitado.');
-      }
-
-      if (retentionConfig && retentionConfig.enabled && retentionConfig.autoCleanup) {
-        logger.info('Iniciando limpeza automática de backups antigos...');
-
-        if (retentionConfig.mode === 'classic') {
-          logger.info('Modo clássico ativo: limpeza automática por sobrescrita já foi realizada no upload');
-        } else {
-          try {
-            if (retentionConfig.localDays > 0) {
-              const localCleanup = await cleanupOldBackups(retentionConfig.localDays, clientName);
-              if (localCleanup.removed > 0) {
-                logger.info(`Limpeza local: ${localCleanup.removed} arquivo(s) removido(s)`);
-              }
-            }
-
-            if (storageConfig && storageConfig.ftp && storageConfig.ftp.enabled && storageConfig.ftp.host && retentionConfig.ftpDays > 0) {
-              const ftpCleanup = await cleanupFtpBackups(storageConfig.ftp, retentionConfig.ftpDays, clientName);
-              if (ftpCleanup.removed > 0) {
-                logger.info(`Limpeza FTP: ${ftpCleanup.removed} arquivo(s) removido(s)`);
-              }
-            }
-
-            logger.info('Limpeza automática concluída');
-          } catch (cleanupError) {
-            logger.error('Erro durante a limpeza automática', cleanupError);
-          }
-        }
-      }
     });
+
+    if (storageConfig && storageConfig.ftp && storageConfig.ftp.enabled && storageConfig.ftp.host) {
+      const shouldOverwrite = !useTimestamp;
+      await uploadToFtp(finalZipPath, storageConfig.ftp, shouldOverwrite);
+      historyRecord.details += 'Upload FTP realizado. ';
+    } else {
+      logger.info('Armazenamento FTP não configurado ou desabilitado, upload pulado.');
+    }
+
+    if (storageConfig && storageConfig.networkPath && storageConfig.networkPath.enabled && storageConfig.networkPath.path) {
+      try {
+        const destDir = storageConfig.networkPath.path;
+        const fileName = path.basename(finalZipPath);
+        const destPath = path.join(destDir, fileName);
+
+        logger.info(`Copiando backup para o local de rede: ${destPath}`);
+        if (!fs.existsSync(destDir)) {
+          logger.info(`Diretório de destino não existe, criando: ${destDir}`);
+          fs.mkdirSync(destDir, { recursive: true });
+        }
+
+        fs.copyFileSync(finalZipPath, destPath);
+        logger.info(`Arquivo copiado com sucesso para: ${destPath}`);
+        historyRecord.details += 'Cópia para local de rede bem-sucedida. ';
+      } catch (copyError) {
+        logger.error(`Falha ao copiar arquivo para o local de rede: ${storageConfig.networkPath.path}`, { error: copyError.message });
+        historyRecord.details += `Falha na cópia para local de rede: ${copyError.message}. `;
+      }
+    } else {
+      logger.info('Armazenamento em Local de Rede não configurado ou desabilitado.');
+    }
+
+    if (retentionConfig && retentionConfig.enabled && retentionConfig.autoCleanup) {
+      logger.info('Iniciando limpeza automática de backups antigos...');
+      historyRecord.details += 'Iniciando limpeza. ';
+
+      if (retentionConfig.mode === 'classic') {
+        logger.info('Modo clássico ativo: limpeza automática por sobrescrita já foi realizada no upload');
+      } else {
+        try {
+          if (retentionConfig.localDays > 0) {
+            const localCleanup = await cleanupOldBackups(retentionConfig.localDays, clientName);
+            if (localCleanup.removed > 0) {
+              logger.info(`Limpeza local: ${localCleanup.removed} arquivo(s) removido(s)`);
+            }
+          }
+
+          if (storageConfig && storageConfig.ftp && storageConfig.ftp.enabled && storageConfig.ftp.host && retentionConfig.ftpDays > 0) {
+            const ftpCleanup = await cleanupFtpBackups(storageConfig.ftp, retentionConfig.ftpDays, clientName);
+            if (ftpCleanup.removed > 0) {
+              logger.info(`Limpeza FTP: ${ftpCleanup.removed} arquivo(s) removido(s)`);
+            }
+          }
+
+          logger.info('Limpeza automática concluída');
+        } catch (cleanupError) {
+          logger.error('Erro durante a limpeza automática', cleanupError);
+        }
+      }
+    }
+
+    const stats = fs.statSync(finalZipPath);
+    historyRecord.status = 'success';
+    historyRecord.fileSize = (stats.size / (1024 * 1024)).toFixed(2);
+    historyRecord.details = 'Backup concluído com sucesso. ' + historyRecord.details;
 
   } catch (error) {
     logger.error('Falha no processo de backup consolidado. A operação foi abortada.', { stack: error.stack });
+    historyRecord.status = 'failed';
+    historyRecord.errorMessage = error.message;
+
+  } finally {
+    historyRecord.duration = (Date.now() - startTime) / 1000;
+    addHistoryRecord(historyRecord);
+    logger.info(`Registro de histórico adicionado: status ${historyRecord.status}`);
   }
 }
 

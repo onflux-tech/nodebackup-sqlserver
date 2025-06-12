@@ -1,11 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
   const themeToggle = document.getElementById('themeToggle');
-  const sunIcon = document.querySelector('.sun-icon');
-  const moonIcon = document.querySelector('.moon-icon');
 
   const savedTheme = localStorage.getItem('theme') || 'light';
   document.documentElement.setAttribute('data-theme', savedTheme);
-  updateThemeUI(savedTheme);
 
   themeToggle.addEventListener('click', () => {
     const currentTheme = document.documentElement.getAttribute('data-theme');
@@ -13,23 +10,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.documentElement.setAttribute('data-theme', newTheme);
     localStorage.setItem('theme', newTheme);
-    updateThemeUI(newTheme);
 
-    themeToggle.style.transform = 'scale(0.95)';
     setTimeout(() => {
-      themeToggle.style.transform = '';
-    }, 150);
+      lucide.createIcons();
+    }, 50);
   });
-
-  function updateThemeUI(theme) {
-    if (theme === 'dark') {
-      sunIcon.style.display = 'none';
-      moonIcon.style.display = 'block';
-    } else {
-      sunIcon.style.display = 'block';
-      moonIcon.style.display = 'none';
-    }
-  }
 
   const setupForm = document.getElementById('setupForm');
   const setupButton = document.getElementById('setupButton');

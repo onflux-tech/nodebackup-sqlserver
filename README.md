@@ -20,6 +20,9 @@ Uma solução segura e leve para automatizar backups de bancos de dados SQL Serv
 - **Compressão 7-Zip:** Comprime os backups em formato `.7z` com alta taxa de compressão.
 - **Upload via FTP:** Envia os backups compactados para um servidor FTP.
 - **Agendamento Flexível:** Permite configurar múltiplos horários para backups automáticos.
+- **Política de Retenção:** Sistema automático para limpeza de backups antigos com modos "Clássico" e "Retenção".
+- **Painel de Histórico:** Visualização completa do histórico de backups com estatísticas e logs detalhados.
+- **Interface Moderna:** Design responsivo com tema claro/escuro e suporte móvel.
 - **Serviço do Windows:** Roda de forma confiável em segundo plano.
 
 ## 📋 Pré-requisitos
@@ -103,27 +106,38 @@ Contribuições são sempre bem-vindas! Se você tem ideias para melhorar a apli
 Abaixo estão as funcionalidades planejadas para o futuro. Contribuições são muito bem-vindas!
 
 ### ✅ **Fase 1.1: Política de Retenção (v0.1.0)**
+
 - **Status:** Concluído
 - **Funcionalidades:** Sistema completo para gerenciar e limpar backups antigos automaticamente, com modos "Clássico" e "Retenção", limpeza manual e automática, e interface web dedicada.
 
-### 🎯 **Fase 1.2: Painel de Histórico (Próximo)**
-- [ ] Criar na interface uma área para visualizar o histórico de backups, status (sucesso/falha) e logs.
-- [ ] Usar um banco de dados local (SQLite) para persistir o histórico.
-- [ ] Adicionar filtros e estatísticas.
+### ✅ **Fase 1.2: Painel de Histórico (v0.2.1)**
+
+- **Status:** Concluído
+- **Funcionalidades:** Painel de histórico completo com banco SQLite, estatísticas de backups, filtros por status, interface modernizada com tema claro/escuro, e melhorias de UX/UI.
+
+### 🎯 **Fase 1.3: Logs em Tempo Real (Próximo)**
+
+- [ ] Stream de logs em tempo real via WebSocket
+- [ ] Interface "Logs ao Vivo" no dashboard
+- [ ] Filtros por nível (info, warn, error)
 
 ### Fase 2: Notificações
+
 - [ ] **Alertas por E-mail:** Enviar notificações sobre o status de cada rotina de backup.
 - [ ] **Integração com Mensageiros:** Adicionar suporte para alertas via Telegram ou WhatsApp.
 
 ### Fase 3: Expansão das Fontes de Backup
+
 - [ ] **Backup de Arquivos e Pastas:** Permitir a seleção de diretórios para incluir no backup.
 - [ ] **Suporte a Novos Bancos:** Adicionar compatibilidade com MySQL e PostgreSQL.
 
 ### Fase 4: Expansão dos Destinos de Backup
+
 - [ ] **Integração com Storage S3:** Adicionar suporte para upload para serviços S3.
 - [ ] **Integração com Google Drive:** Permitir o envio dos backups para o Google Drive.
 
 ### Fase 5: Funcionalidades Avançadas
+
 - [ ] **Interface de Restauração:** Criar uma funcionalidade segura para restaurar um banco de dados a partir de um backup.
 
 ## 🔧 Solução de Problemas
@@ -133,6 +147,7 @@ Abaixo estão as funcionalidades planejadas para o futuro. Contribuições são 
 Se você está tendo problemas para conectar ao SQL Server em ambientes Windows Server, consulte o guia completo: [TROUBLESHOOTING-CONNECTION.md](docs/TROUBLESHOOTING-CONNECTION.md)
 
 **Problemas comuns:**
+
 - Erro "socket hang up" em Windows Server 2012/2016
 - Falha de autenticação
 - SQL Server não encontrado

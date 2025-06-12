@@ -88,16 +88,17 @@ Este conjunto de regras fornece diretrizes completas para desenvolvimento da apl
 
 ## 🚀 Estado Atual vs Próximos Passos
 
-### ✅ Implementado (v0.1.0)
-- Todas as funcionalidades da v0.0.5
-- **Política de Retenção**: Limpeza automática de backups antigos (local e FTP)
-- **Modos de Retenção**: Clássico (sobrescrita) e Retenção (timestamp)
-- **Interface Web**: Nova aba para configurar a política de retenção
-- **Limpeza Manual**: Botões para execução imediata via API
+### ✅ Implementado (v0.2.1)
+- Todas as funcionalidades da v0.1.0
+- **Painel de Histórico**: Visualização completa do histórico de backups com SQLite
+- **Estatísticas**: Total de backups, sucessos/falhas, duração média e tamanho total
+- **Interface Modernizada**: Tema claro/escuro, fonte Inter, sidebar responsiva
+- **Suporte Móvel**: Interface completamente responsiva com navegação mobile
+- **Autenticação Aprimorada**: Middleware de autenticação e cache control
 
-### 🎯 Próxima Prioridade (v0.2.0 - Fase 1.2)
-- **Painel de Histórico**: Visualização do histórico de backups com SQLite
-- **Interface**: Nova página para o histórico com filtros e estatísticas
+### 🎯 Próxima Prioridade (v0.3.0 - Fase 1.3)
+- **Logs em Tempo Real**: Stream de logs via WebSocket para monitoramento ao vivo
+- **Interface de Logs**: Painel "Logs ao Vivo" com filtros e controles
 
 ### 🔮 Roadmap v0.x.x
 - **v0.2.0**: Painel de Histórico (SQLite + Interface)

@@ -4,298 +4,632 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Configuração de Backup</title>
+  <title>NodeBackup - Configuração de Backup SQL Server</title>
   <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 
 <body>
-  <div id="toast-container"></div>
+  <!-- Toast Container -->
+  <div id="toast-container" class="toast-container"></div>
 
-  <div class="container">
-    <div class="header">
-      <h2>Configuração de Backup</h2>
+  <!-- Mobile Menu Overlay -->
+  <div id="mobile-overlay" class="mobile-overlay"></div>
 
-      <!-- Botões de Ação -->
+  <!-- Main App Container -->
+  <div class="app-container">
+
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-left">
+        <button id="mobile-menu-toggle" class="mobile-menu-btn" aria-label="Abrir menu">
+          <i data-lucide="menu"></i>
+        </button>
+        <div class="app-logo">
+          <div class="logo-icon">
+            <i data-lucide="database"></i>
+          </div>
+          <div class="logo-text">
+            <h1>NodeBackup</h1>
+            <span>Database Backup Manager</span>
+          </div>
+        </div>
+      </div>
+
       <div class="header-actions">
-        <button type="button" id="themeToggle" class="header-btn theme-toggle" title="Alternar tema">
-          <svg class="theme-toggle-icon" id="themeIcon" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-            fill="currentColor" viewBox="0 0 16 16">
-            <path class="sun-icon"
-              d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z" />
-            <path class="moon-icon" style="display: none;"
-              d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278z" />
-          </svg>
+        <button id="themeToggle" class="action-btn" title="Alternar tema">
+          <i data-lucide="sun" class="theme-icon-light"></i>
+          <i data-lucide="moon" class="theme-icon-dark"></i>
         </button>
 
-        <button type="submit" id="saveButton" class="header-btn" title="Salvar Configurações" form="configForm">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
-            <path
-              d="M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H9.5a1 1 0 0 0-1 1v7.293l2.646-2.647a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L7.5 8.293V2a2 2 0 0 1 2-2H14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h2.5a.5.5 0 0 1 0 1H2z" />
-          </svg>
+        <button type="submit" id="saveButton" class="action-btn primary" title="Salvar Configurações" form="configForm">
+          <i data-lucide="save"></i>
+          <span class="action-text">Salvar</span>
           <div class="spinner"></div>
         </button>
 
-        <button type="button" id="logoutButton" class="header-btn" title="Sair">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
-            <path fill-rule="evenodd"
-              d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0v2z" />
-            <path fill-rule="evenodd"
-              d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z" />
-          </svg>
+        <button type="button" id="logoutButton" class="action-btn danger" title="Sair">
+          <i data-lucide="log-out"></i>
         </button>
       </div>
-    </div>
+    </header>
 
-    <div class="dashboard-layout">
-      <!-- Sidebar -->
-      <nav class="sidebar-nav">
-        <div class="nav-tabs">
-          <button class="nav-tab active" data-tab="database" type="button">
-            <div class="nav-icon">📊</div>
-            <div class="nav-text">
-              <span class="nav-title">Banco de Dados</span>
-              <span class="nav-subtitle">SQL Server</span>
-            </div>
-          </button>
+    <!-- Main Layout -->
+    <div class="app-layout">
 
-          <button class="nav-tab" data-tab="storage" type="button">
-            <div class="nav-icon">💾</div>
-            <div class="nav-text">
-              <span class="nav-title">Armazenamento</span>
-              <span class="nav-subtitle">Destinos do backup</span>
-            </div>
-          </button>
+      <!-- Sidebar Navigation -->
+      <nav id="sidebar" class="sidebar">
+        <div class="sidebar-content">
+          <div class="nav-section">
+            <h3 class="nav-section-title">Configuração</h3>
+            <div class="nav-items">
+              <button class="nav-item active" data-tab="database">
+                <div class="nav-item-icon">
+                  <i data-lucide="database"></i>
+                </div>
+                <div class="nav-item-content">
+                  <span class="nav-item-title">Banco de Dados</span>
+                  <span class="nav-item-subtitle">SQL Server</span>
+                </div>
+              </button>
 
-          <button class="nav-tab" data-tab="schedule" type="button">
-            <div class="nav-icon">⏰</div>
-            <div class="nav-text">
-              <span class="nav-title">Horários</span>
-              <span class="nav-subtitle">Agendamento</span>
-            </div>
-          </button>
+              <button class="nav-item" data-tab="storage">
+                <div class="nav-item-icon">
+                  <i data-lucide="hard-drive"></i>
+                </div>
+                <div class="nav-item-content">
+                  <span class="nav-item-title">Armazenamento</span>
+                  <span class="nav-item-subtitle">FTP & Local</span>
+                </div>
+              </button>
 
-          <button class="nav-tab" data-tab="retention" type="button">
-            <div class="nav-icon">🗂️</div>
-            <div class="nav-text">
-              <span class="nav-title">Retenção</span>
-              <span class="nav-subtitle">Limpeza automática</span>
+              <button class="nav-item" data-tab="schedule">
+                <div class="nav-item-icon">
+                  <i data-lucide="clock"></i>
+                </div>
+                <div class="nav-item-content">
+                  <span class="nav-item-title">Agendamento</span>
+                  <span class="nav-item-subtitle">Horários</span>
+                </div>
+              </button>
+
+              <button class="nav-item" data-tab="retention">
+                <div class="nav-item-icon">
+                  <i data-lucide="trash-2"></i>
+                </div>
+                <div class="nav-item-content">
+                  <span class="nav-item-title">Retenção</span>
+                  <span class="nav-item-subtitle">Limpeza</span>
+                </div>
+              </button>
+
+              <button class="nav-item" data-tab="history">
+                <div class="nav-item-icon">
+                  <i data-lucide="activity"></i>
+                </div>
+                <div class="nav-item-content">
+                  <span class="nav-item-title">Histórico</span>
+                  <span class="nav-item-subtitle">Logs</span>
+                </div>
+              </button>
             </div>
-          </button>
+          </div>
         </div>
       </nav>
 
+      <!-- Main Content -->
       <main class="main-content">
-        <form id="configForm" autocomplete="off">
-          <!-- Tab: Banco de Dados -->
+        <form id="configForm" autocomplete="off" class="config-form">
+
+          <!-- Database Tab -->
           <div class="tab-content active" id="tab-database">
-            <div class="tab-header">
-              <h3>📊 Configuração do Banco de Dados</h3>
-              <p>Configure a conexão com o SQL Server e selecione os bancos para backup.</p>
-            </div>
-
-            <div class="form-section">
-              <div class="form-group">
-                <label for="dbServer">Servidor SQL</label>
-                <input type="text" id="dbServer" placeholder="localhost\SQLEXPRESS">
-                <small>Ex: localhost ou NOME_PC\SQLEXPRESS</small>
-              </div>
-
-              <div class="form-row two-cols">
-                <div class="form-group">
-                  <label for="dbUser">Usuário</label>
-                  <input type="text" id="dbUser" placeholder="sa">
+            <div class="page-header">
+              <div class="page-header-content">
+                <div class="page-icon">
+                  <i data-lucide="database"></i>
                 </div>
-                <div class="form-group">
-                  <label for="dbPass">Senha</label>
-                  <input type="password" id="dbPass" placeholder="••••••••">
+                <div class="page-info">
+                  <h2 class="page-title">Configuração do Banco de Dados</h2>
+                  <p class="page-description">Configure a conexão com o SQL Server e selecione os bancos para backup</p>
                 </div>
               </div>
-
-              <div class="form-group">
-                <button type="button" id="btnListDatabases" class="btn btn-primary btn-full">
-                  <span class="btn-text">Listar Bancos</span>
-                  <div class="spinner"></div>
-                </button>
-              </div>
-
-              <div class="form-group">
-                <label for="dbList">Selecionar Bancos</label>
-                <select id="dbList" multiple size="6"></select>
-                <small>Segure CTRL (ou CMD) para selecionar múltiplos.</small>
-              </div>
-            </div>
-          </div>
-
-          <!-- Tab: Armazenamento -->
-          <div class="tab-content" id="tab-storage">
-            <div class="tab-header">
-              <h3>💾 Armazenamento</h3>
-              <p>Configure um ou mais locais para enviar os backups após a criação.</p>
             </div>
 
-            <div class="form-section storage-options">
-              <!-- Opção 1: Servidor FTP -->
-              <div class="storage-option">
-                <div class="checkbox-group">
-                  <input type="checkbox" id="ftpEnabled">
-                  <label for="ftpEnabled"><strong>Servidor FTP</strong></label>
+            <div class="content-grid">
+              <div class="card">
+                <div class="card-header">
+                  <h3 class="card-title">
+                    <i data-lucide="server"></i>
+                    Conexão SQL Server
+                  </h3>
                 </div>
-                <div id="ftpForm" class="storage-form">
-                  <div class="form-row two-cols">
-                    <div class="form-group">
-                      <label for="ftpHost">Host</label>
-                      <input type="text" id="ftpHost" placeholder="ftp.meuservidor.com">
+                <div class="card-content">
+                  <div class="form-grid">
+                    <div class="form-group col-span-2">
+                      <label for="dbServer">Servidor SQL</label>
+                      <div class="input-wrapper">
+                        <i data-lucide="server" class="input-icon"></i>
+                        <input type="text" id="dbServer" placeholder="localhost\SQLEXPRESS">
+                      </div>
+                      <p class="form-help">Ex: localhost ou NOME_PC\SQLEXPRESS</p>
                     </div>
+
                     <div class="form-group">
-                      <label for="ftpPort">Porta</label>
-                      <input type="number" id="ftpPort" placeholder="21">
+                      <label for="dbUser">Usuário</label>
+                      <div class="input-wrapper">
+                        <i data-lucide="user" class="input-icon"></i>
+                        <input type="text" id="dbUser" placeholder="sa">
+                      </div>
+                    </div>
+
+                    <div class="form-group">
+                      <label for="dbPass">Senha</label>
+                      <div class="input-wrapper">
+                        <i data-lucide="lock" class="input-icon"></i>
+                        <input type="password" id="dbPass" placeholder="••••••••">
+                      </div>
                     </div>
                   </div>
-                  <div class="form-row two-cols">
-                    <div class="form-group">
-                      <label for="ftpUser">Usuário</label>
-                      <input type="text" id="ftpUser" placeholder="ftp_user">
-                    </div>
-                    <div class="form-group">
-                      <label for="ftpPass">Senha</label>
-                      <input type="password" id="ftpPass" placeholder="••••••••">
-                    </div>
-                  </div>
-                  <div class="form-group">
-                    <label for="ftpRemoteDir">Diretório Remoto</label>
-                    <input type="text" id="ftpRemoteDir" placeholder="/backups_sql/">
-                  </div>
-                  <div class="form-group">
-                    <button type="button" id="btnTestFtp" class="btn btn-primary btn-full">
-                      <span class="btn-text">Testar Conexão FTP</span>
+
+                  <div class="button-group">
+                    <button type="button" id="btnListDatabases" class="btn btn-primary">
+                      <i data-lucide="refresh-cw"></i>
+                      <span class="btn-text">Listar Bancos</span>
                       <div class="spinner"></div>
                     </button>
                   </div>
                 </div>
               </div>
 
-              <!-- Opção 2: Local de Rede -->
-              <div class="storage-option">
-                <div class="checkbox-group">
-                  <input type="checkbox" id="networkPathEnabled">
-                  <label for="networkPathEnabled"><strong>Local de Rede / Pasta Adicional</strong></label>
+              <div class="card">
+                <div class="card-header">
+                  <h3 class="card-title">
+                    <i data-lucide="check-square"></i>
+                    Bancos Selecionados
+                  </h3>
                 </div>
+                <div class="card-content">
+                  <div class="form-group">
+                    <div id="selectedDatabasesTags" class="selected-databases-tags">
+                      <div class="empty-selection">
+                        <i data-lucide="database"></i>
+                        <span>Nenhum banco selecionado</span>
+                        <p>Clique em "Listar Bancos" para selecionar</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Storage Tab -->
+          <div class="tab-content" id="tab-storage">
+            <div class="page-header">
+              <div class="page-header-content">
+                <div class="page-icon">
+                  <i data-lucide="hard-drive"></i>
+                </div>
+                <div class="page-info">
+                  <h2 class="page-title">Armazenamento</h2>
+                  <p class="page-description">Configure destinos para salvar os backups</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="content-grid">
+              <!-- FTP Storage -->
+              <div class="storage-card">
+                <div class="card-header">
+                  <div class="storage-toggle">
+                    <input type="checkbox" id="ftpEnabled" class="toggle-switch">
+                    <label for="ftpEnabled" class="toggle-label">
+                      <span class="toggle-slider"></span>
+                    </label>
+                  </div>
+                  <div class="storage-info">
+                    <h3 class="card-title">
+                      <i data-lucide="cloud"></i>
+                      Servidor FTP
+                    </h3>
+                    <p class="card-description">Upload automático para servidor FTP</p>
+                  </div>
+                </div>
+
+                <div id="ftpForm" class="storage-form">
+                  <div class="form-grid">
+                    <div class="form-group">
+                      <label for="ftpHost">Host</label>
+                      <div class="input-wrapper">
+                        <i data-lucide="globe" class="input-icon"></i>
+                        <input type="text" id="ftpHost" placeholder="ftp.exemplo.com">
+                      </div>
+                    </div>
+
+                    <div class="form-group">
+                      <label for="ftpPort">Porta</label>
+                      <div class="input-wrapper">
+                        <i data-lucide="hash" class="input-icon"></i>
+                        <input type="number" id="ftpPort" placeholder="21" value="21">
+                      </div>
+                    </div>
+
+                    <div class="form-group">
+                      <label for="ftpUser">Usuário</label>
+                      <div class="input-wrapper">
+                        <i data-lucide="user" class="input-icon"></i>
+                        <input type="text" id="ftpUser" placeholder="usuario_ftp">
+                      </div>
+                    </div>
+
+                    <div class="form-group">
+                      <label for="ftpPass">Senha</label>
+                      <div class="input-wrapper">
+                        <i data-lucide="lock" class="input-icon"></i>
+                        <input type="password" id="ftpPass" placeholder="••••••••">
+                      </div>
+                    </div>
+
+                    <div class="form-group col-span-2">
+                      <label for="ftpRemoteDir">Diretório</label>
+                      <div class="input-wrapper">
+                        <i data-lucide="folder" class="input-icon"></i>
+                        <input type="text" id="ftpRemoteDir" placeholder="/backups/">
+                      </div>
+                    </div>
+                  </div>
+
+                  <button type="button" id="btnTestFtp" class="btn btn-outline">
+                    <i data-lucide="wifi"></i>
+                    <span class="btn-text">Testar Conexão</span>
+                    <div class="spinner"></div>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Network Path Storage -->
+              <div class="storage-card">
+                <div class="card-header">
+                  <div class="storage-toggle">
+                    <input type="checkbox" id="networkPathEnabled" class="toggle-switch">
+                    <label for="networkPathEnabled" class="toggle-label">
+                      <span class="toggle-slider"></span>
+                    </label>
+                  </div>
+                  <div class="storage-info">
+                    <h3 class="card-title">
+                      <i data-lucide="folder-open"></i>
+                      Local/Rede
+                    </h3>
+                    <p class="card-description">Cópia para pasta local ou de rede</p>
+                  </div>
+                </div>
+
                 <div id="networkPathForm" class="storage-form">
                   <div class="form-group">
-                    <label for="networkPath">Caminho da Pasta</label>
+                    <label for="networkPath">Caminho</label>
                     <div class="input-group">
-                      <input type="text" id="networkPath" placeholder="\\servidor\share\backups ou D:\copia_backups">
-                      <button type="button" id="browsePathBtn" class="btn btn-secondary">Procurar...</button>
+                      <div class="input-wrapper">
+                        <i data-lucide="folder" class="input-icon"></i>
+                        <input type="text" id="networkPath" placeholder="\\servidor\share\backups">
+                      </div>
+                      <button type="button" id="browsePathBtn" class="btn btn-outline">
+                        <i data-lucide="search"></i>
+                        Procurar
+                      </button>
                     </div>
-                    <small>Especifique um caminho local ou de rede (UNC) para copiar o backup.</small>
+                    <p class="form-help">Caminho local (D:\backups) ou UNC (\\servidor\share)</p>
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- Tab: Horários de Backup -->
+          <!-- Schedule Tab -->
           <div class="tab-content" id="tab-schedule">
-            <div class="tab-header">
-              <h3>⏰ Horários de Backup</h3>
-              <p>Configure quando os backups devem ser executados automaticamente.</p>
+            <div class="page-header">
+              <div class="page-header-content">
+                <div class="page-icon">
+                  <i data-lucide="clock"></i>
+                </div>
+                <div class="page-info">
+                  <h2 class="page-title">Agendamento</h2>
+                  <p class="page-description">Configure quando os backups devem ser executados</p>
+                </div>
+              </div>
             </div>
 
-            <div class="form-section">
-              <div class="form-group">
-                <label for="clientName">Nome do Cliente</label>
-                <input type="text" id="clientName" placeholder="Nome do Cliente para o Backup">
-                <small>Este nome será usado nos arquivos de backup.</small>
+            <div class="content-grid single-column">
+              <div class="card">
+                <div class="card-header">
+                  <h3 class="card-title">
+                    <i data-lucide="tag"></i>
+                    Identificação
+                  </h3>
+                </div>
+                <div class="card-content">
+                  <div class="form-group">
+                    <label for="clientName">Nome do Cliente</label>
+                    <div class="input-wrapper">
+                      <i data-lucide="building" class="input-icon"></i>
+                      <input type="text" id="clientName" placeholder="Nome do Cliente">
+                    </div>
+                    <p class="form-help">Este nome será usado nos arquivos de backup</p>
+                  </div>
+                </div>
               </div>
-              <div class="form-group">
-                <label>Horários de Execução</label>
-                <div id="scheduleInputs"></div>
-                <button type="button" id="addSchedule" class="btn btn-primary" aria-label="Adicionar novo horário">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                    viewBox="0 0 16 16">
-                    <path
-                      d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z" />
-                  </svg>
-                  Adicionar Horário
-                </button>
-                <small>Defina um ou mais horários no formato HH:MM para os backups.</small>
+
+              <div class="card">
+                <div class="card-header">
+                  <h3 class="card-title">
+                    <i data-lucide="alarm-clock"></i>
+                    Horários de Execução
+                  </h3>
+                  <button type="button" id="addSchedule" class="btn btn-outline btn-sm">
+                    <i data-lucide="plus"></i>
+                    Adicionar
+                  </button>
+                </div>
+                <div class="card-content">
+                  <div id="scheduleInputs" class="schedule-list"></div>
+                  <p class="form-help">Defina um ou mais horários no formato HH:MM para execução automática</p>
+                </div>
               </div>
             </div>
           </div>
 
-          <!-- Tab: Política de Retenção -->
+          <!-- Retention Tab -->
           <div class="tab-content" id="tab-retention">
-            <div class="tab-header">
-              <h3>🗂️ Política de Retenção</h3>
-              <p>Configure a limpeza automática de backups antigos para economizar espaço.</p>
+            <div class="page-header">
+              <div class="page-header-content">
+                <div class="page-icon">
+                  <i data-lucide="trash-2"></i>
+                </div>
+                <div class="page-info">
+                  <h2 class="page-title">Política de Retenção</h2>
+                  <p class="page-description">Configure a limpeza automática de backups antigos</p>
+                </div>
+              </div>
             </div>
 
-            <div class="form-section">
-              <div class="form-group">
-                <div class="checkbox-group">
-                  <input type="checkbox" id="retentionEnabled" checked>
-                  <label for="retentionEnabled">Ativar limpeza automática de backups antigos</label>
+            <div class="content-grid">
+              <div class="card">
+                <div class="card-header">
+                  <h3 class="card-title">
+                    <i data-lucide="settings"></i>
+                    Configurações Gerais
+                  </h3>
                 </div>
-                <small>Habilita a remoção automática de arquivos de backup mais antigos.</small>
-              </div>
-
-              <div class="form-group">
-                <label>Modo de Operação</label>
-                <div class="radio-group">
-                  <div class="radio-option">
-                    <input type="radio" id="modeClassic" name="retentionMode" value="classic">
-                    <label for="modeClassic">
-                      <strong>Modo Clássico</strong><br>
-                      <small>Cada horário mantém apenas 1 backup (Cliente-1.7z, Cliente-2.7z, etc.)</small>
-                    </label>
+                <div class="card-content">
+                  <div class="form-group">
+                    <div class="toggle-group">
+                      <input type="checkbox" id="retentionEnabled" class="toggle-switch" checked>
+                      <label for="retentionEnabled" class="toggle-label">
+                        <span class="toggle-slider"></span>
+                        <span class="toggle-text">Ativar limpeza automática</span>
+                      </label>
+                    </div>
                   </div>
-                  <div class="radio-option">
-                    <input type="radio" id="modeRetention" name="retentionMode" value="retention" checked>
-                    <label for="modeRetention">
-                      <strong>Modo Retenção</strong><br>
-                      <small>Acumula backups com timestamp (Cliente-2024-01-15-120000.7z) e limpa por data</small>
-                    </label>
+
+                  <div class="form-group">
+                    <label>Modo de Operação</label>
+                    <div class="radio-group">
+                      <div class="radio-item">
+                        <input type="radio" id="modeClassic" name="retentionMode" value="classic">
+                        <label for="modeClassic" class="radio-label">
+                          <div class="radio-icon">
+                            <i data-lucide="repeat"></i>
+                          </div>
+                          <div class="radio-content">
+                            <span class="radio-title">Modo Clássico</span>
+                            <span class="radio-description">Mantém apenas 1 backup por horário</span>
+                          </div>
+                        </label>
+                      </div>
+
+                      <div class="radio-item">
+                        <input type="radio" id="modeRetention" name="retentionMode" value="retention" checked>
+                        <label for="modeRetention" class="radio-label">
+                          <div class="radio-icon">
+                            <i data-lucide="calendar"></i>
+                          </div>
+                          <div class="radio-content">
+                            <span class="radio-title">Modo Retenção</span>
+                            <span class="radio-description">Acumula backups com timestamp</span>
+                          </div>
+                        </label>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <div class="form-row two-cols">
-                <div class="form-group">
-                  <label for="localRetentionDays">Retenção Local (dias)</label>
-                  <input type="number" id="localRetentionDays" min="1" max="365" value="7" placeholder="7">
-                  <small>Número de dias para manter os backups no disco local.</small>
+              <div class="card">
+                <div class="card-header">
+                  <h3 class="card-title">
+                    <i data-lucide="calendar-days"></i>
+                    Período de Retenção
+                  </h3>
                 </div>
-                <div class="form-group">
-                  <label for="ftpRetentionDays">Retenção FTP (dias)</label>
-                  <input type="number" id="ftpRetentionDays" min="1" max="365" value="30" placeholder="30">
-                  <small>Número de dias para manter os backups no servidor FTP (opcional).</small>
+                <div class="card-content">
+                  <div class="form-grid">
+                    <div class="form-group">
+                      <label for="localRetentionDays">Local (dias)</label>
+                      <div class="input-wrapper">
+                        <i data-lucide="hard-drive" class="input-icon"></i>
+                        <input type="number" id="localRetentionDays" min="1" max="365" value="7">
+                      </div>
+                    </div>
+
+                    <div class="form-group">
+                      <label for="ftpRetentionDays">FTP (dias)</label>
+                      <div class="input-wrapper">
+                        <i data-lucide="cloud" class="input-icon"></i>
+                        <input type="number" id="ftpRetentionDays" min="1" max="365" value="30">
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <div class="toggle-group">
+                      <input type="checkbox" id="autoCleanup" class="toggle-switch" checked>
+                      <label for="autoCleanup" class="toggle-label">
+                        <span class="toggle-slider"></span>
+                        <span class="toggle-text">Limpeza automática após backup</span>
+                      </label>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              <div class="form-group">
-                <div class="checkbox-group">
-                  <input type="checkbox" id="autoCleanup" checked>
-                  <label for="autoCleanup">Executar limpeza automaticamente após cada backup</label>
+              <div class="card">
+                <div class="card-header">
+                  <h3 class="card-title">
+                    <i data-lucide="play"></i>
+                    Limpeza Manual
+                  </h3>
                 </div>
-                <small>Remove automaticamente os arquivos antigos após cada rotina de backup.</small>
+                <div class="card-content">
+                  <div class="cleanup-buttons">
+                    <button type="button" id="btnCleanupLocal" class="btn btn-outline">
+                      <i data-lucide="hard-drive"></i>
+                      <span class="btn-text">Limpar Local</span>
+                      <div class="spinner"></div>
+                    </button>
+                    <button type="button" id="btnCleanupFtp" class="btn btn-outline">
+                      <i data-lucide="cloud"></i>
+                      <span class="btn-text">Limpar FTP</span>
+                      <div class="spinner"></div>
+                    </button>
+                  </div>
+                  <p class="form-help">Execute limpeza manual conforme a política configurada</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- History Tab -->
+          <div class="tab-content" id="tab-history">
+            <div class="page-header">
+              <div class="page-header-content">
+                <div class="page-icon">
+                  <i data-lucide="activity"></i>
+                </div>
+                <div class="page-info">
+                  <h2 class="page-title">Histórico de Backups</h2>
+                  <p class="page-description">Visualize execuções, estatísticas e detalhes</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="content-grid single-column">
+              <!-- Stats Cards -->
+              <div class="stats-grid">
+                <div class="stat-card">
+                  <div class="stat-icon">
+                    <i data-lucide="database"></i>
+                  </div>
+                  <div class="stat-content">
+                    <span class="stat-value" id="stats-total">0</span>
+                    <span class="stat-label">Total</span>
+                  </div>
+                </div>
+
+                <div class="stat-card success">
+                  <div class="stat-icon">
+                    <i data-lucide="check-circle"></i>
+                  </div>
+                  <div class="stat-content">
+                    <span class="stat-value" id="stats-success">0</span>
+                    <span class="stat-label">Sucessos</span>
+                  </div>
+                </div>
+
+                <div class="stat-card error">
+                  <div class="stat-icon">
+                    <i data-lucide="x-circle"></i>
+                  </div>
+                  <div class="stat-content">
+                    <span class="stat-value" id="stats-failed">0</span>
+                    <span class="stat-label">Falhas</span>
+                  </div>
+                </div>
+
+                <div class="stat-card">
+                  <div class="stat-icon">
+                    <i data-lucide="clock"></i>
+                  </div>
+                  <div class="stat-content">
+                    <span class="stat-value" id="stats-avg-duration">0s</span>
+                    <span class="stat-label">Duração Média</span>
+                  </div>
+                </div>
+
+                <div class="stat-card">
+                  <div class="stat-icon">
+                    <i data-lucide="hard-drive"></i>
+                  </div>
+                  <div class="stat-content">
+                    <span class="stat-value" id="stats-total-size">0 MB</span>
+                    <span class="stat-label">Tamanho Total</span>
+                  </div>
+                </div>
               </div>
 
-              <div class="form-group">
-                <div class="cleanup-buttons">
-                  <button type="button" id="btnCleanupLocal" class="btn btn-secondary">
-                    <span class="btn-text">🗑️ Limpar Local</span>
-                    <div class="spinner"></div>
-                  </button>
-                  <button type="button" id="btnCleanupFtp" class="btn btn-secondary">
-                    <span class="btn-text">🌐 Limpar FTP</span>
-                    <div class="spinner"></div>
-                  </button>
+              <!-- History Table Card -->
+              <div class="card">
+                <div class="card-header">
+                  <h3 class="card-title">
+                    <i data-lucide="list"></i>
+                    Registro de Execuções
+                  </h3>
+                  <div class="card-actions">
+                    <div class="filter-group">
+                      <label for="status-filter">Status:</label>
+                      <select id="status-filter" class="filter-select">
+                        <option value="">Todos</option>
+                        <option value="success">Sucesso</option>
+                        <option value="failed">Falha</option>
+                      </select>
+                    </div>
+                  </div>
                 </div>
-                <small>Execute a limpeza manual de backups antigos conforme a política configurada.</small>
+
+                <div class="table-container">
+                  <table id="history-table" class="data-table">
+                    <thead>
+                      <tr>
+                        <th>Data/Hora</th>
+                        <th>Bancos</th>
+                        <th>Status</th>
+                        <th>Duração</th>
+                        <th>Tamanho</th>
+                        <th>Detalhes</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <!-- Populated by JavaScript -->
+                    </tbody>
+                  </table>
+                </div>
+
+                <div class="table-footer">
+                  <div class="pagination">
+                    <button type="button" id="prev-page" class="pagination-btn" disabled>
+                      <i data-lucide="chevron-left"></i>
+                      Anterior
+                    </button>
+                    <span id="page-info" class="pagination-info">Página 1 de 1</span>
+                    <button type="button" id="next-page" class="pagination-btn" disabled>
+                      Próximo
+                      <i data-lucide="chevron-right"></i>
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -305,36 +639,133 @@
     </div>
   </div>
 
+  <!-- Modals -->
   <div id="folderBrowserModal" class="modal">
-    <div class="modal-content folder-browser">
+    <div class="modal-content">
       <div class="modal-header">
-        <h4>Selecionar Pasta</h4>
-        <button type="button" class="close-button" id="closeFolderBrowser">&times;</button>
+        <h3 class="modal-title">
+          <i data-lucide="folder-open"></i>
+          Selecionar Pasta
+        </h3>
+        <button type="button" class="modal-close" id="closeFolderBrowser">
+          <i data-lucide="x"></i>
+        </button>
       </div>
-      <div class="folder-browser-body">
-        <div class="current-path-bar">
-          <button type="button" id="levelUpBtn" class="btn-icon" title="Voltar">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-              <path fill-rule="evenodd"
-                d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z" />
-            </svg>
-          </button>
-          <input type="text" id="currentPathInput" placeholder="Digite um caminho (ex: \\servidor\share) e tecle Enter">
-        </div>
-        <div id="folderList" class="folder-list">
+
+      <div class="modal-body">
+        <div class="folder-browser">
+          <div class="browser-toolbar">
+            <button type="button" id="levelUpBtn" class="btn btn-outline btn-sm">
+              <i data-lucide="arrow-up"></i>
+              Voltar
+            </button>
+            <button type="button" id="homeDrivesBtn" class="btn btn-outline btn-sm">
+              <i data-lucide="hard-drive"></i>
+              Drives
+            </button>
+            <div class="path-input">
+              <input type="text" id="currentPathInput" placeholder="Digite um caminho...">
+            </div>
+          </div>
+
+          <div id="folderList" class="folder-list">
+            <!-- Populated by JavaScript -->
+          </div>
+          <p class="form-help">💡 Clique em uma pasta ou drive para navegar</p>
         </div>
       </div>
+
       <div class="modal-footer">
-        <div class="new-folder-container">
-          <input type="text" id="newFolderNameInput" placeholder="Nome da nova pasta...">
-          <button type="button" id="createNewFolderBtn" class="btn btn-secondary">Criar</button>
+        <div class="new-folder">
+          <input type="text" id="newFolderNameInput" placeholder="Nome da nova pasta">
+          <button type="button" id="createNewFolderBtn" class="btn btn-outline">
+            <i data-lucide="folder-plus"></i>
+            Criar
+          </button>
         </div>
-        <button type="button" id="selectFolderBtn" class="btn btn-primary">Selecionar Pasta</button>
+        <button type="button" id="selectFolderBtn" class="btn btn-primary">
+          <i data-lucide="check"></i>
+          Selecionar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="backupDetailsModal" class="modal">
+    <div class="modal-content modal-large">
+      <div class="modal-header">
+        <h3 class="modal-title" id="backupDetailsTitle">
+          <i data-lucide="info"></i>
+          Detalhes do Backup
+        </h3>
+        <button type="button" class="modal-close" id="closeBackupDetailsModal">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div id="backupDetailsContent" class="backup-details-content">
+          <!-- Conteúdo será populado dinamicamente -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="databaseSelectorModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <i data-lucide="database"></i>
+          Selecionar Bancos de Dados
+        </h3>
+        <button type="button" class="modal-close" id="closeDatabaseSelector">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="database-selector">
+          <div class="database-toolbar">
+            <div class="selection-info">
+              <span id="selectionCount">0 bancos selecionados</span>
+            </div>
+            <div class="selection-actions">
+              <button type="button" id="selectAllDbs" class="btn btn-outline btn-sm">
+                <i data-lucide="check-square"></i>
+                Selecionar Todos
+              </button>
+              <button type="button" id="clearAllDbs" class="btn btn-outline btn-sm">
+                <i data-lucide="square"></i>
+                Limpar Seleção
+              </button>
+            </div>
+          </div>
+
+          <div id="databaseList" class="database-list">
+            <div class="loading-databases">
+              <div class="spinner" style="display: block; margin: 2rem auto;"></div>
+              <p>Carregando bancos de dados...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" id="cancelDatabaseSelection" class="btn btn-outline">
+          <i data-lucide="x"></i>
+          Cancelar
+        </button>
+        <button type="button" id="confirmDatabaseSelection" class="btn btn-primary">
+          <i data-lucide="check"></i>
+          Confirmar Seleção
+        </button>
       </div>
     </div>
   </div>
 
   <script src="script.js"></script>
+  <script>
+    lucide.createIcons();
+  </script>
 </body>
 
 </html>
