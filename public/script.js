@@ -118,6 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let lastCalculatedLimit = 0;
   let historyDebounceTimer = null;
   let isHistoryLoading = false;
+  let currentHistoryData = [];
 
   function switchTab(targetTab) {
     navItems.forEach(nav => nav.classList.remove('active'));
@@ -628,8 +629,6 @@ document.addEventListener('DOMContentLoaded', () => {
       toggleButtonLoading(btnListDbs, false);
     }
   }
-
-
 
   function showDetailedErrorToast(mainError, details, suggestions) {
     const toast = document.createElement('div');
@@ -1179,6 +1178,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   loadConfig();
 
+  setTimeout(() => {
+    lucide.createIcons();
+  }, 100);
+
   function toggleRetentionFields() {
     const retentionEnabledEl = document.getElementById('retentionEnabled');
     const modeClassicEl = document.getElementById('modeClassic');
@@ -1578,10 +1581,17 @@ document.addEventListener('DOMContentLoaded', () => {
           historyTableBody.innerHTML = '';
           if (!result.data || result.data.length === 0) {
             historyTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Nenhum registro encontrado.</td></tr>';
+            currentHistoryData = [];
           } else {
-            result.data.forEach(item => {
+            currentHistoryData = result.data.map((item, index) => ({
+              ...item,
+              tempId: item.id || `temp_${page}_${index}`
+            }));
+
+            result.data.forEach((item, index) => {
               const row = document.createElement('tr');
               const statusClass = item.status === 'success' ? 'status-success' : 'status-failed';
+              const itemId = item.id || `temp_${page}_${index}`;
 
               row.innerHTML = `
                       <td>${new Date(item.timestamp).toLocaleString('pt-BR')}</td>
@@ -1590,7 +1600,7 @@ document.addEventListener('DOMContentLoaded', () => {
                       <td>${item.duration.toFixed(2)}s</td>
                       <td>${item.fileSize} MB</td>
                       <td>
-                          <button class="btn-view-details" data-backup='${JSON.stringify(item)}'>
+                          <button class="btn-view-details" data-backup-id="${itemId}">
                               <i data-lucide="eye"></i>
                               Visualizar
                           </button>
@@ -1631,8 +1641,18 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         e.stopPropagation();
         try {
-          const backupData = JSON.parse(e.target.closest('button').dataset.backup);
-          showBackupDetails(backupData);
+          const backupId = e.target.closest('button').dataset.backupId;
+          const backupData = currentHistoryData.find(item =>
+            (item.id && item.id.toString() === backupId) ||
+            (item.tempId && item.tempId === backupId)
+          );
+
+          if (backupData) {
+            showBackupDetails(backupData);
+          } else {
+            console.error('Dados do backup não encontrados para ID:', backupId);
+            showToast('Dados do backup não encontrados', 'error');
+          }
         } catch (error) {
           console.error('Erro ao processar dados do backup:', error);
           showToast('Erro ao carregar detalhes do backup', 'error');
@@ -1662,6 +1682,43 @@ document.addEventListener('DOMContentLoaded', () => {
   function generateBackupDetailsHTML(backup) {
     const isSuccess = backup.status === 'success';
     const timestamp = new Date(backup.timestamp).toLocaleString('pt-BR');
+
+    const errorMessage = backup.errorMessage || '';
+    const errorLower = errorMessage.toLowerCase();
+
+    let failedStep = 'database';
+
+    if (errorLower.includes('sqlcmd') || errorLower.includes('login failed') ||
+      errorLower.includes('sql server') || errorLower.includes('backup database') ||
+      errorLower.includes('odbc driver') || errorLower.includes('authentication') ||
+      errorLower.includes('cannot open database') || errorLower.includes('server not found') ||
+      errorLower.includes('network-related') || errorLower.includes('instance-specific')) {
+      failedStep = 'database';
+    }
+    else if (errorLower.includes('compactação') || errorLower.includes('7z') ||
+      errorLower.includes('compression') || errorLower.includes('zip') ||
+      errorLower.includes('archive') || errorLower.includes('compactar') ||
+      errorLower.includes('7za.exe') || errorLower.includes('cannot create archive')) {
+      failedStep = 'compression';
+    }
+    else if ((errorLower.includes('ftp') && !errorLower.includes('sqlcmd')) ||
+      errorLower.includes('upload failed') || errorLower.includes('ftp error') ||
+      errorLower.includes('connection timeout') || errorLower.includes('connection refused') ||
+      (errorLower.includes('host') && errorLower.includes('unreachable')) ||
+      errorLower.includes('530 login') || errorLower.includes('550 permission')) {
+      failedStep = 'ftp';
+    }
+    else if (errorLower.includes('rede') || errorLower.includes('network path') ||
+      errorLower.includes('local de rede') || errorLower.includes('path not found') ||
+      errorLower.includes('pasta') || errorLower.includes('diretório') ||
+      errorLower.includes('directory') || errorLower.includes('copy failed') ||
+      errorLower.includes('access denied') && errorLower.includes('path')) {
+      failedStep = 'network';
+    }
+    else if (errorLower.includes('limpeza') || errorLower.includes('cleanup') ||
+      errorLower.includes('delete failed') || errorLower.includes('remove failed')) {
+      failedStep = 'cleanup';
+    }
 
     const headerHtml = `
           <div class="backup-info-header ${backup.status}">
@@ -1700,7 +1757,7 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
       `;
 
-    const stepsHtml = generateBackupStepsHTML(backup);
+    const stepsHtml = generateBackupStepsHTML(backup, failedStep);
 
     return `
           ${headerHtml}
@@ -1711,23 +1768,51 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
   }
 
-  function generateBackupStepsHTML(backup) {
+  function generateBackupStepsHTML(backup, failedStep = 'database') {
     const isSuccess = backup.status === 'success';
     const details = backup.details || '';
+
+    if (failedStep === 'database' && backup.errorMessage) {
+      const errorLower = backup.errorMessage.toLowerCase();
+
+      if (errorLower.includes('sqlcmd') || errorLower.includes('login failed') ||
+        errorLower.includes('sql server') || errorLower.includes('backup database') ||
+        errorLower.includes('odbc driver') || errorLower.includes('authentication') ||
+        errorLower.includes('cannot open database') || errorLower.includes('server not found')) {
+        failedStep = 'database';
+      }
+      else if (errorLower.includes('compactação') || errorLower.includes('7z') ||
+        errorLower.includes('compression') || errorLower.includes('7za.exe')) {
+        failedStep = 'compression';
+      }
+      else if ((errorLower.includes('ftp') && !errorLower.includes('sqlcmd')) ||
+        errorLower.includes('upload failed') || errorLower.includes('ftp error')) {
+        failedStep = 'ftp';
+      }
+      else if (errorLower.includes('rede') || errorLower.includes('network path') ||
+        errorLower.includes('local de rede') || errorLower.includes('copy failed')) {
+        failedStep = 'network';
+      }
+      else if (errorLower.includes('limpeza') || errorLower.includes('cleanup')) {
+        failedStep = 'cleanup';
+      }
+    }
 
     const steps = [
       {
         id: 'database',
         title: 'Backup dos Bancos de Dados',
         description: `Geração dos arquivos .bak para ${backup.databases.length} banco(s)`,
-        status: isSuccess ? 'success' : (details.includes('backup') ? 'failed' : 'success'),
+        status: isSuccess ? 'success' : (failedStep === 'database' ? 'failed' : 'success'),
         icon: 'database'
       },
       {
         id: 'compression',
         title: 'Compactação dos Arquivos',
         description: 'Criação do arquivo .7z compactado',
-        status: isSuccess ? 'success' : (details.includes('Compactação') ? 'success' : (details.includes('backup') ? 'skipped' : 'failed')),
+        status: isSuccess ? 'success' :
+          (failedStep === 'compression' ? 'failed' :
+            (failedStep === 'database' ? 'skipped' : 'success')),
         icon: 'archive'
       },
       {
@@ -1735,22 +1820,27 @@ document.addEventListener('DOMContentLoaded', () => {
         title: 'Upload para Servidor FTP',
         description: 'Envio do backup para o servidor remoto',
         status: isSuccess && details.includes('Upload FTP') ? 'success' :
-          (!isSuccess && details.includes('FTP') ? 'failed' : 'skipped'),
+          (failedStep === 'ftp' ? 'failed' :
+            (!isSuccess && ['database', 'compression'].includes(failedStep) ? 'skipped' :
+              (details.includes('Upload FTP') ? 'success' : 'skipped'))),
         icon: 'cloud-upload'
       },
       {
         id: 'network',
         title: 'Cópia para Local de Rede',
-        description: 'Envio para pasta local ou de rede configurada',
+        description: 'Envio do backup para pasta local ou de rede configurada (se habilitado)',
         status: isSuccess && details.includes('local de rede') ? 'success' :
-          (!isSuccess && details.includes('rede') ? 'failed' : 'skipped'),
+          (failedStep === 'network' ? 'failed' :
+            (!isSuccess && ['database', 'compression'].includes(failedStep) ? 'skipped' :
+              (details.includes('local de rede') ? 'success' : 'skipped'))),
         icon: 'folder-sync'
       },
       {
         id: 'cleanup',
         title: 'Limpeza de Backups Antigos',
         description: 'Remoção automática de arquivos conforme política de retenção',
-        status: isSuccess && details.includes('limpeza') ? 'success' : 'skipped',
+        status: isSuccess && details.includes('limpeza') ? 'success' :
+          (failedStep === 'cleanup' ? 'failed' : 'skipped'),
         icon: 'trash-2'
       }
     ];
@@ -1765,10 +1855,10 @@ document.addEventListener('DOMContentLoaded', () => {
                   <span class="step-title">${step.title}</span><span class="step-description">${step.description}</span>
           `;
 
-      if (step.status === 'failed' && backup.errorMessage) {
+      if (step.status === 'failed' && backup.errorMessage && step.id === failedStep) {
         stepContent += `
                   <div class="step-error">
-                      <strong>Erro:</strong> ${backup.errorMessage}
+                      <strong>Erro:</strong> ${escapeHtml(backup.errorMessage)}
                   </div>
               `;
       }

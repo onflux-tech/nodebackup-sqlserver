@@ -3,5 +3,6 @@ node_modules
 logs
 config.enc
 history.db
+history-backup.json
 NodeBackup.exe
 NodeBackupInstaller*.exe
