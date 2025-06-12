@@ -5,6 +5,17 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
+## [0.2.2] - 12-06-2025
+
+### 🐛 Corrigido
+
+- **Status de Sucesso Incorreto:** Corrigido um problema onde um backup era marcado como sucesso mesmo com falhas parciais (ex: falha no upload para FTP).
+- **Detecção de Falhas no Histórico:** Melhorada a precisão na detecção e exibição dos detalhes da etapa exata onde a falha ocorreu no histórico de backups.
+
+### 💄 Modificado
+
+- **Ícones da Interface:** Atualizados os ícones em várias partes da interface para uma representação visual mais clara e intuitiva das ações.
+
 ## [0.2.1] - 11-06-2025
 
 ### ✨ Adicionado
@@ -89,6 +100,7 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ---
 
+[0.2.2]: https://github.com/onflux-tech/nodebackup-sqlserver/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/onflux-tech/nodebackup-sqlserver/compare/v0.1.0...v0.2.1
 [0.1.0]: https://github.com/onflux-tech/nodebackup-sqlserver/compare/v0.0.5...v0.1.0
 [0.0.5]: https://github.com/onflux-tech/nodebackup-sqlserver/releases/tag/v0.0.5

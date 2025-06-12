@@ -88,7 +88,7 @@ Este conjunto de regras fornece diretrizes completas para desenvolvimento da apl
 
 ## 🚀 Estado Atual vs Próximos Passos
 
-### ✅ Implementado (v0.2.1)
+### ✅ Implementado (v0.2.2)
 - Todas as funcionalidades da v0.1.0
 - **Painel de Histórico**: Visualização completa do histórico de backups com SQLite
 - **Estatísticas**: Total de backups, sucessos/falhas, duração média e tamanho total

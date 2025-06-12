@@ -116,7 +116,7 @@ Abaixo estão as funcionalidades planejadas para o futuro. Contribuições são 
 - **Status:** Concluído
 - **Funcionalidades:** Sistema completo para gerenciar e limpar backups antigos automaticamente, com modos "Clássico" e "Retenção", limpeza manual e automática, e interface web dedicada.
 
-### ✅ **Fase 1.2: Painel de Histórico (v0.2.1)**
+### ✅ **Fase 1.2: Painel de Histórico (v0.2.2)**
 
 - **Status:** Concluído
 - **Funcionalidades:** Painel de histórico completo com banco SQLite, estatísticas de backups, filtros por status, interface modernizada com tema claro/escuro, e melhorias de UX/UI.

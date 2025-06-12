@@ -5,7 +5,7 @@ alwaysApply: true
 ---
 # Roadmap e Tasklist - Próximas Implementações
 
-## 📍 Estado Atual (v0.2.1)
+## 📍 Estado Atual (v0.2.2)
 **Funcionalidades Implementadas:**
 - ✅ Setup inicial interativo via web
 - ✅ Interface web com autenticação segura
@@ -66,7 +66,7 @@ alwaysApply: true
   - ✅ Feedback detalhado com contagem de arquivos removidos
   - ✅ Validações e mensagens de erro amigáveis
 
-#### 📈 **1.2 Painel de Histórico** (IMPLEMENTADO v0.2.1)
+#### 📈 **1.2 Painel de Histórico** (IMPLEMENTADO v0.2.2)
 **Arquivos implementados:** `src/services/history.js`, `public/history.js`, interface integrada
 
 **Implementações concluídas:**
@@ -294,7 +294,7 @@ alwaysApply: true
 - ✅ Documentação completa em `docs/RETENTION_POLICY.md`
 - ✅ Testes e ajustes finais realizados
 
-### ✅ **v0.2.1 - Painel de Histórico** (CONCLUÍDO)
+### ✅ **v0.2.2 - Painel de Histórico** (CONCLUÍDO)
 **Objetivo**: Interface completa para visualizar histórico de backups
 
 **Implementações concluídas:**

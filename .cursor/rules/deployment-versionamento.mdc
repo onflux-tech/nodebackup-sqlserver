@@ -7,7 +7,7 @@ alwaysApply: true
 
 ## 📋 Versionamento Semântico
 
-### Padrão Atual (v0.2.1)
+### Padrão Atual (v0.2.2)
 - **MAJOR** (1.x.x): Mudanças que quebram compatibilidade
 - **MINOR** (0.x.x): Novas funcionalidades compatíveis (pré-release)
 - **PATCH** (x.x.x): Correções de bugs e melhorias
