@@ -1,5 +1,9 @@
 Write-Host "=== Build do Instalador NodeBackup ===" -ForegroundColor Cyan
 
+$packageJson = Get-Content "package.json" | ConvertFrom-Json
+$version = "v$($packageJson.version)"
+Write-Host "Versao detectada: $version" -ForegroundColor Green
+
 $nsisPath = @(
   "${env:ProgramFiles(x86)}\NSIS\makensis.exe",
   "${env:ProgramFiles}\NSIS\makensis.exe",
@@ -38,9 +42,20 @@ Write-Host "Compilando instalador..." -ForegroundColor Yellow
 & $nsisPath installer.nsi
 
 if ($LASTEXITCODE -eq 0) {
-  Write-Host "Instalador criado com sucesso: NodeBackupInstaller.exe" -ForegroundColor Green
-  $size = [math]::Round((Get-Item "NodeBackupInstaller.exe").Length / 1MB, 2)
-  Write-Host "Tamanho: $size MB" -ForegroundColor Cyan
+  $originalName = "NodeBackupInstaller.exe"
+  $versionedName = "NodeBackupInstaller-$version.exe"
+  
+  if (Test-Path $originalName) {
+    Rename-Item $originalName $versionedName
+    Write-Host "Instalador criado com sucesso: $versionedName" -ForegroundColor Green
+    $size = [math]::Round((Get-Item $versionedName).Length / 1MB, 2)
+    Write-Host "Tamanho: $size MB" -ForegroundColor Cyan
+  }
+  else {
+    Write-Host "Instalador criado com sucesso: $originalName" -ForegroundColor Green
+    $size = [math]::Round((Get-Item $originalName).Length / 1MB, 2)
+    Write-Host "Tamanho: $size MB" -ForegroundColor Cyan
+  }
 }
 else {
   Write-Host "ERRO: Falha ao criar o instalador" -ForegroundColor Red
