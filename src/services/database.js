@@ -114,12 +114,22 @@ async function performConsolidatedBackup(dbList, clientName, backupNumber, dbCon
     const filesToCompress = backupFilePaths.map(p => `"${p}"`).join(' ');
     const zipCmd = `"${sevenZipAsset}" a -t7z -mx=9 "${finalZipPath}" ${filesToCompress}`;
 
-    const { stdout: zipStdout, stderr: zipStderr } = await execAsync(zipCmd);
-    if (zipStderr && zipStderr.length > 0) {
-      logger.warn(`7za stderr: ${zipStderr}`);
+    try {
+      const { stdout: zipStdout, stderr: zipStderr } = await execAsync(zipCmd);
+      if (zipStderr && zipStderr.length > 0) {
+        logger.warn(`7za stderr: ${zipStderr}`);
+      }
+      logger.info(`Backup consolidado compactado com sucesso: ${finalZipPath}`);
+      historyRecord.details += 'Compactação bem-sucedida. ';
+    } catch (zipError) {
+      logger.error('Erro ao compactar os arquivos.', {
+        message: zipError.message,
+        stdout: zipError.stdout,
+        stderr: zipError.stderr,
+        cmd: zipError.cmd
+      });
+      throw new Error(`Falha na compactação (7-Zip): ${zipError.stderr || zipError.message}`);
     }
-    logger.info(`Backup consolidado compactado com sucesso: ${finalZipPath}`);
-    historyRecord.details += 'Compactação bem-sucedida. ';
 
     for (const filePath of backupFilePaths) {
       try {
@@ -221,7 +231,10 @@ async function performConsolidatedBackup(dbList, clientName, backupNumber, dbCon
 
   } catch (error) {
     isSuccess = false;
-    logger.error('Falha no processo de backup consolidado. A operação foi abortada.', { stack: error.stack });
+    logger.error('Falha no processo de backup consolidado. A operação foi abortada.', {
+      stack: error.stack,
+      stderr: error.stderr
+    });
     historyRecord.status = 'failed';
     historyRecord.errorMessage = error.message;
 
