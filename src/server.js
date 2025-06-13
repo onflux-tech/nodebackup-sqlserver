@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const session = require('express-session');
+const SQLiteStore = require('connect-sqlite3')(session);
 const logger = require('./utils/logger');
 const apiRoutes = require('./api/routes');
 const { baseDir, getConfig } = require('./config');
@@ -15,13 +16,18 @@ function startServer() {
   app.use(express.urlencoded({ extended: true }));
 
   app.use(session({
+    store: new SQLiteStore({
+      db: 'history.db',
+      dir: process.cwd(),
+      table: 'sessions'
+    }),
     secret: config.app.sessionSecret || require('crypto').randomBytes(32).toString('hex'),
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
     cookie: {
       secure: false,
       httpOnly: true,
-      maxAge: 1000 * 60 * 60 * 24
+      maxAge: 1000 * 60 * 60
     }
   }));
 
