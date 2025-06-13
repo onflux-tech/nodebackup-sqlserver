@@ -6,14 +6,17 @@ alwaysApply: true
 # Node-Backup: SQL Server - Visão Geral do Projeto
 
 ## Descrição do Projeto
-O Node-Backup é uma aplicação Windows para automatização de backups de bancos SQL Server com interface web segura. A aplicação:
+O Node-Backup é uma aplicação Windows para automatização de backups de bancos SQL Server com interface web moderna e segura. A aplicação:
 - Gera backups `.bak` de múltiplos bancos SQL Server
 - Comprime em arquivos `.7z` com alta compressão
 - Envia para servidores FTP automaticamente
 - Funciona como serviço do Windows
-- Interface web com autenticação criptografada
+- Interface web responsiva com autenticação criptografada
+- **Sistema de histórico completo** com SQLite
+- **Política de retenção** configurável para limpeza automática
+- **Arquitetura modular** frontend e backend
 
-## Arquitetura Principal
+## Arquitetura Modular Atual
 
 ### Ponto de Entrada
 - [src/app.js](mdc:src/app.js) - Entry point principal da aplicação
@@ -23,6 +26,7 @@ O Node-Backup é uma aplicação Windows para automatização de backups de banc
 ### Serviços Core
 - [src/services/database.js](mdc:src/services/database.js) - Backup e listagem de bancos SQL Server
 - [src/services/ftp.js](mdc:src/services/ftp.js) - Upload para servidores FTP
+- [src/services/history.js](mdc:src/services/history.js) - Gerenciamento histórico SQLite
 - [src/services/scheduler.js](mdc:src/services/scheduler.js) - Agendamento de backups
 - [src/services/windowsService.js](mdc:src/services/windowsService.js) - Instalação como serviço Windows
 
@@ -31,17 +35,45 @@ O Node-Backup é uma aplicação Windows para automatização de backups de banc
 - [src/utils/encryption.js](mdc:src/utils/encryption.js) - Criptografia para configurações
 - [src/utils/errorHandler.js](mdc:src/utils/errorHandler.js) - Tratamento amigável de erros
 
-### Interface Web
-- [public/index.html](mdc:public/index.html) - Dashboard principal
-- [public/login.html](mdc:public/login.html) - Tela de login
-- [public/setup.html](mdc:public/setup.html) - Configuração inicial
-- [public/script.js](mdc:public/script.js) - JavaScript principal (17KB)
-- [public/styles.css](mdc:public/styles.css) - Estilos CSS (12KB)
+### API Modular (src/api/)
+- **Middleware**: [src/api/middleware/auth.js](mdc:src/api/middleware/auth.js) - Autenticação centralizada
+- **Rotas por Funcionalidade**:
+  - [src/api/routes/auth.js](mdc:src/api/routes/auth.js) - Login, logout, mudança senha
+  - [src/api/routes/browse.js](mdc:src/api/routes/browse.js) - Navegação arquivos/pastas
+  - [src/api/routes/config.js](mdc:src/api/routes/config.js) - Configurações aplicação
+  - [src/api/routes/database.js](mdc:src/api/routes/database.js) - Operações SQL Server
+  - [src/api/routes/history.js](mdc:src/api/routes/history.js) - Histórico e estatísticas
+  - [src/api/routes/storage.js](mdc:src/api/routes/storage.js) - FTP e limpeza
+
+### Interface Web Modular (public/)
+- **CSS Modular (25KB total)**:
+  - [public/css/base.css](mdc:public/css/base.css) - Variáveis, reset, temas (4KB)
+  - [public/css/components.css](mdc:public/css/components.css) - Componentes UI (13KB)
+  - [public/css/layout.css](mdc:public/css/layout.css) - Layout, header, sidebar (3KB)
+  - [public/css/login.css](mdc:public/css/login.css) - Login/setup (2KB)
+  - [public/css/responsive.css](mdc:public/css/responsive.css) - Media queries (3KB)
+
+- **JavaScript Modular (35KB total)**:
+  - [public/js/ui.js](mdc:public/js/ui.js) - Componentes UI, temas, toasts (5KB)
+  - [public/js/config.js](mdc:public/js/config.js) - Configurações (6KB)
+  - [public/js/database.js](mdc:public/js/database.js) - Seleção bancos (5KB)
+  - [public/js/history.js](mdc:public/js/history.js) - Painel histórico (8KB)
+  - [public/js/storage.js](mdc:public/js/storage.js) - FTP, limpeza (6KB)
+  - [public/js/schedule.js](mdc:public/js/schedule.js) - Agendamento (2KB)
+  - [public/js/auth.js](mdc:public/js/auth.js) - Autenticação (1KB)
+  - [public/js/api.js](mdc:public/js/api.js) - Requisições API (2KB)
+
+- **HTML Pages**:
+  - [public/index.html](mdc:public/index.html) - Dashboard principal
+  - [public/login.html](mdc:public/login.html) - Tela de login
+  - [public/setup.html](mdc:public/setup.html) - Configuração inicial
+  - [public/script.js](mdc:public/script.js) - Entry point JS (importa módulos)
 
 ## Stack Tecnológica
 - **Runtime**: Node.js 12+ (compatibilidade obrigatória)
 - **Framework Web**: Express.js 4.19.2
-- **Banco de Dados**: SQL Server (via mssql 6.3.2 e sqlcmd)
+- **Banco Histórico**: SQLite 3 (via sql.js 1.8.0 - Node 12 compatível)
+- **Banco Principal**: SQL Server (via mssql 6.3.2 e sqlcmd)
 - **Autenticação**: bcryptjs + express-session
 - **Agendamento**: node-schedule 2.1.1
 - **FTP**: basic-ftp 5.0.5
@@ -50,16 +82,76 @@ O Node-Backup é uma aplicação Windows para automatização de backups de banc
 - **Compressão**: 7-Zip (7za.exe embarcado)
 - **Serviço Windows**: NSSM (nssm.exe embarcado)
 - **Build**: pkg 5.8.1 para executável único
+- **Frontend**: JavaScript ES6 Modules + CSS Variables
 
-## Configuração e Segurança
-- Configurações salvas em [config.enc](mdc:config.enc) criptografadas
-- Primeira execução ativa setup inicial obrigatório
-- Interface protegida por sessões autenticadas
-- Logs rotacionados em [logs/](mdc:logs) com retenção de 3 dias
+## Funcionalidades Implementadas (v0.2.2)
+
+### 🔐 Autenticação e Segurança
+- Setup inicial obrigatório via web
+- Sistema de login com hash bcrypt
+- Middleware de autenticação centralizado
+- Configurações criptografadas (config.enc)
+- Prevenção FOUC (Flash of Unstyled Content)
+
+### 💾 Backup e Armazenamento
+- Backup automático SQL Server (.bak)
+- Compressão 7-Zip alta performance
+- Upload FTP automatizado
+- Política de retenção configurável (v0.1.0)
+- Modo Clássico vs Retenção (timestamp)
+- Limpeza automática local e FTP
+
+### ⏰ Agendamento e Monitoramento  
+- Agendamento flexível de backups
+- Histórico completo com SQLite (v0.2.0)
+- Estatísticas detalhadas (total, sucessos, falhas, duração)
+- Interface de histórico responsiva
+- Filtros por status e paginação
+
+### 🎨 Interface Moderna
+- Design responsivo mobile-first
+- Sistema dual de temas (claro/escuro)
+- Sidebar colapsável para mobile
+- Componentes modularizados
+- Toast notifications inteligentes
+- Loading states em todas operações
+
+### 🔧 Infraestrutura
+- Instalação como serviço Windows (NSSM)
+- Sistema de logs rotacionados
+- Build automatizado (pkg)
+- Executável autocontido
 
 ## Sistema de Build
 - [scripts/build.js](mdc:scripts/build.js) - Embarca assets e gera executável
 - [package.json](mdc:package.json) - Configuração npm e scripts
 - Target: Windows x64 com Node 12 (pkg node12-win-x64)
-- Assets embarcados: 7za.exe, nssm.exe, pasta public/
+- Assets embarcados: 7za.exe, nssm.exe, pasta public/ completa
+
+## Configuração e Segurança
+- Configurações salvas em [config.enc](mdc:config.enc) criptografadas
+- Primeira execução ativa setup inicial obrigatório
+- Interface protegida por sessões autenticadas
+- Logs rotacionados em [logs/](mdc:logs) com retenção configurável
+- Histórico persistido em SQLite local
+
+## Versionamento Atual
+- **Versão Atual**: v0.2.2 (Painel de Histórico + Refatoração)
+- **Última Release**: v0.2.0 (Painel de Histórico SQLite)
+- **Release Anterior**: v0.1.0 (Política de Retenção)
+- **Próxima**: v0.3.0 (Logs em Tempo Real WebSocket)
+
+## Métricas de Qualidade
+- **Executável**: ~57MB (autocontido)
+- **Frontend**: 60KB total (35KB JS + 25KB CSS)
+- **Compatibilidade**: Windows 7+ x64
+- **SQL Server**: 2008 R2+ até 2022
+- **Performance**: < 200MB RAM, < 5s startup
+- **Arquitetura**: Modular, manutenível, escalável
+
+## Próximos Desenvolvimentos (Roadmap)
+1. **v0.3.0**: Logs em Tempo Real (WebSocket)
+2. **v0.4.0**: Notificações E-mail (SMTP)
+3. **v0.5.0**: Integração Telegram/WhatsApp
+4. **v1.0.0**: Release estável completo
 

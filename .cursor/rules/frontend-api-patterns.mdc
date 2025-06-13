@@ -3,284 +3,291 @@ description:
 globs: 
 alwaysApply: true
 ---
-# Frontend e API - Padrões de Interface
+# Frontend e API - Padrões de Interface Modular
 
-## 🌐 Estrutura da Interface Web
+## 🌐 Estrutura Modular da Interface Web
 
-### Arquivos Frontend Principais
-- [public/index.html](mdc:public/index.html) - Dashboard principal (5.8KB)
-- [public/script.js](mdc:public/script.js) - JavaScript principal (17KB, 522 linhas)
-- [public/styles.css](mdc:public/styles.css) - CSS principal (12KB, 684 linhas)
-- [public/login.html](mdc:public/login.html) + [public/login.js](mdc:public/login.js) - Sistema login
-- [public/setup.html](mdc:public/setup.html) + [public/setup.js](mdc:public/setup.js) - Setup inicial
+### Arquivos Frontend Principais (Refatorados)
+- **CSS Modular (5 arquivos - 25KB total)**:
+  - [public/css/base.css](mdc:public/css/base.css) - Variáveis CSS, reset, temas (4KB)
+  - [public/css/components.css](mdc:public/css/components.css) - Componentes UI (13KB)
+  - [public/css/layout.css](mdc:public/css/layout.css) - Layout, header, sidebar (3KB)
+  - [public/css/login.css](mdc:public/css/login.css) - Estilos login/setup (2KB)
+  - [public/css/responsive.css](mdc:public/css/responsive.css) - Media queries (3KB)
 
-### Limitações e Diretrizes
-- **JavaScript Vanilla**: Sem frameworks pesados (manter compatibilidade e tamanho)
-- **CSS Puro**: Sem preprocessadores, focado em responsividade
-- **Tamanho Total**: Manter < 50KB total (assets embarcados no executável)
-- **Compatibilidade**: IE11+, Chrome 60+, Firefox 55+ (empresas com Windows antigo)
+- **JavaScript Modular (8 arquivos - 35KB total)**:
+  - [public/js/ui.js](mdc:public/js/ui.js) - Componentes UI, tema, toasts (5KB)
+  - [public/js/config.js](mdc:public/js/config.js) - Gerenciamento configurações (6KB)
+  - [public/js/database.js](mdc:public/js/database.js) - Seleção bancos SQL (5KB)
+  - [public/js/history.js](mdc:public/js/history.js) - Painel histórico (8KB)
+  - [public/js/storage.js](mdc:public/js/storage.js) - FTP e limpeza (6KB)
+  - [public/js/schedule.js](mdc:public/js/schedule.js) - Agendamento (2KB)
+  - [public/js/auth.js](mdc:public/js/auth.js) - Autenticação (1KB)
+  - [public/js/api.js](mdc:public/js/api.js) - Requisições API (2KB)
 
-## 🔌 Padrões de API REST
+- **HTML Pages**:
+  - [public/index.html](mdc:public/index.html) - Dashboard principal
+  - [public/login.html](mdc:public/login.html) - Sistema login
+  - [public/setup.html](mdc:public/setup.html) - Setup inicial
 
-### Estrutura de Rotas ([src/api/routes.js](mdc:src/api/routes.js))
+### Limitações e Diretrizes Atualizadas
+- **Modularidade**: Código separado por responsabilidade
+- **Performance**: Total < 60KB (CSS + JS)
+- **Compatibilidade**: IE11+, Chrome 60+, Firefox 55+
+- **Temas**: Sistema dual (claro/escuro) com variáveis CSS
+- **FOUC Prevention**: Script inline anti-flash implementado
+
+## 🔌 Padrões de API REST Modularizada
+
+### Estrutura de Rotas Refatorada
 ```javascript
-// ✅ Padrão atual - manter consistência
-GET    /api/config              # Obter configurações
-POST   /api/config              # Salvar configurações
-GET    /api/list-databases       # Listar bancos disponíveis
-POST   /api/test-ftp            # Testar conexão FTP
-POST   /api/setup               # Configuração inicial
-POST   /api/change-password     # Alterar senha
-POST   /api/login               # Autenticação
-POST   /api/logout              # Logout
+// Rotas organizadas por módulos em src/api/routes/
+├── auth.js         # POST /api/login, /api/logout, /api/change-password
+├── browse.js       # GET /api/browse, POST /api/create-folder  
+├── config.js       # GET /api/config, POST /api/config
+├── database.js     # GET /api/list-databases, POST /api/test-connection
+├── history.js      # GET /api/history, GET /api/history/stats
+└── storage.js      # POST /api/test-ftp, /api/cleanup-local, /api/cleanup-ftp
 ```
 
-### Padrões de Resposta
+### Middleware de Autenticação Implementado
 ```javascript
-// ✅ Sucesso
+// src/api/middleware/auth.js
+const requireAuth = (req, res, next) => {
+  if (config.isFirstRun) return next(); // Setup inicial
+  if (!req.session.user) {
+    return res.status(401).json({ error: 'Acesso negado' });
+  }
+  next();
+};
+```
+
+### Padrões de Resposta API
+```javascript
+// ✅ Sucesso (implementado)
 {
   "message": "Operação realizada com sucesso",
   "data": { /* dados opcionais */ }
 }
 
-// ✅ Erro com detalhes amigáveis
+// ✅ Erro estruturado (implementado)
 {
-  "error": "Mensagem amigável para o usuário",
+  "error": "Mensagem amigável",
   "details": "Detalhes técnicos",
   "suggestions": ["Sugestão 1", "Sugestão 2"]
 }
+```
 
-// ❌ Evitar respostas inconsistentes
-{
-  "status": "error",
-  "msg": "Erro",
-  "code": 500
+## 🎨 Sistema de Design Modular
+
+### Variáveis CSS Implementadas
+```css
+/* Definidas em public/css/base.css */
+:root {
+  /* Cores base */
+  --bg-primary: #ffffff;
+  --text-primary: #0f172a;
+  --border-primary: #e2e8f0;
+  
+  /* Espaçamento */
+  --space-sm: 0.5rem;
+  --space-md: 0.75rem;
+  --space-lg: 1rem;
+  
+  /* Bordas e sombras */
+  --radius-md: 0.5rem;
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+}
+
+/* Tema escuro */
+[data-theme="dark"] {
+  --bg-primary: #0f172a;
+  --text-primary: #f8fafc;
+  --border-primary: #334155;
 }
 ```
 
-### Middleware de Autenticação
+### Componentes Reutilizáveis Implementados
+
+#### 🔄 Sistema de Loading (public/js/ui.js)
 ```javascript
-// Padrão para rotas protegidas
-function requireAuth(req, res, next) {
-  if (!req.session.user) {
-    return res.status(401).json({ error: 'Acesso negado' });
-  }
-  next();
+export function toggleButtonLoading(button, isLoading) {
+  button.disabled = isLoading;
+  const textElement = button.querySelector('.btn-text');
+  const spinnerElement = button.querySelector('.spinner');
+  // ... implementação completa
+}
+```
+
+#### 🎨 Sistema de Toasts (public/js/ui.js)
+```javascript
+export function showToast(message, type = 'success', duration = 4000) {
+  // Toast com auto-close, hover pause, close button
 }
 
-// Aplicar em todas as rotas exceto login, setup e assets
+export function showDetailedErrorToast(mainError, details, suggestions) {
+  // Toast detalhado para erros complexos
+}
 ```
 
-## 🎨 Padrões de Interface
-
-### Design System Atual
-- **Cores Primárias**: Azul (#007bff), Verde (#28a745), Vermelho (#dc3545)
-- **Tipografia**: System fonts (-apple-system, BlinkMacSystemFont, Segoe UI)
-- **Grid**: CSS Grid e Flexbox para layouts responsivos
-- **Ícones**: Font Awesome ou ícones SVG embarcados
-
-### Componentes Reutilizáveis
-
-#### 🔄 Loading States
-```html
-<!-- Padrão para operações assíncronas -->
-<button id="testBtn" class="btn btn-primary">
-  <span class="btn-text">Testar Conexão</span>
-  <span class="btn-loading hidden">
-    <i class="fas fa-spinner fa-spin"></i> Testando...
-  </span>
-</button>
-```
-
-#### ⚠️ Mensagens de Status
-```html
-<!-- Container padrão para mensagens -->
-<div id="messageContainer" class="message-container">
-  <!-- Dinamicamente populado via JavaScript -->
-</div>
-```
-
-#### 📝 Formulários
-```html
-<!-- Padrão para inputs de configuração -->
-<div class="form-group">
-  <label for="serverInput">Servidor SQL:</label>
-  <input type="text" id="serverInput" class="form-control" 
-         placeholder="localhost" required>
-  <small class="form-text text-muted">
-    Endereço do servidor SQL Server
-  </small>
-</div>
-```
-
-### JavaScript Patterns
-
-#### 🔄 Requisições AJAX
+#### 🎯 Sistema de Temas (public/js/ui.js)
 ```javascript
-// ✅ Padrão para chamadas de API
-async function callAPI(endpoint, method = 'GET', data = null) {
+export function setupThemeToggle() {
+  // Toggle tema com persistência localStorage
+  // Prevenção FOUC via script inline
+  // Auto-reload de ícones Lucide
+}
+```
+
+## 📱 Responsividade Implementada
+
+### Breakpoints CSS (public/css/responsive.css)
+```css
+/* Mobile first approach implementado */
+@media (max-width: 1024px) { /* Tablets */ }
+@media (max-width: 768px)  { /* Mobile large */ }
+@media (max-width: 480px)  { /* Mobile small */ }
+@media (max-width: 360px)  { /* Mobile extra small */ }
+```
+
+### Componentes Responsivos
+- **Sidebar**: Colapsa para overlay mobile
+- **Cards**: Grid responsivo com breakpoints
+- **Tabelas**: Scroll horizontal em mobile
+- **Formulários**: Stacking automático em mobile
+- **Modals**: Altura adaptável por viewport
+
+## 🔒 Segurança Frontend Implementada
+
+### Validação e Sanitização
+```javascript
+// Implementado em public/js/api.js
+export async function apiFetch(url, options = {}) {
   try {
-    const options = {
-      method: method,
-      headers: { 'Content-Type': 'application/json' }
-    };
+    const response = await fetch(url, {
+      ...options,
+      headers: { 'Content-Type': 'application/json', ...options.headers }
+    });
     
-    if (data) {
-      options.body = JSON.stringify(data);
+    if (response.status === 401) {
+      showToast('Sessão expirada. Redirecionando...', 'error');
+      setTimeout(() => window.location.href = '/login.html', 1500);
+      throw new Error('Unauthorized');
     }
-    
-    const response = await fetch(endpoint, options);
-    const result = await response.json();
-    
-    if (!response.ok) {
-      throw new Error(result.error || 'Erro na requisição');
-    }
-    
-    return result;
+    // ... tratamento adicional
   } catch (error) {
     console.error('API Error:', error);
-    showMessage(error.message, 'error');
     throw error;
   }
 }
 ```
 
-#### 📝 Manipulação de Formulários
-```javascript
-// ✅ Padrão para submissão de formulários
-function setupFormSubmission(formId, apiEndpoint, onSuccess) {
-  const form = document.getElementById(formId);
-  
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const formData = new FormData(form);
-    const data = Object.fromEntries(formData);
-    
-    try {
-      setButtonLoading(form.querySelector('button[type="submit"]'), true);
-      const result = await callAPI(apiEndpoint, 'POST', data);
-      
-      showMessage(result.message, 'success');
-      if (onSuccess) onSuccess(result);
-      
-    } catch (error) {
-      // Erro já tratado em callAPI
-    } finally {
-      setButtonLoading(form.querySelector('button[type="submit"]'), false);
+### Prevenção FOUC (Flash of Unstyled Content)
+```html
+<!-- Implementado em todos os HTMLs -->
+<script>
+  (function() {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
     }
-  });
-}
+  })();
+</script>
 ```
 
-#### 🎛️ Estado de Loading
+## 🚀 Performance Frontend Otimizada
+
+### Métricas Atuais Implementadas
+- **CSS Modular**: 25KB total (5 arquivos especializados)
+- **JavaScript Modular**: 35KB total (8 módulos específicos)
+- **Loading Progressivo**: Módulos carregados sob demanda
+- **Cache Control**: Headers apropriados implementados
+
+### Otimizações de UX Implementadas
+- **Loading States**: Em todos os botões e operações assíncronas
+- **Error Handling**: Toasts informativos com sugestões
+- **Tema Persistence**: LocalStorage com aplicação imediata
+- **Mobile First**: Design responsivo completo
+
+## 📋 Padrões para Desenvolvimento Modular
+
+### Estrutura de Novos Módulos JS
 ```javascript
-// ✅ Função utilitária para loading states
-function setButtonLoading(button, isLoading) {
-  const textSpan = button.querySelector('.btn-text');
-  const loadingSpan = button.querySelector('.btn-loading');
-  
-  if (isLoading) {
-    textSpan.classList.add('hidden');
-    loadingSpan.classList.remove('hidden');
-    button.disabled = true;
-  } else {
-    textSpan.classList.remove('hidden');
-    loadingSpan.classList.add('hidden');
-    button.disabled = false;
-  }
+// Template para novos módulos
+// Exportar funções específicas
+export function setupNewFeature() {
+  // Inicialização
 }
+
+export function handleNewAction() {
+  // Lógica de ação
+}
+
+// Importar no entry point (script.js)
+import { setupNewFeature } from './js/new-feature.js';
 ```
 
-## 📱 Responsividade e Acessibilidade
-
-### Breakpoints CSS
+### Estrutura de Novos Estilos CSS
 ```css
-/* Mobile first approach */
-@media (min-width: 576px) { /* SM */ }
-@media (min-width: 768px) { /* MD */ }
-@media (min-width: 992px) { /* LG */ }
-@media (min-width: 1200px) { /* XL */ }
+/* Adicionar em módulo apropriado */
+/* components.css para novos componentes */
+/* layout.css para mudanças de estrutura */
+/* responsive.css para media queries */
+
+.new-component {
+  /* Usar variáveis CSS */
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+}
 ```
 
-### Padrões de Acessibilidade
-- **Labels**: Sempre associar labels aos inputs
-- **ARIA**: Usar aria-label para botões e ícones
-- **Contraste**: Mínimo 4.5:1 para texto normal
-- **Navegação**: Suporte completo ao teclado
-- **Foco**: Indicadores visuais claros
+## 🔄 APIs e Integração Backend
 
-## 🔒 Segurança Frontend
-
-### Validação Client-Side
+### Padrão de Rotas Implementado
 ```javascript
-// ✅ Validação (mas sempre revalidar no backend)
-function validatePassword(password) {
-  if (password.length < 6) {
-    throw new Error('Senha deve ter pelo menos 6 caracteres');
-  }
-  return true;
-}
+// src/api/routes/[module].js
+const express = require('express');
+const router = express.Router();
+const { requireAuth } = require('../middleware/auth');
 
-function validateRequired(value, fieldName) {
-  if (!value || value.trim() === '') {
-    throw new Error(`${fieldName} é obrigatório`);
+router.get('/endpoint', requireAuth, async (req, res) => {
+  try {
+    // Lógica da rota
+    res.json({ message: 'Sucesso', data: result });
+  } catch (error) {
+    logger.error('Erro na rota', error);
+    res.status(500).json({ 
+      error: 'Erro interno',
+      details: error.message 
+    });
   }
-  return true;
-}
+});
+
+module.exports = router;
 ```
 
-### Proteção XSS
-```javascript
-// ✅ Escapar HTML em conteúdo dinâmico
-function escapeHtml(text) {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-}
+## 📊 Checklist para Novas Features Frontend
 
-// Usar sempre que inserir conteúdo dinâmico
-element.innerHTML = escapeHtml(userInput);
-```
+### ✅ Desenvolvimento Modular
+- [ ] **Módulo JS**: Criar/atualizar módulo específico
+- [ ] **Estilos CSS**: Adicionar no módulo CSS apropriado
+- [ ] **Responsividade**: Testar em múltiplos dispositivos
+- [ ] **Temas**: Verificar funcionamento dark/light
+- [ ] **Loading States**: Implementar para operações assíncronas
+- [ ] **Error Handling**: Toast notifications apropriadas
 
-## 🚀 Performance Frontend
+### ✅ Performance e Compatibilidade
+- [ ] **Tamanho**: Verificar impacto no bundle total
+- [ ] **Browser Testing**: IE11+, Chrome 60+, Firefox 55+
+- [ ] **Mobile**: Testar touch, gestos, viewport
+- [ ] **Acessibilidade**: ARIA labels, contraste, navegação teclado
 
-### Otimizações Atuais
-- **Assets Embarcados**: Tudo incluído no executável (sem CDN)
-- **CSS Minificado**: Compressão manual quando necessário
-- **JavaScript Vanilla**: Sem overhead de frameworks
-- **Imagens Otimizadas**: PNG/JPG comprimidos
-
-### Métricas de Performance
-- **First Paint**: < 500ms (local)
-- **Interatividade**: < 1s para ações básicas
-- **Bundle Size**: < 50KB total frontend
-- **Memory Usage**: < 50MB para interface
-
-## 📋 Checklist para Novas Features Frontend
-
-### ✅ Desenvolvimento
-- [ ] Interface responsiva (mobile-first)
-- [ ] Loading states para operações assíncronas
-- [ ] Validação client-side + backend
-- [ ] Mensagens de erro amigáveis
-- [ ] Tratamento de offline/conectividade
-
-### ✅ Segurança
-- [ ] Validação de inputs
-- [ ] Escape de HTML
-- [ ] CSRF protection (se aplicável)
-- [ ] Rate limiting no backend
-
-### ✅ UX/UI
-- [ ] Feedback visual para ações
-- [ ] Estados de erro claros
-- [ ] Confirmações para ações destrutivas
-- [ ] Tooltips/ajuda contextual
-
-### ✅ Compatibilidade
-- [ ] Testado em IE11+ (empresas)
-- [ ] Funciona sem JavaScript (degradação graceful)
-- [ ] Acessibilidade básica (WCAG AA)
-- [ ] Performance aceitável em hardware antigo
+### ✅ Integração
+- [ ] **API**: Seguir padrões de resposta
+- [ ] **Autenticação**: Aplicar middleware quando necessário
+- [ ] **Logs**: Implementar logging estruturado
+- [ ] **Build**: Verificar compatibilidade com pkg node12-win-x64
 

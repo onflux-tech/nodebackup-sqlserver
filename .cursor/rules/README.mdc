@@ -7,50 +7,55 @@ alwaysApply: true
 
 ## 🎯 Visão Geral
 
-Este conjunto de regras fornece diretrizes completas para desenvolvimento da aplicação **NodeBackup SQL Server** - uma solução de backup automatizado compatível com **Node.js 12** e distribuída como executável único para Windows.
+Este conjunto de regras fornece diretrizes completas para desenvolvimento da aplicação **NodeBackup SQL Server** - uma solução de backup automatizado compatível com **Node.js 12** e distribuída como executável único para Windows, agora com **arquitetura modular** moderna.
 
 ## 📚 Regras Disponíveis
 
 ### 1. 🏗️ [Visão Geral do Projeto](mdc:projeto-nodebackup.mdc)
-**Escopo**: Arquitetura, tecnologias e estrutura geral
-- Descrição completa do projeto
-- Stack tecnológica (Node 12, Express, SQL Server)
-- Mapeamento de arquivos principais
+**Escopo**: Arquitetura modular, tecnologias e estrutura atual
+- Descrição completa do projeto refatorado
+- Stack tecnológica (Node 12, Express, SQL Server, SQLite)
+- Mapeamento da estrutura modular (frontend + backend)
 - Sistema de configuração criptografada
 - Processo de build com assets embarcados
+- **NOVO**: Arquitetura modular com 8 módulos JS e 5 módulos CSS
 
 ### 2. 🛠️ [Padrões de Desenvolvimento](mdc:padroes-desenvolvimento.mdc)
-**Escopo**: Compatibilidade Node 12, estrutura de código e boas práticas
+**Escopo**: Compatibilidade Node 12, estrutura modular e boas práticas
 - Compatibilidade obrigatória com Node.js 12.x
-- Padrões de estrutura de arquivos
+- **ATUALIZADO**: Padrões de estrutura modular (frontend/backend)
+- **NOVO**: Organização de módulos JS (ES6) e CSS (variáveis)
 - CommonJS vs ES Modules
 - Tratamento de erros e logging
 - Configuração segura e criptografia
-- Validações de build
+- **NOVO**: Checklist para desenvolvimento modular
 
 ### 3. 🌐 [Frontend e API](mdc:frontend-api-patterns.mdc)
-**Escopo**: Interface web, padrões de API REST e UX
-- Estrutura da interface web (JavaScript Vanilla + CSS)
-- Padrões de API REST consistentes
-- Componentes reutilizáveis da UI
+**Escopo**: Interface web modular, padrões de API REST e UX moderna
+- **RENOVADO**: Estrutura modular da interface web (5 CSS + 8 JS)
+- **NOVO**: Sistema de design com variáveis CSS e temas
+- Padrões de API REST com rotas modulares
+- **NOVO**: Middleware de autenticação centralizado
+- Componentes reutilizáveis modernos
 - Performance e compatibilidade browser
-- Segurança frontend (XSS, validação)
-- Responsividade e acessibilidade
+- **NOVO**: Sistema anti-FOUC implementado
+- Responsividade mobile-first completa
 
 ### 4. 🚀 [Deployment e Versionamento](mdc:deployment-versionamento.mdc)
 **Escopo**: Build, releases e distribuição
-- Versionamento semântico (v0.1.0 atual)
+- Versionamento semântico (v0.2.2 atual)
 - Processo de build com pkg
-- Assets embarcados (7za.exe, nssm.exe)
+- Assets embarcados (7za.exe, nssm.exe, public/ modular)
 - GitHub Releases e CI/CD
 - Instalador NSIS opcional
 - Troubleshooting de build
 
 ### 5. 📈 [Roadmap e Tasklist](mdc:roadmap-tasklist.mdc)
-**Escopo**: Próximas implementações e plano de desenvolvimento
-- Estado atual vs futuras funcionalidades
-- 5 fases de desenvolvimento planejadas
+**Escopo**: Próximas implementações sobre base modular
+- **ATUALIZADO**: Estado atual v0.2.2 (pós-refatoração)
+- **NOVO**: Fases de desenvolvimento com base modular
 - Tasklist detalhada por feature
+- **PRÓXIMO**: v0.3.0 - Logs em Tempo Real (WebSocket)
 - Estimativas de tempo e prioridades
 - Melhorias de infraestrutura
 - Critérios de qualidade
@@ -58,18 +63,20 @@ Este conjunto de regras fornece diretrizes completas para desenvolvimento da apl
 ## 🎯 Como Usar Estas Regras
 
 ### Para Desenvolvimento Ativo
-1. **Consulte** [padroes-desenvolvimento.mdc](mdc:padroes-desenvolvimento.mdc) para compatibilidade Node 12
+1. **Consulte** [padroes-desenvolvimento.mdc](mdc:padroes-desenvolvimento.mdc) para estrutura modular
 2. **Verifique** [frontend-api-patterns.mdc](mdc:frontend-api-patterns.mdc) para mudanças na interface
 3. **Siga** os padrões de commit em [deployment-versionamento.mdc](mdc:deployment-versionamento.mdc)
+4. **NOVO**: Use a estrutura modular para adicionar novas funcionalidades
 
 ### Para Novas Features
 1. **Consulte** [roadmap-tasklist.mdc](mdc:roadmap-tasklist.mdc) para ver se já está planejado
-2. **Mantenha** compatibilidade conforme [padroes-desenvolvimento.mdc](mdc:padroes-desenvolvimento.mdc)
-3. **Teste** o build conforme [deployment-versionamento.mdc](mdc:deployment-versionamento.mdc)
+2. **NOVO**: Crie módulos JS/CSS apropriados conforme [padroes-desenvolvimento.mdc](mdc:padroes-desenvolvimento.mdc)
+3. **NOVO**: Use rotas modulares conforme [frontend-api-patterns.mdc](mdc:frontend-api-patterns.mdc)
+4. **Teste** o build conforme [deployment-versionamento.mdc](mdc:deployment-versionamento.mdc)
 
 ### Para Entendimento Geral
-1. **Comece** com [projeto-nodebackup.mdc](mdc:projeto-nodebackup.mdc) para overview
-2. **Explore** arquivos mencionados nas regras para entender implementação
+1. **Comece** com [projeto-nodebackup.mdc](mdc:projeto-nodebackup.mdc) para overview modular
+2. **Explore** estrutura modular documentada nas regras
 3. **Consulte** [roadmap-tasklist.mdc](mdc:roadmap-tasklist.mdc) para contexto futuro
 
 ## ⚠️ Restrições Importantes
@@ -79,47 +86,92 @@ Este conjunto de regras fornece diretrizes completas para desenvolvimento da apl
 - **Windows 7+**: Executável deve funcionar em sistemas antigos
 - **SQL Server 2008+**: Manter suporte a versões legadas
 - **Assets Embarcados**: 7za.exe e nssm.exe obrigatórios
+- **NOVO**: Modularidade deve manter compatibilidade total
 
-### 🟡 Limitações Técnicas
+### 🟡 Limitações Técnicas Atualizadas
 - **Tamanho Executável**: < 100MB
-- **Interface Web**: < 50KB total (JavaScript + CSS)
+- **Interface Web**: < 60KB total (35KB JS + 25KB CSS - modular)
 - **Dependências**: Evitar bibliotecas que exijam Node 14+
 - **Build Target**: pkg node12-win-x64 obrigatório
+- **NOVO**: Módulos devem seguir padrões estabelecidos
 
 ## 🚀 Estado Atual vs Próximos Passos
 
-### ✅ Implementado (v0.2.2)
-- Todas as funcionalidades da v0.1.0
-- **Painel de Histórico**: Visualização completa do histórico de backups com SQLite
-- **Estatísticas**: Total de backups, sucessos/falhas, duração média e tamanho total
-- **Interface Modernizada**: Tema claro/escuro, fonte Inter, sidebar responsiva
-- **Suporte Móvel**: Interface completamente responsiva com navegação mobile
-- **Autenticação Aprimorada**: Middleware de autenticação e cache control
+### ✅ Implementado (v0.2.2 - Pós-Refatoração)
+- **Base Sólida**: Todas as funcionalidades v0.1.0 e v0.2.0
+- **NOVO - Arquitetura Modular**: Frontend e backend completamente refatorados
+- **CSS Modular**: 5 arquivos especializados (base, components, layout, login, responsive)
+- **JavaScript Modular**: 8 módulos específicos (ui, config, database, history, storage, schedule, auth, api)
+- **Backend Reorganizado**: Rotas separadas por funcionalidade com middleware dedicado
+- **Interface Modernizada**: Tema claro/escuro, responsiva, mobile-first
+- **Sistema Anti-FOUC**: Script inline implementado
+- **Painel de Histórico**: Visualização completa com SQLite
+- **Política de Retenção**: Limpeza automática configurável
 
 ### 🎯 Próxima Prioridade (v0.3.0 - Fase 1.3)
-- **Logs em Tempo Real**: Stream de logs via WebSocket para monitoramento ao vivo
-- **Interface de Logs**: Painel "Logs ao Vivo" com filtros e controles
+- **Logs em Tempo Real**: Stream via WebSocket aproveitando base modular
+- **Nova Aba "Logs ao Vivo"**: Integrada ao sistema de temas existente
+- **Módulo logs.js**: Seguindo padrões modulares estabelecidos
 
-### 🔮 Roadmap v0.x.x
-- **v0.2.0**: Painel de Histórico (SQLite + Interface)
-- **v0.3.0**: Logs em Tempo Real (WebSocket)
-- **v0.4.0**: Notificações por E-mail
-- **v0.5.0**: Integração Telegram/WhatsApp
-- **v1.0.0**: Release estável completo
+### 🔮 Roadmap v0.x.x Atualizado
+- **v0.3.0**: Logs em Tempo Real (WebSocket) - 3-4 semanas
+- **v0.4.0**: Notificações por E-mail (SMTP) - 6-8 semanas
+- **v0.5.0**: Integração Telegram/WhatsApp - 4-6 semanas
+- **v1.0.0**: Release estável consolidado - 2-3 semanas
 
-## 📞 Quando Consultar Cada Regra
+## 📊 Melhorias Implementadas na Refatoração
+
+### 🏗️ **Arquitetura**
+- **Modularidade**: Código separado por responsabilidade
+- **Manutenibilidade**: Fácil localização e edição de funcionalidades
+- **Escalabilidade**: Base sólida para expansão rápida
+- **Performance**: Carregamento otimizado e cache inteligente
+
+### 🎨 **Frontend**
+- **CSS Variables**: Sistema de design consistente
+- **Responsividade**: Mobile-first com breakpoints definidos
+- **Temas**: Sistema robusto claro/escuro
+- **Componentes**: Reutilizáveis e bem documentados
+
+### 🔧 **Backend**
+- **Rotas Modulares**: Separadas por funcionalidade
+- **Middleware**: Autenticação centralizada
+- **API Consistente**: Padrões de resposta unificados
+- **Error Handling**: Tratamento robusto e informativo
+
+## 📞 Quando Consultar Cada Regra (Atualizado)
 
 | Situação | Regra Principal | Regras Secundárias |
-|----------|-----------------|-------------------|
+|----|-----|----|
 | **Novo no projeto** | [projeto-nodebackup.mdc](mdc:projeto-nodebackup.mdc) | Todas |
-| **Adicionando feature** | [roadmap-tasklist.mdc](mdc:roadmap-tasklist.mdc) | [padroes-desenvolvimento.mdc](mdc:padroes-desenvolvimento.mdc) |
-| **Mudando interface** | [frontend-api-patterns.mdc](mdc:frontend-api-patterns.mdc) | [padroes-desenvolvimento.mdc](mdc:padroes-desenvolvimento.mdc) |
+| **Desenvolvimento modular** | [padroes-desenvolvimento.mdc](mdc:padroes-desenvolvimento.mdc) | [frontend-api-patterns.mdc](mdc:frontend-api-patterns.mdc) |
+| **Adicionando módulo CSS/JS** | [frontend-api-patterns.mdc](mdc:frontend-api-patterns.mdc) | [padroes-desenvolvimento.mdc](mdc:padroes-desenvolvimento.mdc) |
+| **Nova rota API** | [frontend-api-patterns.mdc](mdc:frontend-api-patterns.mdc) | [padroes-desenvolvimento.mdc](mdc:padroes-desenvolvimento.mdc) |
 | **Fazendo release** | [deployment-versionamento.mdc](mdc:deployment-versionamento.mdc) | Todas |
 | **Bug crítico** | [padroes-desenvolvimento.mdc](mdc:padroes-desenvolvimento.mdc) | [projeto-nodebackup.mdc](mdc:projeto-nodebackup.mdc) |
-| **Planejamento** | [roadmap-tasklist.mdc](mdc:roadmap-tasklist.mdc) | [deployment-versionamento.mdc](mdc:deployment-versionamento.mdc) |
+| **Planejamento features** | [roadmap-tasklist.mdc](mdc:roadmap-tasklist.mdc) | [padroes-desenvolvimento.mdc](mdc:padroes-desenvolvimento.mdc) |
+
+## 🔄 Vantagens da Arquitetura Modular
+
+### 📈 **Desenvolvimento**
+- **Localização Rápida**: Funcionalidade específica em arquivo dedicado
+- **Edição Segura**: Mudanças isoladas sem impacto em outras áreas
+- **Debugging Eficiente**: Logs e erros com contexto específico
+- **Code Review**: Mudanças focadas e fáceis de revisar
+
+### 🚀 **Performance**
+- **Carregamento Otimizado**: Módulos carregados conforme necessidade
+- **Cache Inteligente**: Módulos cachados independentemente
+- **Bundle Size**: Controle granular do tamanho de cada área
+- **Responsividade**: CSS especializado para cada contexto
+
+### 🔧 **Manutenção**
+- **Atualizações Isoladas**: Mudança em um módulo não afeta outros
+- **Testes Focados**: Cada módulo pode ser testado independentemente
+- **Documentação Clara**: Responsabilidade bem definida
+- **Escalabilidade**: Fácil adição de novas funcionalidades
 
 ---
 
-**💡 Dica**: Use Ctrl+F para buscar tópicos específicos dentro de cada regra, ou consulte os links `[arquivo.ext](mdc:arquivo.ext)` para navegar rapidamente pelos arquivos do projeto.
-
+**💡 Dica**: A nova estrutura modular permite desenvolvimento mais rápido e manutenção mais fácil. Use Ctrl+F para buscar funcionalidades específicas dentro de cada módulo, ou consulte os links `[arquivo.ext](mdc:arquivo.ext)` para navegar rapidamente pelos arquivos do projeto.
 

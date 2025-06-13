@@ -19,19 +19,28 @@ alwaysApply: true
 - winston 3.3.3 (evitar versões 3.8+)
 - pkg 5.8.1 (suporte a Node 12)
 
-## 📁 Padrões de Estrutura
+## 📁 Padrões de Estrutura Modular
 
-### Organização de Arquivos
+### Organização Backend (src/)
 ```
 src/
 ├── app.js              # Entry point principal
 ├── server.js           # Configuração Express
 ├── config.js           # Gerenciamento configuração
 ├── api/
-│   └── routes.js       # Todas as rotas REST
+│   ├── middleware/
+│   │   └── auth.js     # Middleware autenticação
+│   └── routes/
+│       ├── auth.js     # Rotas autenticação
+│       ├── browse.js   # Rotas navegação arquivos
+│       ├── config.js   # Rotas configuração
+│       ├── database.js # Rotas banco de dados
+│       ├── history.js  # Rotas histórico
+│       └── storage.js  # Rotas armazenamento
 ├── services/
 │   ├── database.js     # Operações SQL Server
 │   ├── ftp.js         # Operações FTP
+│   ├── history.js     # Serviço histórico SQLite
 │   ├── scheduler.js   # Agendamento
 │   └── windowsService.js # Serviço Windows
 └── utils/
@@ -40,61 +49,88 @@ src/
     └── errorHandler.js # Tratamento erros
 ```
 
-### Interface Web (public/)
-- **index.html** - Dashboard principal
-- **script.js** - JavaScript principal (manter < 25KB)
-- **styles.css** - CSS principal (manter < 15KB)
-- **login.html/js** - Sistema autenticação
-- **setup.html/js** - Configuração inicial
+### Organização Frontend Modular (public/)
+```
+public/
+├── css/
+│   ├── base.css        # Variáveis CSS, reset, temas
+│   ├── components.css  # Componentes UI (botões, forms, cards)
+│   ├── layout.css      # Layout principal, header, sidebar
+│   ├── login.css       # Estilos página login/setup
+│   └── responsive.css  # Media queries responsivas
+├── js/
+│   ├── api.js         # Funções requisições API
+│   ├── auth.js        # Lógica autenticação/logout
+│   ├── config.js      # Gerenciamento configurações
+│   ├── database.js    # Seleção e listagem bancos
+│   ├── history.js     # Painel histórico backups
+│   ├── schedule.js    # Agendamento backups
+│   ├── storage.js     # Configuração FTP e limpeza
+│   └── ui.js          # Componentes UI (tema, tabs, toasts)
+├── index.html         # Dashboard principal
+├── login.html         # Página login
+├── setup.html         # Configuração inicial
+├── script.js          # Entry point JS (importa módulos)
+├── login.js           # Script página login
+└── setup.js           # Script configuração inicial
+```
 
-## 🛠️ Padrões de Código
+## 🛠️ Padrões de Código Modular
 
-### Módulos e Imports
+### Módulos JavaScript (ES6 Modules)
 ```javascript
-// ✅ Usar CommonJS (Node 12 compatível)
-const express = require('express');
-const { getConfig } = require('./config');
+// ✅ Exportar funções específicas
+export function setupThemeToggle() { /* ... */ }
+export function showToast(message, type) { /* ... */ }
 
-// ❌ Evitar ES Modules
-import express from 'express';
+// ✅ Importar módulos no entry point
+import { setupThemeToggle, setupTabs } from './js/ui.js';
+import { setupConfigForm, loadConfig } from './js/config.js';
+import { setupDatabase } from './js/database.js';
+```
+
+### Organização de Rotas API
+```javascript
+// ✅ Rotas separadas por funcionalidade
+const express = require('express');
+const router = express.Router();
+const { requireAuth } = require('../middleware/auth');
+
+// Aplicar middleware quando necessário
+router.get('/config', requireAuth, getConfig);
+router.post('/config', requireAuth, saveConfig);
+
+module.exports = router;
+```
+
+### CSS Modular com Variáveis
+```css
+/* ✅ Usar variáveis CSS definidas em base.css */
+.card {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+/* ✅ Temas automáticos */
+[data-theme="dark"] {
+  --bg-primary: #0f172a;
+  --text-primary: #f8fafc;
+}
 ```
 
 ### Tratamento de Erros
 - Sempre usar [src/utils/logger.js](mdc:src/utils/logger.js)
 - Aplicar [src/utils/errorHandler.js](mdc:src/utils/errorHandler.js) para erros de usuário
 - Logs estruturados com níveis apropriados
-
-### Async/Await (Node 12+)
-```javascript
-// ✅ Async/await suportado
-async function performBackup() {
-  try {
-    const result = await backupDatabase();
-    logger.info('Backup concluído');
-    return result;
-  } catch (error) {
-    logger.error('Falha no backup', error);
-    throw error;
-  }
-}
-```
+- Toast notifications via [public/js/ui.js](mdc:public/js/ui.js)
 
 ### Configuração Segura
 - Todas as configurações via [src/config.js](mdc:src/config.js)
 - Arquivo config.enc criptografado obrigatório
+- Middleware de autenticação em [src/api/middleware/auth.js](mdc:src/api/middleware/auth.js)
 - Nunca hardcode credenciais
-
-## 🔒 Padrões de Segurança
-
-### Autenticação (src/api/routes.js)
-- bcryptjs para hash de senhas
-- express-session para sessões
-- Validação obrigatória em todas as rotas protegidas
-
-### Criptografia
-- Usar [src/utils/encryption.js](mdc:src/utils/encryption.js)
-- crypto-js para criptografia simétrica
-- Nunca salvar dados sensíveis em plain text
 
 ## 📝 Logging Padrão
 
@@ -121,7 +157,7 @@ logger.error('Falha ao conectar FTP', { host: config.ftp.host, error: err.messag
 ### Assets Embarcados
 - 7za.exe para compressão
 - nssm.exe para serviço Windows
-- Todos os arquivos public/ para interface web
+- Todos os arquivos public/ para interface web modular
 
 ### Executável Final
 - NodeBackup.exe único (±57MB)
@@ -134,9 +170,50 @@ logger.error('Falha ao conectar FTP', { host: config.ftp.host, error: err.messag
 - Testar em Node.js 12.x antes de commit
 - Validar build com pkg node12-win-x64
 - Verificar funcionamento como serviço Windows
+- Testar responsividade em múltiplos dispositivos
 
 ### Validações de Código
 - Não usar features Node 14+
 - Evitar dependências que quebrem Node 12
 - Manter compatibilidade com sqlcmd legado
+- Validar funcionamento de todos os módulos JS/CSS
+
+## 🎨 Padrões de Desenvolvimento Frontend
+
+### Nomenclatura de Arquivos
+- **CSS**: Usar kebab-case (`base.css`, `components.css`)
+- **JavaScript**: Usar camelCase nos nomes de função
+- **Modularidade**: Um arquivo por responsabilidade
+
+### Performance e Tamanho
+- **CSS Total**: Manter < 25KB (5 arquivos CSS)
+- **JavaScript Total**: Manter < 35KB (8 módulos JS)
+- **Compatibilidade**: IE11+, Chrome 60+, Firefox 55+
+
+### Sistema de Temas
+- **Variáveis CSS**: Definir em [public/css/base.css](mdc:public/css/base.css)
+- **Theme Toggle**: Implementado em [public/js/ui.js](mdc:public/js/ui.js)
+- **FOUC Prevention**: Script inline no `<head>` de todos os HTMLs
+
+## 📋 Checklist para Novas Features
+
+### ✅ Frontend
+- [ ] Criar módulo JS específico se necessário
+- [ ] Adicionar estilos no módulo CSS apropriado
+- [ ] Testar responsividade mobile
+- [ ] Verificar funcionamento em tema escuro
+- [ ] Implementar loading states apropriados
+
+### ✅ Backend  
+- [ ] Criar rota em módulo apropriado
+- [ ] Aplicar middleware de autenticação
+- [ ] Implementar logs estruturados
+- [ ] Testar tratamento de erros
+- [ ] Validar entrada de dados
+
+### ✅ Build e Deploy
+- [ ] Verificar compatibilidade Node 12
+- [ ] Testar build local
+- [ ] Validar tamanho do executável
+- [ ] Testar instalação como serviço
 
