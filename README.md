@@ -35,7 +35,7 @@ Uma solução segura e leve para automatizar backups de bancos de dados SQL Serv
 
 - **Sistema Operacional:** Windows 7 ou superior.
 - **SQL Server (2008 ou superior):** A ferramenta `sqlcmd` precisa estar instalada e acessível no `PATH` do sistema.
-- **Node.js (v12 ou superior):** Necessário apenas se você for modificar ou compilar o projeto.
+- **Node.js (v18 ou superior):** Necessário apenas se você for modificar ou compilar o projeto.
 
 ## 🚀 Como Usar
 
