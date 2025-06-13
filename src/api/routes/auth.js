@@ -1,0 +1,91 @@
+const express = require('express');
+const bcrypt = require('bcryptjs');
+const { getConfig, setConfig, saveConfig } = require('../../config');
+const { requireAuth } = require('../middleware/auth');
+
+const router = express.Router();
+
+router.post('/setup', (req, res) => {
+  const config = getConfig();
+  if (!config.app.isInitialSetup) {
+    return res.status(403).json({ message: 'A configuração inicial já foi realizada.' });
+  }
+
+  const { username, password } = req.body;
+  if (!username || !password || password.length < 6) {
+    return res.status(400).json({ message: 'Usuário e senha (mínimo 6 caracteres) são obrigatórios.' });
+  }
+
+  const salt = bcrypt.genSaltSync(10);
+  config.app.username = username;
+  config.app.password = bcrypt.hashSync(password, salt);
+  config.app.isInitialSetup = false;
+
+  setConfig(config);
+  if (saveConfig()) {
+    res.status(200).json({ message: 'Conta de administrador criada com sucesso.' });
+  } else {
+    res.status(500).json({ message: 'Erro ao salvar a configuração.' });
+  }
+});
+
+router.post('/change-password', requireAuth, (req, res) => {
+  const { username, oldPassword, newPassword, confirmNewPassword } = req.body;
+  const config = getConfig();
+
+  if (config.app.isInitialSetup) {
+    return res.status(403).json({ message: 'Execute a configuração inicial primeiro.' });
+  }
+
+  if (newPassword !== confirmNewPassword) {
+    return res.status(400).json({ message: 'As novas senhas não coincidem.' });
+  }
+
+  if (newPassword.length < 6) {
+    return res.status(400).json({ message: 'A nova senha deve ter pelo menos 6 caracteres.' });
+  }
+
+  const storedUser = config.app.username;
+  const storedHash = config.app.password;
+
+  if (username === storedUser && bcrypt.compareSync(oldPassword, storedHash)) {
+    const salt = bcrypt.genSaltSync(10);
+    config.app.password = bcrypt.hashSync(newPassword, salt);
+    setConfig(config);
+    if (saveConfig()) {
+      res.status(200).json({ message: 'Senha alterada com sucesso.' });
+    } else {
+      res.status(500).json({ message: 'Erro ao salvar a nova senha.' });
+    }
+  } else {
+    res.status(401).json({ message: 'Usuário ou senha antiga incorretos.' });
+  }
+});
+
+router.post('/login', (req, res) => {
+  const { username, password } = req.body;
+  const config = getConfig();
+
+  const storedUser = config.app.username;
+  const storedHash = config.app.password;
+
+  if (username === storedUser && bcrypt.compareSync(password, storedHash)) {
+    req.session.user = { username: storedUser };
+    res.status(200).json({ message: 'Login bem-sucedido.' });
+  } else {
+    res.status(401).json({ message: 'Usuário ou senha inválidos.' });
+  }
+});
+
+router.post('/logout', requireAuth, (req, res) => {
+  req.session.destroy(err => {
+    if (err) {
+      return res.status(500).json({ message: 'Não foi possível fazer logout.' });
+    }
+    res.clearCookie('connect.sid');
+    res.status(200).json({ message: 'Logout bem-sucedido.' });
+  });
+});
+
+
+module.exports = router; 
