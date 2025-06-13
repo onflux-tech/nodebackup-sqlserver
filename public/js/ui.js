@@ -4,11 +4,8 @@ export function setupThemeToggle() {
   const themeToggle = document.getElementById('themeToggle');
   if (!themeToggle) return;
 
-  const savedTheme = localStorage.getItem('theme') || 'light';
-  document.documentElement.setAttribute('data-theme', savedTheme);
-
   themeToggle.addEventListener('click', () => {
-    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
     const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
 
     document.documentElement.setAttribute('data-theme', newTheme);
