@@ -44,16 +44,6 @@ jobs:
           Rename-Item "NodeBackupInstaller.exe" "NodeBackupInstaller-$version.exe"
         shell: powershell
 
-      - name: Fazer upload do executável para a release
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./NodeBackup.exe
-          asset_name: NodeBackup.exe
-          asset_content_type: application/octet-stream
-
       - name: Fazer upload do instalador para a release
         uses: actions/upload-release-asset@v1
         env:
