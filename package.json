@@ -1,6 +1,6 @@
 {
   "name": "node-backup",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "Backup automático SQL Server",
   "main": "src/app.js",
   "bin": "src/app.js",
@@ -22,12 +22,12 @@
   "dependencies": {
     "basic-ftp": "^5.0.5",
     "bcryptjs": "^2.4.3",
-    "connect-sqlite3": "^0.9.13",
     "crypto-js": "^4.2.0",
     "express": "^4.19.2",
     "express-session": "^1.18.0",
     "mssql": "^6.3.2",
     "node-schedule": "^2.1.1",
+    "socket.io": "^4.2.0",
     "sql.js": "^1.8.0",
     "winston": "^3.3.3",
     "winston-daily-rotate-file": "^4.5.5"

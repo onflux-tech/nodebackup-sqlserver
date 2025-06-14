@@ -41,7 +41,6 @@ const windowsService = require('./services/windowsService');
 const { initializeDatabase } = require('./services/history');
 
 async function main() {
-  logger.info('Iniciando a aplicação de backup...');
 
   if (windowsService.handleServiceCommands()) {
     return;
@@ -49,18 +48,23 @@ async function main() {
 
   try {
     await initializeDatabase();
+    logger.info('✅ Banco de dados de histórico inicializado com sucesso');
   } catch (error) {
-    logger.error('Falha ao inicializar o banco de dados de histórico. A aplicação será encerrada.', error);
+    logger.error('❌ Falha ao inicializar o banco de dados de histórico. A aplicação será encerrada.', error);
     process.exit(1);
   }
 
   if (!loadConfig()) {
-    logger.error('Falha ao carregar a configuração. A aplicação será encerrada.');
+    logger.error('❌ Falha ao carregar a configuração. A aplicação será encerrada.');
     process.exit(1);
   }
 
   startServer();
+
+  logger.info('⏰ Configurando agendamento de backups...');
   scheduleBackups();
+
+  logger.info('🚀 NodeBackup inicializado com sucesso! Acesse http://localhost:3030');
 }
 
 main(); 

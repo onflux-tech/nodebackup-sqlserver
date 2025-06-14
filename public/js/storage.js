@@ -100,7 +100,7 @@ async function cleanupFtp() {
 
 // --- Folder Browser Logic ---
 function closeFolderBrowser() {
-  elements.folderBrowserModal.classList.remove('show');
+  elements.folderBrowserModal.classList.remove('active');
 }
 
 async function loadAndDisplayPath(path = '') {
@@ -166,7 +166,7 @@ async function createNewFolder() {
 
 function setupFolderBrowser() {
   elements.browsePathBtn?.addEventListener('click', () => {
-    elements.folderBrowserModal.classList.add('show');
+    elements.folderBrowserModal.classList.add('active');
     loadAndDisplayPath();
     if (window.lucide) window.lucide.createIcons();
   });

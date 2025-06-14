@@ -15,7 +15,7 @@ function getDefaultConfig() {
     app: {
       username: '',
       password: '',
-      sessionSecret: require('crypto').randomBytes(32).toString('hex'),
+      sessionSecret: '',
       isInitialSetup: true
     },
     clientName: 'Cliente',
@@ -50,13 +50,32 @@ function getDefaultConfig() {
   };
 }
 
+function ensureSessionSecret(config) {
+  if (!config.app) {
+    config.app = getDefaultConfig().app;
+  }
+
+  if (!config.app.sessionSecret || config.app.sessionSecret === '') {
+    config.app.sessionSecret = require('crypto').randomBytes(32).toString('hex');
+    return true;
+  }
+
+  return false;
+}
+
 function loadConfig() {
   try {
+    let configChanged = false;
+
     if (fs.existsSync(encryptedConfigFile)) {
       const encryptedData = fs.readFileSync(encryptedConfigFile, 'utf8');
       const decryptedConfig = decrypt(encryptedData);
       if (decryptedConfig) {
         config = decryptedConfig;
+
+        if (ensureSessionSecret(config)) {
+          configChanged = true;
+        }
 
         if (config.ftp && !config.storage) {
           logger.warn('MIGRATION: Configuração de FTP antiga detectada. Migrando para o novo formato de Armazenamento.');
@@ -75,15 +94,22 @@ function loadConfig() {
             }
           };
           delete config.ftp;
-          saveConfig();
+          configChanged = true;
         } else if (!config.storage) {
           config.storage = getDefaultConfig().storage;
+          configChanged = true;
         }
 
-        logger.info('Configurações criptografadas carregadas com sucesso.');
+        if (configChanged) {
+          saveConfig();
+        }
+
+        logger.info('✅ Configurações criptografadas carregadas com sucesso.');
+        logger.info(`🔑 SessionSecret: ${config.app.sessionSecret.substring(0, 8)}...`);
       } else {
         logger.error('Falha ao descriptografar o arquivo de configuração. Verifique se o arquivo não está corrompido.');
         config = getDefaultConfig();
+        ensureSessionSecret(config);
         saveConfig();
       }
     } else if (fs.existsSync(configFile)) {
@@ -94,6 +120,11 @@ function loadConfig() {
       if (!config.app) {
         const defaultConfig = getDefaultConfig();
         config.app = defaultConfig.app;
+        configChanged = true;
+      }
+
+      if (ensureSessionSecret(config)) {
+        configChanged = true;
       }
 
       if (config.ftp && !config.storage) {
@@ -113,12 +144,14 @@ function loadConfig() {
           }
         };
         delete config.ftp;
+        configChanged = true;
       }
 
       if (!config.retention) {
         const defaultConfig = getDefaultConfig();
         config.retention = defaultConfig.retention;
         logger.info('Configuração de retenção adicionada com valores padrão.');
+        configChanged = true;
       }
 
       saveConfig();
@@ -126,6 +159,7 @@ function loadConfig() {
       logger.info('Migração concluída. O arquivo config.json foi removido por segurança.');
     } else {
       config = getDefaultConfig();
+      ensureSessionSecret(config);
       saveConfig();
       logger.info('Arquivo de configuração não encontrado. Um novo (config.enc) foi criado.');
       logger.warn('Nenhuma conta de administrador configurada. Acesse a interface web para criar uma.');

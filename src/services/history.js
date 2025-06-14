@@ -80,7 +80,6 @@ async function initializeDatabase() {
       db.run(createTableQuery);
       persist();
       sqliteEnabled = true;
-      logger.info('Serviço de histórico inicializado com sucesso.');
     } else {
       throw new Error('SQLite não disponível');
     }

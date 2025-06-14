@@ -157,7 +157,7 @@ function showBackupDetails(backup) {
   const isSuccess = backup.status === 'success';
   backupDetailsTitle.innerHTML = `<i data-lucide="${isSuccess ? 'check-circle' : 'alert-circle'}"></i> Detalhes do Backup - ${isSuccess ? 'Sucesso' : 'Falha'}`;
   backupDetailsContent.innerHTML = generateBackupDetailsHTML(backup);
-  backupDetailsModal.classList.add('show');
+  backupDetailsModal.classList.add('active');
   if (window.lucide) window.lucide.createIcons();
 }
 
@@ -269,8 +269,8 @@ export function setupHistory() {
   statusFilter?.addEventListener('change', () => !isHistoryLoading && loadHistory(1, false));
   historyPagination.prev?.addEventListener('click', () => historyCurrentPage > 1 && !isHistoryLoading && loadHistory(historyCurrentPage - 1, false));
   historyPagination.next?.addEventListener('click', () => historyCurrentPage < historyTotalPages && !isHistoryLoading && loadHistory(historyCurrentPage + 1, false));
-  closeBackupDetailsModalBtn?.addEventListener('click', () => backupDetailsModal.classList.remove('show'));
-  window.addEventListener('click', (e) => e.target === backupDetailsModal && backupDetailsModal.classList.remove('show'));
+  closeBackupDetailsModalBtn?.addEventListener('click', () => backupDetailsModal.classList.remove('active'));
+  window.addEventListener('click', (e) => e.target === backupDetailsModal && backupDetailsModal.classList.remove('active'));
 
   window.reloadHistory = (force) => {
     lastCalculatedLimit = 0;

@@ -128,6 +128,16 @@
                   <span class="nav-item-subtitle">Estatísticas e Execuções</span>
                 </div>
               </button>
+
+              <button class="nav-item" data-tab="logs">
+                <div class="nav-item-icon">
+                  <i data-lucide="terminal"></i>
+                </div>
+                <div class="nav-item-content">
+                  <span class="nav-item-title">Logs ao Vivo</span>
+                  <span class="nav-item-subtitle">Tempo Real</span>
+                </div>
+              </button>
             </div>
           </div>
         </div>
@@ -646,6 +656,113 @@
             </div>
           </div>
 
+          <!-- Logs Tab -->
+          <div class="tab-content" id="tab-logs">
+            <div class="page-header">
+              <div class="page-header-content">
+                <div class="page-icon">
+                  <i data-lucide="terminal"></i>
+                </div>
+                <div class="page-info">
+                  <h2 class="page-title">Logs em Tempo Real</h2>
+                  <p class="page-description">Acompanhe logs da aplicação em tempo real</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="content-grid single-column">
+              <!-- Controls Card -->
+              <div class="card">
+                <div class="card-header">
+                  <h3 class="card-title">
+                    <i data-lucide="settings"></i>
+                    Controles
+                  </h3>
+                  <div class="card-actions" id="logControls">
+                    <button type="button" id="pauseLogsBtn" class="btn btn-outline btn-sm">
+                      <i data-lucide="pause"></i>
+                      <span class="btn-text">Pausar</span>
+                    </button>
+                    <button type="button" id="autoScrollBtn" class="btn btn-outline btn-sm active">
+                      <i data-lucide="chevrons-down"></i>
+                      <span class="btn-text">Auto-scroll: On</span>
+                    </button>
+                    <button type="button" id="downloadLogsBtn" class="btn btn-outline btn-sm">
+                      <i data-lucide="download"></i>
+                      <span class="btn-text">Download</span>
+                    </button>
+                    <button type="button" id="clearLogsBtn" class="btn btn-outline btn-sm danger">
+                      <i data-lucide="trash-2"></i>
+                      <span class="btn-text">Limpar</span>
+                    </button>
+                  </div>
+                </div>
+                <div class="card-content">
+                  <div class="log-filters">
+                    <div class="filter-group">
+                      <label>Níveis de Log:</label>
+                      <div class="filter-checkboxes">
+                        <label class="log-level-filter">
+                          <input type="checkbox" value="error" checked>
+                          <span class="filter-label error">
+                            <i data-lucide="alert-circle"></i>
+                            Error
+                          </span>
+                        </label>
+                        <label class="log-level-filter">
+                          <input type="checkbox" value="warn" checked>
+                          <span class="filter-label warn">
+                            <i data-lucide="alert-triangle"></i>
+                            Warn
+                          </span>
+                        </label>
+                        <label class="log-level-filter">
+                          <input type="checkbox" value="info" checked>
+                          <span class="filter-label info">
+                            <i data-lucide="info"></i>
+                            Info
+                          </span>
+                        </label>
+                        <label class="log-level-filter">
+                          <input type="checkbox" value="debug">
+                          <span class="filter-label debug">
+                            <i data-lucide="bug"></i>
+                            Debug
+                          </span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Logs Display Card -->
+              <div class="card logs-card">
+                <div class="card-header">
+                  <h3 class="card-title">
+                    <i data-lucide="scroll-text"></i>
+                    Registros
+                  </h3>
+                  <div class="connection-status">
+                    <span class="status-indicator" id="connectionStatus">
+                      <i data-lucide="circle"></i>
+                      Conectando...
+                    </span>
+                  </div>
+                </div>
+                <div class="card-content logs-container-wrapper">
+                  <div id="logsContainer" class="logs-container">
+                    <div class="logs-placeholder">
+                      <i data-lucide="terminal"></i>
+                      <h4>Aguardando logs...</h4>
+                      <p>Os logs aparecerão aqui em tempo real</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
         </form>
       </main>
     </div>
@@ -774,6 +891,28 @@
     </div>
   </div>
 
+  <div id="confirmationModal" class="modal">
+    <div class="modal-content modal-sm">
+      <div class="modal-header">
+        <h3 class="modal-title" id="confirmationModalTitle">
+          <i data-lucide="alert-triangle"></i>
+          Confirmar Ação
+        </h3>
+        <button type="button" class="modal-close" id="confirmationModalClose">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p id="confirmationModalMessage">Você tem certeza que deseja prosseguir?</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="confirmationModalCancel" class="btn btn-outline">Cancelar</button>
+        <button type="button" id="confirmationModalConfirm" class="btn btn-danger">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/socket.io.min.js"></script>
   <script src="script.js" type="module"></script>
   <script>
     lucide.createIcons();

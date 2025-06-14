@@ -107,16 +107,16 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   openModalButton.onclick = () => {
-    modal.classList.add('show');
+    modal.classList.add('active');
   };
 
   closeModalButton.onclick = () => {
-    modal.classList.remove('show');
+    modal.classList.remove('active');
   };
 
   window.onclick = (event) => {
     if (event.target == modal) {
-      modal.classList.remove('show');
+      modal.classList.remove('active');
     }
   };
 
@@ -144,7 +144,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const result = await response.json();
       if (response.ok) {
         showToast(result.message, 'success');
-        setTimeout(() => modal.classList.remove('show'), 1500);
+        setTimeout(() => modal.classList.remove('active'), 1500);
       } else {
         showToast(result.message || 'Ocorreu um erro.');
       }

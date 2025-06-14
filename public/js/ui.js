@@ -167,4 +167,53 @@ export function toggleButtonLoading(button, isLoading) {
 
 export function getActiveTab() {
   return activeTab;
+}
+
+/**
+ * @param {string} title
+ * @param {string} message
+ * @param {function} onConfirm
+ */
+export function showConfirmationModal(title, message, onConfirm) {
+  const modal = document.getElementById('confirmationModal');
+
+  const titleEl = document.getElementById('confirmationModalTitle');
+  const messageEl = document.getElementById('confirmationModalMessage');
+  const confirmBtn = document.getElementById('confirmationModalConfirm');
+  const cancelBtn = document.getElementById('confirmationModalCancel');
+  const closeBtn = document.getElementById('confirmationModalClose');
+
+  if (!modal || !titleEl || !messageEl || !confirmBtn || !cancelBtn || !closeBtn) {
+    console.error('Elementos do modal de confirmação não encontrados.');
+    return;
+  }
+
+  titleEl.innerHTML = `<i data-lucide="alert-triangle"></i> ${escapeHtml(title)}`;
+  lucide.createIcons();
+
+  messageEl.textContent = message;
+
+  modal.classList.add('active');
+
+  const handleConfirm = () => {
+    onConfirm();
+    closeModal();
+  };
+
+  const closeModal = () => {
+    modal.classList.remove('active');
+    confirmBtn.removeEventListener('click', handleConfirm);
+    cancelBtn.removeEventListener('click', closeModal);
+    closeBtn.removeEventListener('click', closeModal);
+  };
+
+  confirmBtn.addEventListener('click', handleConfirm);
+  cancelBtn.addEventListener('click', closeModal);
+  closeBtn.addEventListener('click', closeModal);
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
 } 

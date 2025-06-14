@@ -1,35 +1,154 @@
 const express = require('express');
+const http = require('http');
 const path = require('path');
 const session = require('express-session');
-const SQLiteStore = require('connect-sqlite3')(session);
+const CustomSessionStore = require('./utils/sessionStore');
+const { Server } = require('socket.io');
 const logger = require('./utils/logger');
 const apiRoutes = require('./api/routes');
+const { requireSocketAuth } = require('./api/middleware/auth');
 const { baseDir, getConfig } = require('./config');
 
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"]
+  },
+  transports: ['websocket', 'polling']
+});
 const PORT = process.env.PORT || 3030;
 
-function startServer() {
+function createSessionMiddleware() {
   const config = getConfig();
 
-  app.use(express.json());
-  app.use(express.urlencoded({ extended: true }));
+  let sessionSecret = config.app.sessionSecret;
 
-  app.use(session({
-    store: new SQLiteStore({
-      db: 'history.db',
-      dir: process.cwd(),
-      table: 'sessions'
+  if (!sessionSecret) {
+    const crypto = require('crypto');
+    const fallbackData = config.client.name || 'nodebackup-app';
+    sessionSecret = crypto.createHash('sha256').update(fallbackData).digest('hex');
+
+  } else {
+  }
+
+  return session({
+    store: new CustomSessionStore({
+      path: path.join(process.cwd(), 'sessions.json'),
+      ttl: 60 * 60 * 24 * 7,
+      cleanupInterval: 60 * 60 * 6
     }),
-    secret: config.app.sessionSecret || require('crypto').randomBytes(32).toString('hex'),
+    secret: sessionSecret,
     resave: false,
     saveUninitialized: false,
     cookie: {
       secure: false,
       httpOnly: true,
-      maxAge: 1000 * 60 * 60
+      maxAge: 1000 * 60 * 60 * 24 * 7
     }
-  }));
+  });
+}
+
+function startServer() {
+  const config = getConfig();
+  const sessionMiddleware = createSessionMiddleware();
+
+  app.use(express.json());
+  app.use(express.urlencoded({ extended: true }));
+  app.use(sessionMiddleware);
+
+  io.use((socket, next) => {
+    sessionMiddleware(socket.request, {}, next);
+  });
+
+  io.use(requireSocketAuth);
+
+  io.on('connection', (socket) => {
+    try {
+      setTimeout(() => {
+        try {
+          const recentLogs = logger.logBuffer.getRecentLogs(50);
+          socket.emit('logs:history', recentLogs);
+        } catch (error) {
+          logger.error('Erro ao enviar logs históricos:', error);
+        }
+      }, 100);
+
+      let activeFilters = {
+        levels: ['info', 'warn', 'error'],
+        maxEntries: 1000
+      };
+
+      const unsubscribe = logger.logBuffer.subscribe((logEntry) => {
+        try {
+          if (activeFilters.levels.includes(logEntry.level)) {
+            socket.emit('logs:new', logEntry);
+          }
+        } catch (error) {
+          logger.error('Erro ao enviar novo log via WebSocket:', error);
+        }
+      });
+
+      socket.on('logs:setFilters', (filters) => {
+        try {
+          activeFilters = { ...activeFilters, ...filters };
+        } catch (error) {
+          logger.error('Erro ao atualizar filtros:', error);
+        }
+      });
+
+      socket.on('logs:getHistory', (options = {}) => {
+        try {
+          const count = Math.min(options.count || 100, 1000);
+          const levels = options.levels || activeFilters.levels;
+
+          const filteredLogs = logger.logBuffer.getRecentLogs(count * 2)
+            .filter(log => levels.includes(log.level))
+            .slice(-count);
+
+          socket.emit('logs:history', filteredLogs);
+        } catch (error) {
+          logger.error('Erro ao enviar logs históricos filtrados:', error);
+        }
+      });
+
+      socket.on('logs:clear', () => {
+        try {
+          if (socket.userId === 'anonymous') {
+            socket.emit('error', 'Acesso negado para usuários anônimos');
+            return;
+          }
+
+          logger.logBuffer.clear();
+          io.emit('logs:cleared');
+          logger.info(`🗑️  Logs limpos pelo usuário ${socket.userId}`);
+        } catch (error) {
+          logger.error('Erro ao limpar logs:', error);
+        }
+      });
+
+      socket.on('error', (error) => {
+        logger.error(`Erro no WebSocket ${socket.id}:`, error);
+      });
+
+      socket.on('disconnect', (reason) => {
+        try {
+          unsubscribe();
+        } catch (error) {
+          logger.error('Erro ao fazer cleanup do WebSocket:', error);
+        }
+      });
+
+    } catch (error) {
+      logger.error('Erro ao configurar conexão WebSocket:', error);
+      socket.disconnect();
+    }
+  });
+
+  io.on('error', (error) => {
+    logger.error('Erro no servidor Socket.IO:', error);
+  });
 
   const publicPath = path.join(baseDir, 'public');
 
@@ -79,8 +198,11 @@ function startServer() {
     return req.session.user ? res.redirect('/') : res.redirect('/login.html');
   });
 
-  app.listen(PORT, () => {
-    logger.info(`Servidor web de configuração rodando em http://localhost:${PORT}`);
+  server.listen(PORT, () => {
+  });
+
+  server.on('error', (error) => {
+    logger.error('Erro no servidor HTTP:', error);
   });
 }
 

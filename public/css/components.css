@@ -322,7 +322,7 @@ input::placeholder {
 }
 
 .toggle-slider::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 1px;
   left: 1px;
@@ -938,7 +938,7 @@ input::placeholder {
   padding: var(--space-lg);
 }
 
-.modal.show {
+.modal.active {
   display: flex;
 }
 
@@ -1374,4 +1374,303 @@ input::placeholder {
 .toast-close:hover {
   background: var(--bg-tertiary);
   color: var(--text-primary);
+}
+
+/* ===== LOGS INTERFACE ===== */
+.logs-card {
+  height: 600px;
+  display: flex;
+  flex-direction: column;
+}
+
+.logs-card .card-content {
+  flex: 1;
+  padding: 0;
+  overflow: hidden;
+}
+
+.logs-container-wrapper {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.logs-container {
+  flex: 1;
+  overflow-y: auto;
+  background: var(--bg-tertiary);
+  font-family: "Courier New", monospace;
+  font-size: 0.8rem;
+  line-height: 1.2;
+  padding: var(--space-sm);
+  border-radius: var(--radius-md);
+  max-height: 500px;
+}
+
+.logs-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-tertiary);
+  text-align: center;
+  gap: var(--space-md);
+}
+
+.logs-placeholder i {
+  width: 48px;
+  height: 48px;
+  opacity: 0.5;
+}
+
+.logs-placeholder h4 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.logs-placeholder p {
+  margin: 0;
+  opacity: 0.8;
+}
+
+.log-entry {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-sm);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-sm);
+  margin-bottom: 1px;
+  transition: var(--transition-fast);
+  line-height: 1.2;
+}
+
+.log-entry:hover {
+  background: var(--bg-primary);
+}
+
+.log-timestamp {
+  color: var(--text-tertiary);
+  font-size: 0.7rem;
+  min-width: 120px;
+  flex-shrink: 0;
+}
+
+.log-level {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  min-width: 55px;
+  flex-shrink: 0;
+}
+
+.log-level i {
+  width: 12px !important;
+  height: 12px !important;
+}
+
+.log-entry .log-level [data-lucide] {
+  width: 12px !important;
+  height: 12px !important;
+}
+
+.log-level span {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.log-message {
+  flex: 1;
+  word-break: break-word;
+  color: var(--text-primary);
+  font-size: 0.8rem;
+  line-height: 1.2;
+}
+
+/* Log Level Colors */
+.log-entry.log-error .log-level {
+  color: var(--error-500);
+}
+
+.log-entry.log-warn .log-level {
+  color: var(--warning-500);
+}
+
+.log-entry.log-info .log-level {
+  color: var(--primary-500);
+}
+
+.log-entry.log-debug .log-level {
+  color: var(--success-500);
+}
+
+/* Log Filters */
+.log-filters {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.filter-checkboxes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+}
+
+.log-level-filter {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  margin: 0;
+}
+
+.log-level-filter input[type="checkbox"] {
+  margin: 0 var(--space-sm) 0 0;
+}
+
+.filter-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-sm);
+  transition: var(--transition-fast);
+}
+
+.filter-label i {
+  width: 12px !important;
+  height: 12px !important;
+}
+
+.filter-label [data-lucide] {
+  width: 12px !important;
+  height: 12px !important;
+}
+
+.logs-container [data-lucide],
+.log-filters [data-lucide],
+#logControls [data-lucide] {
+  width: 12px !important;
+  height: 12px !important;
+}
+
+.filter-label.error {
+  color: var(--error-500);
+  border: 1px solid var(--error-200);
+}
+
+.filter-label.warn {
+  color: var(--warning-500);
+  border: 1px solid var(--warning-200);
+}
+
+.filter-label.info {
+  color: var(--primary-500);
+  border: 1px solid var(--primary-200);
+}
+
+.filter-label.debug {
+  color: var(--success-500);
+  border: 1px solid var(--success-200);
+}
+
+.log-level-filter input[type="checkbox"]:checked+.filter-label {
+  background: var(--bg-tertiary);
+}
+
+/* Log Controls */
+.connection-status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: 0.875rem;
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.status-indicator i {
+  width: 8px;
+  height: 8px;
+  animation: pulse 2s infinite;
+}
+
+.status-connected {
+  color: var(--success-500);
+}
+
+.status-disconnected {
+  color: var(--error-500);
+}
+
+.status-connecting {
+  color: var(--warning-500);
+}
+
+.btn.paused {
+  background: var(--warning-50);
+  border-color: var(--warning-500);
+  color: var(--warning-700);
+}
+
+[data-theme="dark"] .btn.paused {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--warning-400);
+}
+
+.btn.active {
+  background: var(--primary-50);
+  border-color: var(--primary-500);
+  color: var(--primary-700);
+}
+
+[data-theme="dark"] .btn.active {
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--primary-400);
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+}
+
+#logControls .btn-sm {
+  min-width: 110px;
+  justify-content: flex-start;
+}
+
+.toggle-group {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.modal-content.modal-large {
+  max-width: 800px;
+}
+
+.modal-content.modal-sm {
+  max-width: 420px;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-lg);
+  border-bottom: 1px solid var(--border-primary);
 }

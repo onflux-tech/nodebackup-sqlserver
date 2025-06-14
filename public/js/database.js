@@ -65,12 +65,12 @@ function removeSelectedDatabase(dbName) {
 }
 
 function openDatabaseSelectorModal() {
-  elements.databaseSelectorModal.classList.add('show');
+  elements.databaseSelectorModal.classList.add('active');
   loadDatabasesInModal();
 }
 
 function closeDatabaseSelectorModal() {
-  elements.databaseSelectorModal.classList.remove('show');
+  elements.databaseSelectorModal.classList.remove('active');
 }
 
 async function loadDatabasesInModal() {

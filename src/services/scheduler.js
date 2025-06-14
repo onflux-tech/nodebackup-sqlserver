@@ -40,7 +40,7 @@ function scheduleBackups() {
     });
 
     scheduledJobs.push(job);
-    logger.info(`Backup agendado para as ${time} (tarefa #${backupNumber})`);
+    logger.info(`⏰ Backup agendado para as ${time} (tarefa #${backupNumber})`);
   });
 }
 
