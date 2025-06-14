@@ -6,6 +6,7 @@ import { setupScheduling } from './js/schedule.js';
 import { setupStorage } from './js/storage.js';
 import { loadHistoryTab, setupHistory } from './js/history.js';
 import { initializeLogs } from './js/logs.js';
+import { setupUpdater } from './js/updater.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
 
@@ -29,6 +30,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupHistory();
 
   loadConfig();
+
+  setupUpdater();
 
   setTimeout(() => {
     if (window.lucide) {

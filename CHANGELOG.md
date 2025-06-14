@@ -5,6 +5,42 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
+## [0.3.1] - 14-06-2025
+
+### ✨ Adicionado
+- **Sistema de Auto-Update:** Implementado sistema completo de atualização automática que verifica e instala novas versões diretamente do GitHub.
+- **Verificação Automática:** O sistema verifica por atualizações a cada 6 horas automaticamente.
+- **Interface de Atualização:** Nova interface visual no dashboard mostrando a versão atual e notificações quando há atualizações disponíveis.
+- **Download Inteligente:** Sistema detecta e prioriza o instalador `.exe` quando disponível, com fallback para o executável principal.
+- **Instalação Silenciosa:** Instalador NSIS otimizado para modo completamente silencioso (`/S`) sem pop-ups ou interrupções.
+- **Gerenciamento de Serviço:** O sistema para automaticamente o serviço Windows antes da atualização e o reinicia após conclusão.
+- **Progress Tracking:** Monitoramento em tempo real do progresso de download e instalação.
+- **Rollback Automático:** Sistema cria backup do executável atual antes de aplicar atualizações.
+
+### 🔧 Modificado
+- **Instalador NSIS:** Completamente otimizado para suportar instalações silenciosas:
+  - Detecção automática de modo silencioso
+  - Supressão de MessageBox em atualizações
+  - Comandos executados via `nsExec` para não mostrar janelas
+  - Interface oculta com `ShowInstDetails nevershow`
+  - Auto-close ativado em modo silencioso
+- **Interface do Dashboard:** Adicionada seção de versão na sidebar com indicadores visuais.
+- **Package.json:** Versão incrementada para 0.3.1.
+
+### 🐛 Corrigido
+- **Conflito de Arquivo em Uso:** Implementada solução robusta usando PowerShell para substituir executáveis em uso.
+
+### 🔒 Segurança
+- **Verificação de Assinatura:** Sistema valida que atualizações vêm do repositório oficial do GitHub.
+- **HTTPS Only:** Todos os downloads são feitos através de conexões seguras HTTPS.
+- **Backup Automático:** Executável anterior é preservado antes de aplicar atualizações.
+
+### 💄 Melhorado
+- **UX de Atualização:** Interface intuitiva com modal detalhado mostrando versão atual vs nova versão.
+- **Notificações Visuais:** Toast notifications e badges indicando status de atualização.
+- **Transparência Total:** Usuário pode acompanhar todo o processo através da interface.
+- **Zero Downtime:** Processo otimizado para minimizar tempo de inatividade do serviço.
+
 ## [0.3.0] - 13-06-2025
 
 ### ✨ Adicionado
@@ -156,6 +192,7 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ---
 
+[0.3.1]: https://github.com/onflux-tech/nodebackup-sqlserver/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/onflux-tech/nodebackup-sqlserver/compare/v0.2.2...v0.3.0
 [0.2.2]: https://github.com/onflux-tech/nodebackup-sqlserver/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/onflux-tech/nodebackup-sqlserver/compare/v0.1.0...v0.2.1

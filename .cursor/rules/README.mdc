@@ -18,8 +18,9 @@ Este conjunto de regras fornece diretrizes completas para desenvolvimento da apl
 - Mapeamento da estrutura modular (frontend + backend)
 - Sistema de configuração criptografada
 - Processo de build com assets embarcados
-- **ATUALIZADO**: Arquitetura modular com 9 módulos JS e 5 módulos CSS
-- **NOVO**: Logs em tempo real via WebSocket
+- **ATUALIZADO**: Arquitetura modular com 10 módulos JS e 5 módulos CSS
+- **ATUALIZADO**: Logs em tempo real via WebSocket
+- **NOVO**: Sistema de auto-update integrado
 
 ### 2. 🛠️ [Padrões de Desenvolvimento](mdc:padroes-desenvolvimento.mdc)
 **Escopo**: Compatibilidade Node 12, estrutura modular e boas práticas
@@ -55,10 +56,11 @@ Este conjunto de regras fornece diretrizes completas para desenvolvimento da apl
 
 ### 5. 📈 [Roadmap e Tasklist](mdc:roadmap-tasklist.mdc)
 **Escopo**: Próximas implementações sobre base modular
-- **ATUALIZADO**: Estado atual v0.3.0 (logs em tempo real)
+- **ATUALIZADO**: Estado atual v0.3.1 (auto-update silencioso)
 - **ATUALIZADO**: Fases de desenvolvimento com base modular
 - Tasklist detalhada por feature
 - **CONCLUÍDO**: v0.3.0 - Logs em Tempo Real (WebSocket)
+- **CONCLUÍDO**: v0.3.1 - Sistema Auto-Update (GitHub)
 - **PRÓXIMO**: v0.4.0 - Notificações por E-mail (SMTP)
 - Estimativas de tempo e prioridades
 - Melhorias de infraestrutura
@@ -97,26 +99,29 @@ Este conjunto de regras fornece diretrizes completas para desenvolvimento da apl
 
 ### 🟡 Limitações Técnicas Atualizadas
 - **Tamanho Executável**: < 100MB
-- **Interface Web**: < 65KB total (38KB JS + 25KB CSS - modular)
+- **Interface Web**: < 70KB total (41KB JS + 25KB CSS - modular)
 - **Dependências**: Evitar bibliotecas que exijam Node 14+
 - **Build Target**: pkg node12-win-x64 obrigatório
 - **ATUALIZADO**: Módulos devem seguir padrões estabelecidos
-- **NOVO**: WebSocket deve ter fallbacks apropriados
+- **WebSocket**: Deve ter fallbacks apropriados
+- **NOVO**: Auto-update deve ser completamente transparente
 
 ## 🚀 Estado Atual vs Próximos Passos
 
-### ✅ Implementado (v0.3.0 - Logs em Tempo Real)
-- **Base Sólida**: Todas as funcionalidades v0.1.0, v0.2.0 e v0.2.2
+### ✅ Implementado (v0.3.1 - Auto-Update Silencioso)
+- **Base Sólida**: Todas as funcionalidades v0.1.0, v0.2.0, v0.2.2 e v0.3.0
 - **CONSOLIDADO - Arquitetura Modular**: Frontend e backend completamente refatorados
 - **CSS Modular**: 5 arquivos especializados (base, components, layout, login, responsive)
-- **JavaScript Modular**: 9 módulos específicos (ui, config, database, history, storage, schedule, auth, api, logs)
+- **JavaScript Modular**: 10 módulos específicos (ui, config, database, history, storage, schedule, auth, api, logs, updater)
 - **Backend Reorganizado**: Rotas separadas por funcionalidade com middleware dedicado
 - **Interface Modernizada**: Tema claro/escuro, responsiva, mobile-first
 - **Sistema Anti-FOUC**: Script inline implementado
 - **Painel de Histórico**: Visualização completa com SQLite
 - **Política de Retenção**: Limpeza automática configurável
-- **NOVO - Logs em Tempo Real**: WebSocket com Socket.IO para streaming de logs
-- **NOVO - Sessões Persistentes**: SQLite para armazenamento robusto de sessões
+- **Logs em Tempo Real**: WebSocket com Socket.IO para streaming de logs
+- **Sessões Persistentes**: SQLite para armazenamento robusto de sessões
+- **NOVO - Auto-Update**: Sistema completo de atualização automática transparente
+- **NOVO - Instalador Silencioso**: NSIS otimizado para modo /S sem interrupções
 
 ### 🎯 Próxima Prioridade (v0.4.0 - Fase 2.1)
 - **Notificações por E-mail**: Sistema SMTP para alertas de backup
@@ -128,29 +133,32 @@ Este conjunto de regras fornece diretrizes completas para desenvolvimento da apl
 - **v0.5.0**: Integração Telegram/WhatsApp - 4-6 semanas
 - **v1.0.0**: Release estável consolidado - 2-3 semanas
 
-## 📊 Melhorias Implementadas na v0.3.0
+## 📊 Melhorias Implementadas na v0.3.1
 
 ### 🏗️ **Arquitetura**
 - **Modularidade**: Código separado por responsabilidade
 - **Manutenibilidade**: Fácil localização e edição de funcionalidades
 - **Escalabilidade**: Base sólida para expansão rápida
 - **Performance**: Carregamento otimizado e cache inteligente
-- **NOVO**: WebSocket integrado para comunicação em tempo real
+- **WebSocket**: Comunicação em tempo real integrada
+- **NOVO**: Sistema de auto-update completo e transparente
 
 ### 🎨 **Frontend**
 - **CSS Variables**: Sistema de design consistente
 - **Responsividade**: Mobile-first com breakpoints definidos
 - **Temas**: Sistema robusto claro/escuro
 - **Componentes**: Reutilizáveis e bem documentados
-- **NOVO**: Interface de logs em tempo real com controles interativos
+- **Interface de Logs**: Tempo real com controles interativos
+- **NOVO**: Indicador de versão e modal de atualização
 
 ### 🔧 **Backend**
 - **Rotas Modulares**: Separadas por funcionalidade
 - **Middleware**: Autenticação centralizada
 - **API Consistente**: Padrões de resposta unificados
 - **Error Handling**: Tratamento robusto e informativo
-- **NOVO**: WebSocket server com autenticação
-- **NOVO**: Sessões persistentes com SQLite
+- **WebSocket Server**: Com autenticação integrada
+- **Sessões Persistentes**: Armazenamento com SQLite
+- **NOVO**: Serviço de auto-update com GitHub API
 
 ## 📞 Quando Consultar Cada Regra (Atualizado)
 

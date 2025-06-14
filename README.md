@@ -19,6 +19,7 @@ Uma solução segura e leve para automatizar backups de bancos de dados SQL Serv
 
 ## 🌟 Principais Funcionalidades
 
+- **Auto-Update Inteligente:** Sistema automático de atualização que verifica e instala novas versões sem interrupção do serviço.
 - **Setup Inicial Interativo:** Na primeira execução, a aplicação guia você por uma página web segura para criar sua conta de administrador.
 - **Interface Web Segura:** Acesso protegido por login e senha, com funcionalidade para alteração de senha.
 - **Configuração Criptografada:** Todas as suas credenciais (banco de dados, FTP) são armazenadas em um arquivo `config.enc` seguro.
@@ -55,6 +56,26 @@ Nos acessos seguintes, você verá a tela de login. Utilize as credenciais que v
 ### Alterando a Senha
 
 Na tela de login, clique no link **"Alterar senha"** para abrir a janela onde você pode atualizar suas credenciais.
+
+## Sistema de Auto-Update
+
+O NodeBackup inclui um sistema inteligente de atualização automática que mantém sua aplicação sempre atualizada:
+
+### Como Funciona
+
+1. **Verificação Automática:** A cada 6 horas, o sistema verifica se há novas versões disponíveis no repositório oficial do GitHub.
+2. **Notificação Visual:** Quando uma atualização está disponível, um indicador aparece na interface web.
+3. **Download Inteligente:** O sistema baixa automaticamente a nova versão, priorizando o instalador quando disponível.
+4. **Instalação Silenciosa:** A atualização é aplicada de forma completamente transparente, sem pop-ups ou interrupções.
+5. **Gerenciamento de Serviço:** O serviço Windows é parado, atualizado e reiniciado automaticamente.
+6. **Rollback Automático:** Em caso de falha, o sistema restaura a versão anterior automaticamente.
+
+### Características de Segurança
+
+- Todas as atualizações são baixadas via HTTPS do repositório oficial
+- Sistema cria backup automático antes de aplicar atualizações
+- Verificação de integridade dos arquivos baixados
+- Processo totalmente transparente com logs detalhados
 
 ## 👷 Executando como Serviço do Windows
 
@@ -126,6 +147,11 @@ Abaixo estão as funcionalidades planejadas para o futuro. Contribuições são 
 
 - **Status:** Concluído
 - **Funcionalidades:** Stream de logs em tempo real via WebSocket com interface interativa, filtros e opção de download.
+
+### ✅ **Fase 1.4: Auto-Update (v0.3.1)**
+
+- **Status:** Concluído
+- **Funcionalidades:** Sistema completo de atualização automática com verificação periódica, download inteligente e instalação silenciosa.
 
 ### 🎯 **Fase 2: Notificações (Próximo)**
 

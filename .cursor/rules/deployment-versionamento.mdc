@@ -7,7 +7,7 @@ alwaysApply: true
 
 ## 📋 Versionamento Semântico
 
-### Padrão Atual (v0.3.0)
+### Padrão Atual (v0.3.1)
 - **MAJOR** (1.x.x): Mudanças que quebram compatibilidade
 - **MINOR** (0.x.x): Novas funcionalidades compatíveis (pré-release)
 - **PATCH** (x.x.x): Correções de bugs e melhorias
@@ -16,6 +16,7 @@ alwaysApply: true
 - **v0.1.0**: ✅ Fase 1.1 - Política de Retenção de Backups (Concluído)
 - **v0.2.0**: ✅ Fase 1.2 - Painel de Histórico (SQLite + Interface) (Concluído)
 - **v0.3.0**: ✅ Fase 1.3 - Logs em Tempo Real (WebSocket) (Concluído)
+- **v0.3.1**: ✅ Fase 1.4 - Sistema Auto-Update (GitHub) (Concluído)
 - **v0.4.0**: Fase 2.1 - Notificações por E-mail (SMTP)
 - **v0.5.0**: Fase 2.2 - Integração Telegram/WhatsApp
 - **v1.0.0**: Release estável com todas funcionalidades base
@@ -61,10 +62,10 @@ Release/
 ```
 
 ### GitHub Releases
-- **Tag**: v0.3.0 (seguir semver exato)
-- **Title**: "NodeBackup v0.3.0 - Logs em Tempo Real"
+- **Tag**: v0.3.1 (seguir semver exato)
+- **Title**: "NodeBackup v0.3.1 - Sistema Auto-Update"
 - **Description**: Changelog detalhado + instruções
-- **Assets**: NodeBackup.exe + NodeBackupInstaller.exe (opcional)
+- **Assets**: NodeBackupInstaller.exe (recomendado)
 
 ## 🔄 Pipeline de Deploy
 

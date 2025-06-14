@@ -5,7 +5,7 @@ alwaysApply: true
 ---
 # Roadmap e Tasklist - Próximas Implementações
 
-## 📍 Estado Atual (v0.3.0 - Logs em Tempo Real)
+## 📍 Estado Atual (v0.3.1 - Auto-Update Silencioso)
 **Funcionalidades Implementadas:**
 - ✅ Setup inicial interativo via web
 - ✅ Interface web com autenticação segura e middleware centralizado
@@ -28,7 +28,7 @@ alwaysApply: true
   - ✅ Modal para visualizar detalhes de erros
 - ✅ **Refatoração Estrutural Major** (v0.2.2)
   - ✅ **Frontend Modular**: CSS separado em 5 módulos (25KB total)
-  - ✅ **JavaScript Modular**: 9 módulos específicos (38KB total)
+  - ✅ **JavaScript Modular**: 10 módulos específicos (41KB total)
   - ✅ **Backend Reorganizado**: Rotas separadas por funcionalidade
   - ✅ **Middleware Dedicado**: Autenticação centralizada
   - ✅ **Interface Modernizada**: Tema claro/escuro, responsiva
@@ -41,13 +41,20 @@ alwaysApply: true
   - ✅ **Interface Interativa**: Nova aba "Logs ao Vivo" com controles
   - ✅ **Controles Avançados**: Pausar/continuar, limpar, download
   - ✅ **Sessões Persistentes**: connect-sqlite3 para robustez
+- ✅ **Sistema Auto-Update** (v0.3.1)
+  - ✅ **Verificação Automática**: Checagem a cada 6 horas no GitHub
+  - ✅ **Download Inteligente**: Prioriza instalador quando disponível
+  - ✅ **Instalação Silenciosa**: Modo completamente transparente
+  - ✅ **Gerenciamento de Serviço**: Para e reinicia automaticamente
+  - ✅ **Interface Visual**: Indicadores e modal de atualização
+  - ✅ **Rollback Automático**: Backup antes de atualizar
 
 ## 🚀 Roadmap de Desenvolvimento Atualizado
 
 > **📌 Foco Atual**: Versões 0.x.x para adicionar funcionalidades avançadas sobre a base modular sólida estabelecida.
 
-### ✅ **FASE 1: Monitoramento Avançado** (v0.3.0 - CONCLUÍDO)
-*Status: Concluído | Duração: 3 semanas*
+### ✅ **FASE 1: Monitoramento e Manutenção Avançada** (v0.3.1 - CONCLUÍDO)
+*Status: Concluído | Duração: 4 semanas*
 
 #### ✅ **1.3 Logs em Tempo Real** (v0.3.0 - CONCLUÍDO)
 **Status**: ✅ Concluído
@@ -70,6 +77,29 @@ alwaysApply: true
   - ✅ Auto-scroll, pause manual, filtros cliente
   - ✅ Download de logs atuais em .txt
   - ✅ Integrado com sistema de temas existente
+
+#### ✅ **1.4 Sistema Auto-Update** (v0.3.1 - CONCLUÍDO)
+**Status**: ✅ Concluído
+**Arquivos implementados:** [src/services/updater.js](mdc:src/services/updater.js), [public/js/updater.js](mdc:public/js/updater.js), [src/api/routes/updater.js](mdc:src/api/routes/updater.js)
+
+**Implementações Realizadas:**
+- ✅ **Backend Auto-Update**
+  - ✅ Criado [src/services/updater.js](mdc:src/services/updater.js) com integração GitHub API
+  - ✅ Verificação automática a cada 6 horas
+  - ✅ Download inteligente com priorização de instalador
+  - ✅ Gerenciamento automático do serviço Windows
+  
+- ✅ **Frontend Interface**
+  - ✅ Criado [public/js/updater.js](mdc:public/js/updater.js) modular
+  - ✅ Indicador de versão na sidebar
+  - ✅ Modal detalhado de atualização
+  - ✅ Progress tracking em tempo real
+  
+- ✅ **Instalador Silencioso**
+  - ✅ Otimizado installer.nsi para modo /S
+  - ✅ Supressão completa de janelas e pop-ups
+  - ✅ Comandos via nsExec para background
+  - ✅ Auto-close e instalação transparente
 
 ---
 
@@ -202,12 +232,13 @@ alwaysApply: true
 ## 📝 Notas de Implementação Atualizadas
 
 ### **Arquitetura Modular Estabelecida**
-- ✅ Frontend totalmente modularizado (9 módulos JS, 5 módulos CSS)
+- ✅ Frontend totalmente modularizado (10 módulos JS, 5 módulos CSS)
 - ✅ Backend com rotas separadas por funcionalidade
 - ✅ Middleware de autenticação centralizado
 - ✅ Sistema de temas robusto implementado
 - ✅ WebSocket integrado para comunicação em tempo real
 - ✅ Base sólida para expansão rápida
+- ✅ Sistema de auto-update integrado e transparente
 
 ### **Compatibilidade Mantida**
 - ✅ Node.js 12.x obrigatório (validado com pkg)
@@ -217,11 +248,12 @@ alwaysApply: true
 - ✅ Socket.IO 4.x compatível com Node 12
 
 ### **Qualidade e Performance**
-- ✅ Frontend otimizado: 63KB total (38KB JS + 25KB CSS)
+- ✅ Frontend otimizado: 66KB total (41KB JS + 25KB CSS)
 - ✅ Executável: ~85MB autocontido
 - ✅ Startup: < 5 segundos
 - ✅ Responsividade mobile completa
 - ✅ WebSocket com baixa latência
+- ✅ Auto-update silencioso sem downtime
 
 ## 🗓️ Cronograma Detalhado Atualizado
 
@@ -246,6 +278,13 @@ alwaysApply: true
 - Stream de logs em tempo real
 - Interface interativa com controles
 - Sessões persistentes com SQLite
+
+### ✅ **v0.3.1 - Sistema Auto-Update** (CONCLUÍDO)
+- Verificação automática no GitHub a cada 6 horas
+- Download inteligente com priorização de instalador
+- Instalação silenciosa sem interrupções
+- Interface visual com indicadores e progresso
+- Instalador NSIS otimizado para modo /S
 
 ### 🎯 **v0.4.0 - Notificações E-mail** (Próximo - 4-5 semanas)
 **Objetivo**: Sistema completo de notificações por e-mail
@@ -274,18 +313,21 @@ alwaysApply: true
 - Histórico persistente
 - Política de retenção
 - Logs em tempo real
+- Auto-update silencioso
 
-### 🔄 **Funcionalidades Avançadas (33% Complete)**
+### 🔄 **Funcionalidades Avançadas (40% Complete)**
 - ✅ Logs tempo real: Concluído
+- ✅ Auto-update: Concluído
 - 📋 Notificações: Planejado
 - 🔮 Multi-database: Futuro
 - 🔮 Cloud storage: Futuro
 
-### 🏗️ **Infraestrutura (80% Complete)**
+### 🏗️ **Infraestrutura (85% Complete)**
 - ✅ Arquitetura modular estabelecida
 - ✅ Build process automatizado
 - ✅ Sistema de logs robusto
 - ✅ WebSocket integrado
+- ✅ Auto-update transparente
 - 🔄 Testes automatizados (em planejamento)
 - 🔄 CI/CD pipeline (em planejamento)
 

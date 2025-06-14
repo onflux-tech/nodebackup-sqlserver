@@ -1,6 +1,6 @@
 {
   "name": "node-backup",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Backup automático SQL Server",
   "main": "src/app.js",
   "bin": "src/app.js",

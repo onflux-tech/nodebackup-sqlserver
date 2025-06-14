@@ -30,6 +30,7 @@ O Node-Backup é uma aplicação Windows para automatização de backups de banc
 - [src/services/history.js](mdc:src/services/history.js) - Gerenciamento histórico SQLite
 - [src/services/scheduler.js](mdc:src/services/scheduler.js) - Agendamento de backups
 - [src/services/windowsService.js](mdc:src/services/windowsService.js) - Instalação como serviço Windows
+- [src/services/updater.js](mdc:src/services/updater.js) - Sistema de auto-update com GitHub (v0.3.1)
 
 ### Utilitários
 - [src/utils/logger.js](mdc:src/utils/logger.js) - Sistema de logging com rotação diária e WebSocket streaming
@@ -45,6 +46,7 @@ O Node-Backup é uma aplicação Windows para automatização de backups de banc
   - [src/api/routes/database.js](mdc:src/api/routes/database.js) - Operações SQL Server
   - [src/api/routes/history.js](mdc:src/api/routes/history.js) - Histórico e estatísticas
   - [src/api/routes/storage.js](mdc:src/api/routes/storage.js) - FTP e limpeza
+  - [src/api/routes/updater.js](mdc:src/api/routes/updater.js) - Verificação e instalação de atualizações (v0.3.1)
 
 ### Interface Web Modular (public/)
 - **CSS Modular (25KB total)**:
@@ -54,7 +56,7 @@ O Node-Backup é uma aplicação Windows para automatização de backups de banc
   - [public/css/login.css](mdc:public/css/login.css) - Login/setup (2KB)
   - [public/css/responsive.css](mdc:public/css/responsive.css) - Media queries (3KB)
 
-- **JavaScript Modular (38KB total)**:
+- **JavaScript Modular (41KB total)**:
   - [public/js/ui.js](mdc:public/js/ui.js) - Componentes UI, temas, toasts (5KB)
   - [public/js/config.js](mdc:public/js/config.js) - Configurações (6KB)
   - [public/js/database.js](mdc:public/js/database.js) - Seleção bancos (5KB)
@@ -63,7 +65,8 @@ O Node-Backup é uma aplicação Windows para automatização de backups de banc
   - [public/js/schedule.js](mdc:public/js/schedule.js) - Agendamento (2KB)
   - [public/js/auth.js](mdc:public/js/auth.js) - Autenticação (1KB)
   - [public/js/api.js](mdc:public/js/api.js) - Requisições API (2KB)
-  - [public/js/logs.js](mdc:public/js/logs.js) - **NOVO**: Logs em tempo real (3KB)
+  - [public/js/logs.js](mdc:public/js/logs.js) - Logs em tempo real (3KB)
+  - [public/js/updater.js](mdc:public/js/updater.js) - **NOVO**: Auto-update interface (3KB)
 
 - **HTML Pages**:
   - [public/index.html](mdc:public/index.html) - Dashboard principal
@@ -87,7 +90,7 @@ O Node-Backup é uma aplicação Windows para automatização de backups de banc
 - **Build**: pkg 5.8.1 para executável único
 - **Frontend**: JavaScript ES6 Modules + CSS Variables
 
-## Funcionalidades Implementadas (v0.3.0)
+## Funcionalidades Implementadas (v0.3.1)
 
 ### 🔐 Autenticação e Segurança
 - Setup inicial obrigatório via web
@@ -121,6 +124,16 @@ O Node-Backup é uma aplicação Windows para automatização de backups de banc
 - Toast notifications inteligentes
 - Loading states em todas operações
 - **Aba "Logs ao Vivo" com controles interativos** (v0.3.0)
+- **Indicador de versão e atualizações disponíveis** (v0.3.1)
+
+### 🔄 Auto-Update (v0.3.1)
+- **Sistema de atualização automática** completo e transparente
+- **Verificação periódica** de novas versões (a cada 6 horas)
+- **Download inteligente** com priorização de instalador
+- **Instalação silenciosa** sem interrupção do serviço
+- **Gerenciamento automático** do serviço Windows
+- **Rollback automático** em caso de falha
+- **Interface visual** para acompanhar atualizações
 
 ### 🔧 Infraestrutura
 - Instalação como serviço Windows (NSSM)
@@ -128,6 +141,7 @@ O Node-Backup é uma aplicação Windows para automatização de backups de banc
 - Build automatizado (pkg)
 - Executável autocontido
 - **WebSocket server integrado para streaming de logs** (v0.3.0)
+- **Instalador NSIS otimizado para modo silencioso** (v0.3.1)
 
 ## Sistema de Build
 - [scripts/build.js](mdc:scripts/build.js) - Embarca assets e gera executável
@@ -144,7 +158,8 @@ O Node-Backup é uma aplicação Windows para automatização de backups de banc
 - **Sessões armazenadas em SQLite para maior robustez** (v0.3.0)
 
 ## Versionamento Atual
-- **Versão Atual**: v0.3.0 (Logs em Tempo Real WebSocket)
+- **Versão Atual**: v0.3.1 (Auto-Update com Instalação Silenciosa)
+- **Release Anterior**: v0.3.0 (Logs em Tempo Real WebSocket)
 - **Release Anterior**: v0.2.2 (Painel de Histórico + Refatoração)
 - **Release Anterior**: v0.2.0 (Painel de Histórico SQLite)
 - **Release Anterior**: v0.1.0 (Política de Retenção)
@@ -152,11 +167,12 @@ O Node-Backup é uma aplicação Windows para automatização de backups de banc
 
 ## Métricas de Qualidade
 - **Executável**: ~85MB (autocontido)
-- **Frontend**: 63KB total (38KB JS + 25KB CSS)
+- **Frontend**: 66KB total (41KB JS + 25KB CSS)
 - **Compatibilidade**: Windows 7+ x64
 - **SQL Server**: 2008 R2+ até 2022
 - **Performance**: < 200MB RAM, < 5s startup
 - **Arquitetura**: Modular, manutenível, escalável
+- **Auto-Update**: Verificação a cada 6h, instalação silenciosa
 
 ## Próximos Desenvolvimentos (Roadmap)
 1. **v0.4.0**: Notificações E-mail (SMTP)
