@@ -46,6 +46,11 @@ if ($LASTEXITCODE -eq 0) {
   $versionedName = "NodeBackupInstaller-$version.exe"
   
   if (Test-Path $originalName) {
+    if (Test-Path $versionedName) {
+      Write-Host "Removendo instalador anterior: $versionedName" -ForegroundColor Yellow
+      Remove-Item $versionedName -Force
+    }
+    
     Rename-Item $originalName $versionedName
     Write-Host "Instalador criado com sucesso: $versionedName" -ForegroundColor Green
     $size = [math]::Round((Get-Item $versionedName).Length / 1MB, 2)
