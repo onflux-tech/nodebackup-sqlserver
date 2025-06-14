@@ -29,6 +29,7 @@ Uma solução segura e leve para automatizar backups de bancos de dados SQL Serv
 - **Política de Retenção:** Sistema automático para limpeza de backups antigos com modos "Clássico" e "Retenção".
 - **Painel de Histórico:** Visualização completa do histórico de backups com estatísticas e logs detalhados.
 - **Interface Moderna:** Design responsivo com tema claro/escuro e suporte móvel.
+- **Logs em Tempo Real:** Acompanhe as atividades do servidor em tempo real através da interface web.
 - **Serviço do Windows:** Roda de forma confiável em segundo plano.
 
 ## 📋 Pré-requisitos
@@ -121,13 +122,12 @@ Abaixo estão as funcionalidades planejadas para o futuro. Contribuições são 
 - **Status:** Concluído
 - **Funcionalidades:** Painel de histórico completo com banco SQLite, estatísticas de backups, filtros por status, interface modernizada com tema claro/escuro, e melhorias de UX/UI.
 
-### 🎯 **Fase 1.3: Logs em Tempo Real (Próximo)**
+### ✅ **Fase 1.3: Logs em Tempo Real (v0.3.0)**
 
-- [ ] Stream de logs em tempo real via WebSocket
-- [ ] Interface "Logs ao Vivo" no dashboard
-- [ ] Filtros por nível (info, warn, error)
+- **Status:** Concluído
+- **Funcionalidades:** Stream de logs em tempo real via WebSocket com interface interativa, filtros e opção de download.
 
-### Fase 2: Notificações
+### 🎯 **Fase 2: Notificações (Próximo)**
 
 - [ ] **Alertas por E-mail:** Enviar notificações sobre o status de cada rotina de backup.
 - [ ] **Integração com Mensageiros:** Adicionar suporte para alertas via Telegram ou WhatsApp.

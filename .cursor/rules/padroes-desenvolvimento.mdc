@@ -18,6 +18,8 @@ alwaysApply: true
 - mssql 6.3.2 (última versão compatível)
 - winston 3.3.3 (evitar versões 3.8+)
 - pkg 5.8.1 (suporte a Node 12)
+- **socket.io 4.x** (compatível Node 12 - logs em tempo real)
+- **connect-sqlite3 0.9.x** (armazenamento sessões SQLite)
 
 ## 📁 Padrões de Estrutura Modular
 
@@ -25,7 +27,7 @@ alwaysApply: true
 ```
 src/
 ├── app.js              # Entry point principal
-├── server.js           # Configuração Express
+├── server.js           # Configuração Express + WebSocket
 ├── config.js           # Gerenciamento configuração
 ├── api/
 │   ├── middleware/
@@ -44,7 +46,7 @@ src/
 │   ├── scheduler.js   # Agendamento
 │   └── windowsService.js # Serviço Windows
 └── utils/
-    ├── logger.js       # Sistema logging
+    ├── logger.js       # Sistema logging + WebSocket streaming
     ├── encryption.js   # Criptografia
     └── errorHandler.js # Tratamento erros
 ```
@@ -64,6 +66,7 @@ public/
 │   ├── config.js      # Gerenciamento configurações
 │   ├── database.js    # Seleção e listagem bancos
 │   ├── history.js     # Painel histórico backups
+│   ├── logs.js        # Logs em tempo real WebSocket
 │   ├── schedule.js    # Agendamento backups
 │   ├── storage.js     # Configuração FTP e limpeza
 │   └── ui.js          # Componentes UI (tema, tabs, toasts)
@@ -87,6 +90,25 @@ export function showToast(message, type) { /* ... */ }
 import { setupThemeToggle, setupTabs } from './js/ui.js';
 import { setupConfigForm, loadConfig } from './js/config.js';
 import { setupDatabase } from './js/database.js';
+import { setupLogs } from './js/logs.js'; // NOVO: Logs em tempo real
+```
+
+### WebSocket Integration Pattern
+```javascript
+// ✅ Padrão para módulos WebSocket
+export function setupWebSocketFeature() {
+  const socket = io();
+  
+  socket.on('connect', () => {
+    console.log('WebSocket conectado');
+  });
+  
+  socket.on('disconnect', () => {
+    console.log('WebSocket desconectado');
+  });
+  
+  return socket;
+}
 ```
 
 ### Organização de Rotas API
@@ -125,11 +147,13 @@ module.exports = router;
 - Aplicar [src/utils/errorHandler.js](mdc:src/utils/errorHandler.js) para erros de usuário
 - Logs estruturados com níveis apropriados
 - Toast notifications via [public/js/ui.js](mdc:public/js/ui.js)
+- **WebSocket logs em tempo real** via [public/js/logs.js](mdc:public/js/logs.js)
 
 ### Configuração Segura
 - Todas as configurações via [src/config.js](mdc:src/config.js)
 - Arquivo config.enc criptografado obrigatório
 - Middleware de autenticação em [src/api/middleware/auth.js](mdc:src/api/middleware/auth.js)
+- **Sessões persistentes com SQLite** (connect-sqlite3)
 - Nunca hardcode credenciais
 
 ## 📝 Logging Padrão
@@ -146,6 +170,14 @@ logger.info('Iniciando backup de bancos: ' + databases.join(', '));
 logger.error('Falha ao conectar FTP', { host: config.ftp.host, error: err.message });
 ```
 
+### WebSocket Streaming
+```javascript
+// ✅ Logger com broadcast para WebSocket
+logger.on('log', (logData) => {
+  io.emit('log', logData); // Transmite para clientes conectados
+});
+```
+
 ## 🚀 Build e Deployment
 
 ### Build Process ([scripts/build.js](mdc:scripts/build.js))
@@ -158,11 +190,13 @@ logger.error('Falha ao conectar FTP', { host: config.ftp.host, error: err.messag
 - 7za.exe para compressão
 - nssm.exe para serviço Windows
 - Todos os arquivos public/ para interface web modular
+- **Socket.IO client** embarcado para WebSocket
 
 ### Executável Final
-- NodeBackup.exe único (±57MB)
+- NodeBackup.exe único (±85MB)
 - Autocontido, sem dependências externas
 - Compatível Windows 7+
+- **WebSocket server integrado**
 
 ## 🔄 Testes e Validação
 
@@ -171,12 +205,14 @@ logger.error('Falha ao conectar FTP', { host: config.ftp.host, error: err.messag
 - Validar build com pkg node12-win-x64
 - Verificar funcionamento como serviço Windows
 - Testar responsividade em múltiplos dispositivos
+- **Validar conexão WebSocket e reconexão automática**
 
 ### Validações de Código
 - Não usar features Node 14+
 - Evitar dependências que quebrem Node 12
 - Manter compatibilidade com sqlcmd legado
 - Validar funcionamento de todos os módulos JS/CSS
+- **Testar autenticação WebSocket**
 
 ## 🎨 Padrões de Desenvolvimento Frontend
 
@@ -187,8 +223,9 @@ logger.error('Falha ao conectar FTP', { host: config.ftp.host, error: err.messag
 
 ### Performance e Tamanho
 - **CSS Total**: Manter < 25KB (5 arquivos CSS)
-- **JavaScript Total**: Manter < 35KB (8 módulos JS)
+- **JavaScript Total**: Manter < 40KB (9 módulos JS)
 - **Compatibilidade**: IE11+, Chrome 60+, Firefox 55+
+- **WebSocket**: Comunicação eficiente em tempo real
 
 ### Sistema de Temas
 - **Variáveis CSS**: Definir em [public/css/base.css](mdc:public/css/base.css)
@@ -203,6 +240,7 @@ logger.error('Falha ao conectar FTP', { host: config.ftp.host, error: err.messag
 - [ ] Testar responsividade mobile
 - [ ] Verificar funcionamento em tema escuro
 - [ ] Implementar loading states apropriados
+- [ ] **Considerar integração WebSocket se aplicável**
 
 ### ✅ Backend  
 - [ ] Criar rota em módulo apropriado
@@ -210,10 +248,12 @@ logger.error('Falha ao conectar FTP', { host: config.ftp.host, error: err.messag
 - [ ] Implementar logs estruturados
 - [ ] Testar tratamento de erros
 - [ ] Validar entrada de dados
+- [ ] **Verificar compatibilidade com WebSocket**
 
 ### ✅ Build e Deploy
 - [ ] Verificar compatibilidade Node 12
 - [ ] Testar build local
 - [ ] Validar tamanho do executável
 - [ ] Testar instalação como serviço
+- [ ] **Validar funcionamento WebSocket em produção**
 

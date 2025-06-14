@@ -5,6 +5,62 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
+## [0.3.0] - 13-06-2025
+
+### ✨ Adicionado
+- **Logs em Tempo Real (WebSocket):** Implementado um sistema completo de streaming de logs em tempo real para monitoramento direto da interface web. A nova aba "Logs ao Vivo" permite acompanhar as atividades do servidor, como início de backups, conexões FTP e erros, instantaneamente.
+- **Interface de Logs Interativa:** A nova seção de logs inclui controles avançados para pausar/continuar o auto-scroll, limpar a visualização e baixar o log atual como um arquivo de texto.
+- **Autenticação WebSocket:** A conexão WebSocket é protegida por autenticação baseada em sessão, garantindo que apenas usuários autenticados possam receber os logs.
+- **Sessões Persistentes:** Implementado armazenamento de sessões com SQLite usando `connect-sqlite3` para maior robustez e persistência entre reinicializações do serviço.
+- **Módulo logs.js:** Novo módulo JavaScript (3KB) dedicado ao gerenciamento de logs em tempo real com padrões modulares estabelecidos.
+- **Arquitetura Modular Completa:** Frontend e backend completamente refatorados em estrutura modular:
+  - **CSS Modular:** 5 arquivos especializados (base.css, components.css, layout.css, login.css, responsive.css)
+  - **JavaScript Modular:** 9 módulos específicos (ui.js, config.js, database.js, history.js, storage.js, schedule.js, auth.js, api.js, logs.js)
+  - **Backend Reorganizado:** Rotas API separadas por funcionalidade com middleware dedicado
+
+### 🔧 Modificado
+- **Servidor Express:** O servidor foi estendido para suportar WebSocket com Socket.IO 4.x, mantendo compatibilidade com Node.js 12.
+- **Logger Winston:** O sistema de logging foi aprimorado para transmitir logs em tempo real via WebSocket para todos os clientes autenticados.
+- **Configuração de Sessões:** Ajustado `saveUninitialized` para `false` e reduzido o tempo de expiração das sessões de 24 horas para 1 hora, aumentando a segurança.
+- **Dependências:** Adicionadas as bibliotecas `socket.io` para comunicação em tempo real e `connect-sqlite3` para armazenamento robusto de sessões.
+- **Arquitetura Frontend:** Expandida para 9 módulos JavaScript (38KB total) com a adição do módulo de logs em tempo real.
+- **Estrutura de Arquivos:** Reorganização completa da estrutura frontend e backend para melhor manutenibilidade e escalabilidade.
+
+### 🐛 Corrigido
+- **Flash de Tema Claro (FOUC):** Implementado script inline no `<head>` de todos os arquivos HTML (index.html, login.html, setup.html) para aplicar o tema escuro imediatamente, eliminando o flash indesejado durante o carregamento da página.
+- **Gerenciamento de Sessão:** A mudança para `connect-sqlite3` resolve potenciais problemas de perda de sessão ao reiniciar o serviço, proporcionando maior estabilidade.
+- **Estabilidade WebSocket:** Implementada reconexão automática e tratamento de erros para garantir comunicação confiável em tempo real.
+- **Controles de Interface:** Corrigidos problemas com botões de pausar/continuar e auto-scroll na interface de logs que não funcionavam corretamente.
+- **Event Listeners:** Refatorado o sistema de event listeners para prevenir duplicação e melhorar a responsividade dos controles.
+- **Aplicação Duplicada de Tema:** Removida aplicação duplicada do tema nos arquivos JavaScript, deixando apenas o script inline otimizado.
+
+### ♻️ Refatorado
+- **Estrutura Frontend:** CSS separado em 5 módulos especializados para melhor organização e manutenção.
+- **JavaScript Modular:** Script principal dividido em 9 módulos específicos, cada um com responsabilidade bem definida.
+- **Rotas API:** Backend reorganizado com rotas separadas por funcionalidade (auth.js, browse.js, config.js, database.js, history.js, storage.js).
+- **Middleware de Autenticação:** Criado middleware centralizado para autenticação em todas as rotas protegidas.
+- **Padrões de Código:** Estabelecidos padrões modulares consistentes para facilitar manutenção e expansão futura.
+
+### 🔒 Segurança
+- **Autenticação WebSocket:** Middleware de autenticação implementado para WebSocket, garantindo que apenas usuários logados possam acessar logs em tempo real.
+- **Validação de Sessão:** Verificação contínua de sessões válidas para conexões WebSocket ativas.
+- **Rate Limiting:** Proteção contra spam de logs e sobrecarga do servidor WebSocket.
+- **Sessões Robustas:** Armazenamento persistente de sessões em SQLite para maior segurança e estabilidade.
+
+### 💄 Melhorado
+- **UX de Logs:** Interface mais intuitiva com controles visuais claros para pausar, limpar e baixar logs.
+- **Responsividade:** Interface de logs adaptada para dispositivos móveis com controles touch-friendly.
+- **Performance:** Otimização do buffer de logs em memória para melhor performance em sessões longas.
+- **Debugging:** Logs estruturados facilitam identificação rápida de problemas durante operações de backup.
+- **Manutenibilidade:** Arquitetura modular facilita localização e edição de funcionalidades específicas.
+- **Escalabilidade:** Base sólida estabelecida para adição rápida de novas funcionalidades.
+
+### 📝 Documentação
+- **Regras do Cursor:** Atualizadas completamente todas as regras de desenvolvimento para refletir a nova arquitetura modular.
+- **Padrões Modulares:** Documentados padrões de desenvolvimento frontend e backend.
+- **Roadmap Atualizado:** Marcada Fase 1.3 como concluída e planejamento da Fase 2.1 (Notificações E-mail).
+- **Estrutura Documentada:** Mapeamento completo da nova organização de arquivos e responsabilidades.
+
 ## [0.2.2] - 12-06-2025
 
 ### 🐛 Corrigido
@@ -100,6 +156,7 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ---
 
+[0.3.0]: https://github.com/onflux-tech/nodebackup-sqlserver/compare/v0.2.2...v0.3.0
 [0.2.2]: https://github.com/onflux-tech/nodebackup-sqlserver/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/onflux-tech/nodebackup-sqlserver/compare/v0.1.0...v0.2.1
 [0.1.0]: https://github.com/onflux-tech/nodebackup-sqlserver/compare/v0.0.5...v0.1.0

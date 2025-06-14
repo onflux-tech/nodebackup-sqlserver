@@ -15,15 +15,16 @@ alwaysApply: true
   - [public/css/login.css](mdc:public/css/login.css) - Estilos login/setup (2KB)
   - [public/css/responsive.css](mdc:public/css/responsive.css) - Media queries (3KB)
 
-- **JavaScript Modular (8 arquivos - 35KB total)**:
-  - [public/js/ui.js](mdc:public/js/ui.js) - Componentes UI, tema, toasts (5KB)
-  - [public/js/config.js](mdc:public/js/config.js) - Gerenciamento configurações (6KB)
-  - [public/js/database.js](mdc:public/js/database.js) - Seleção bancos SQL (5KB)
-  - [public/js/history.js](mdc:public/js/history.js) - Painel histórico (8KB)
-  - [public/js/storage.js](mdc:public/js/storage.js) - FTP e limpeza (6KB)
-  - [public/js/schedule.js](mdc:public/js/schedule.js) - Agendamento (2KB)
+- **JavaScript Modular (9 arquivos - 57.7KB total)**:
+  - [public/js/ui.js](mdc:public/js/ui.js) - Componentes UI, tema, toasts (8KB)
+  - [public/js/config.js](mdc:public/js/config.js) - Gerenciamento configurações (8KB)
+  - [public/js/database.js](mdc:public/js/database.js) - Seleção bancos SQL (8KB)
+  - [public/js/history.js](mdc:public/js/history.js) - Painel histórico (14KB)
+  - [public/js/storage.js](mdc:public/js/storage.js) - FTP e limpeza (9KB)
+  - [public/js/schedule.js](mdc:public/js/schedule.js) - Agendamento (3KB)
   - [public/js/auth.js](mdc:public/js/auth.js) - Autenticação (1KB)
-  - [public/js/api.js](mdc:public/js/api.js) - Requisições API (2KB)
+  - [public/js/api.js](mdc:public/js/api.js) - Requisições API (1KB)
+  - [public/js/logs.js](mdc:public/js/logs.js) - Logs em tempo real WebSocket (10KB)
 
 - **HTML Pages**:
   - [public/index.html](mdc:public/index.html) - Dashboard principal
@@ -32,10 +33,11 @@ alwaysApply: true
 
 ### Limitações e Diretrizes Atualizadas
 - **Modularidade**: Código separado por responsabilidade
-- **Performance**: Total < 60KB (CSS + JS)
+- **Performance**: Total < 110KB (CSS + JS)
 - **Compatibilidade**: IE11+, Chrome 60+, Firefox 55+
 - **Temas**: Sistema dual (claro/escuro) com variáveis CSS
 - **FOUC Prevention**: Script inline anti-flash implementado
+- **WebSocket**: Comunicação em tempo real para logs
 
 ## 🔌 Padrões de API REST Modularizada
 
@@ -48,6 +50,27 @@ alwaysApply: true
 ├── database.js     # GET /api/list-databases, POST /api/test-connection
 ├── history.js      # GET /api/history, GET /api/history/stats
 └── storage.js      # POST /api/test-ftp, /api/cleanup-local, /api/cleanup-ftp
+```
+
+### WebSocket Integration Implementado
+```javascript
+// src/server.js - WebSocket com autenticação
+const { Server } = require('socket.io');
+const io = new Server(server);
+
+io.use((socket, next) => {
+  // Middleware de autenticação WebSocket
+  if (socket.handshake.session && socket.handshake.session.user) {
+    next();
+  } else {
+    next(new Error('Authentication error'));
+  }
+});
+
+// Broadcast de logs para clientes autenticados
+logger.on('log', (logData) => {
+  io.emit('log', logData);
+});
 ```
 
 ### Middleware de Autenticação Implementado
@@ -139,6 +162,22 @@ export function setupThemeToggle() {
 }
 ```
 
+#### 📊 Sistema de Logs em Tempo Real (public/js/logs.js)
+```javascript
+export function setupLogs() {
+  // Conexão WebSocket para logs
+  // Controles de pause/play, clear, download
+  // Filtros por nível de log
+  // Auto-scroll inteligente
+}
+
+export function connectWebSocket() {
+  // Estabelece conexão Socket.IO
+  // Gerencia reconexão automática
+  // Aplica autenticação de sessão
+}
+```
+
 ## 📱 Responsividade Implementada
 
 ### Breakpoints CSS (public/css/responsive.css)
@@ -182,6 +221,14 @@ export async function apiFetch(url, options = {}) {
 }
 ```
 
+### WebSocket Security
+```javascript
+// Autenticação WebSocket baseada em sessão
+// Validação de origem para prevenir CSRF
+// Rate limiting para prevenir spam de logs
+// Desconexão automática em caso de sessão inválida
+```
+
 ### Prevenção FOUC (Flash of Unstyled Content)
 ```html
 <!-- Implementado em todos os HTMLs -->
@@ -199,15 +246,17 @@ export async function apiFetch(url, options = {}) {
 
 ### Métricas Atuais Implementadas
 - **CSS Modular**: 25KB total (5 arquivos especializados)
-- **JavaScript Modular**: 35KB total (8 módulos específicos)
+- **JavaScript Modular**: 57KB total (9 módulos específicos)
 - **Loading Progressivo**: Módulos carregados sob demanda
 - **Cache Control**: Headers apropriados implementados
+- **WebSocket**: Comunicação eficiente em tempo real
 
 ### Otimizações de UX Implementadas
 - **Loading States**: Em todos os botões e operações assíncronas
 - **Error Handling**: Toasts informativos com sugestões
 - **Tema Persistence**: LocalStorage com aplicação imediata
 - **Mobile First**: Design responsivo completo
+- **Real-time Feedback**: Logs instantâneos via WebSocket
 
 ## 📋 Padrões para Desenvolvimento Modular
 
@@ -225,6 +274,24 @@ export function handleNewAction() {
 
 // Importar no entry point (script.js)
 import { setupNewFeature } from './js/new-feature.js';
+```
+
+### WebSocket Module Pattern
+```javascript
+// Template para módulos WebSocket
+export function setupWebSocketFeature() {
+  const socket = io();
+  
+  socket.on('connect', () => {
+    // Lógica de conexão
+  });
+  
+  socket.on('disconnect', () => {
+    // Lógica de desconexão
+  });
+  
+  return socket;
+}
 ```
 
 ### Estrutura de Novos Estilos CSS
@@ -269,6 +336,32 @@ router.get('/endpoint', requireAuth, async (req, res) => {
 module.exports = router;
 ```
 
+### WebSocket Server Integration
+```javascript
+// src/server.js - Integração completa
+const express = require('express');
+const { createServer } = require('http');
+const { Server } = require('socket.io');
+
+const app = express();
+const server = createServer(app);
+const io = new Server(server);
+
+// Middleware de sessão compartilhado
+const sessionMiddleware = session({
+  store: new SQLiteStore({ db: 'history.db' }),
+  secret: 'your-secret-key',
+  resave: false,
+  saveUninitialized: false,
+  cookie: { maxAge: 3600000 } // 1 hora
+});
+
+app.use(sessionMiddleware);
+io.use((socket, next) => {
+  sessionMiddleware(socket.request, {}, next);
+});
+```
+
 ## 📊 Checklist para Novas Features Frontend
 
 ### ✅ Desenvolvimento Modular
@@ -278,16 +371,19 @@ module.exports = router;
 - [ ] **Temas**: Verificar funcionamento dark/light
 - [ ] **Loading States**: Implementar para operações assíncronas
 - [ ] **Error Handling**: Toast notifications apropriadas
+- [ ] **WebSocket**: Considerar comunicação em tempo real se aplicável
 
 ### ✅ Performance e Compatibilidade
-- [ ] **Tamanho**: Verificar impacto no bundle total
+- [ ] **Tamanho**: Verificar impacto no bundle total (< 65KB)
 - [ ] **Browser Testing**: IE11+, Chrome 60+, Firefox 55+
 - [ ] **Mobile**: Testar touch, gestos, viewport
 - [ ] **Acessibilidade**: ARIA labels, contraste, navegação teclado
+- [ ] **WebSocket**: Testar reconexão e fallbacks
 
 ### ✅ Integração
 - [ ] **API**: Seguir padrões de resposta
 - [ ] **Autenticação**: Aplicar middleware quando necessário
 - [ ] **Logs**: Implementar logging estruturado
 - [ ] **Build**: Verificar compatibilidade com pkg node12-win-x64
+- [ ] **Real-time**: Implementar WebSocket se necessário
 

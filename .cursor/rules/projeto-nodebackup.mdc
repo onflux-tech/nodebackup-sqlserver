@@ -14,13 +14,14 @@ O Node-Backup é uma aplicação Windows para automatização de backups de banc
 - Interface web responsiva com autenticação criptografada
 - **Sistema de histórico completo** com SQLite
 - **Política de retenção** configurável para limpeza automática
+- **Logs em tempo real** via WebSocket para monitoramento ao vivo
 - **Arquitetura modular** frontend e backend
 
 ## Arquitetura Modular Atual
 
 ### Ponto de Entrada
 - [src/app.js](mdc:src/app.js) - Entry point principal da aplicação
-- [src/server.js](mdc:src/server.js) - Servidor Express
+- [src/server.js](mdc:src/server.js) - Servidor Express com WebSocket
 - [src/config.js](mdc:src/config.js) - Sistema de configuração criptografada
 
 ### Serviços Core
@@ -31,7 +32,7 @@ O Node-Backup é uma aplicação Windows para automatização de backups de banc
 - [src/services/windowsService.js](mdc:src/services/windowsService.js) - Instalação como serviço Windows
 
 ### Utilitários
-- [src/utils/logger.js](mdc:src/utils/logger.js) - Sistema de logging com rotação diária
+- [src/utils/logger.js](mdc:src/utils/logger.js) - Sistema de logging com rotação diária e WebSocket streaming
 - [src/utils/encryption.js](mdc:src/utils/encryption.js) - Criptografia para configurações
 - [src/utils/errorHandler.js](mdc:src/utils/errorHandler.js) - Tratamento amigável de erros
 
@@ -53,7 +54,7 @@ O Node-Backup é uma aplicação Windows para automatização de backups de banc
   - [public/css/login.css](mdc:public/css/login.css) - Login/setup (2KB)
   - [public/css/responsive.css](mdc:public/css/responsive.css) - Media queries (3KB)
 
-- **JavaScript Modular (35KB total)**:
+- **JavaScript Modular (38KB total)**:
   - [public/js/ui.js](mdc:public/js/ui.js) - Componentes UI, temas, toasts (5KB)
   - [public/js/config.js](mdc:public/js/config.js) - Configurações (6KB)
   - [public/js/database.js](mdc:public/js/database.js) - Seleção bancos (5KB)
@@ -62,6 +63,7 @@ O Node-Backup é uma aplicação Windows para automatização de backups de banc
   - [public/js/schedule.js](mdc:public/js/schedule.js) - Agendamento (2KB)
   - [public/js/auth.js](mdc:public/js/auth.js) - Autenticação (1KB)
   - [public/js/api.js](mdc:public/js/api.js) - Requisições API (2KB)
+  - [public/js/logs.js](mdc:public/js/logs.js) - **NOVO**: Logs em tempo real (3KB)
 
 - **HTML Pages**:
   - [public/index.html](mdc:public/index.html) - Dashboard principal
@@ -72,19 +74,20 @@ O Node-Backup é uma aplicação Windows para automatização de backups de banc
 ## Stack Tecnológica
 - **Runtime**: Node.js 12+ (compatibilidade obrigatória)
 - **Framework Web**: Express.js 4.19.2
+- **WebSocket**: Socket.IO 4.x (compatível Node 12)
 - **Banco Histórico**: SQLite 3 (via sql.js 1.8.0 - Node 12 compatível)
 - **Banco Principal**: SQL Server (via mssql 6.3.2 e sqlcmd)
-- **Autenticação**: bcryptjs + express-session
+- **Autenticação**: bcryptjs + express-session com connect-sqlite3
 - **Agendamento**: node-schedule 2.1.1
 - **FTP**: basic-ftp 5.0.5
-- **Logging**: winston 3.3.3 com winston-daily-rotate-file
+- **Logging**: winston 3.3.3 com winston-daily-rotate-file + WebSocket streaming
 - **Criptografia**: crypto-js 4.2.0
 - **Compressão**: 7-Zip (7za.exe embarcado)
 - **Serviço Windows**: NSSM (nssm.exe embarcado)
 - **Build**: pkg 5.8.1 para executável único
 - **Frontend**: JavaScript ES6 Modules + CSS Variables
 
-## Funcionalidades Implementadas (v0.2.2)
+## Funcionalidades Implementadas (v0.3.0)
 
 ### 🔐 Autenticação e Segurança
 - Setup inicial obrigatório via web
@@ -92,6 +95,7 @@ O Node-Backup é uma aplicação Windows para automatização de backups de banc
 - Middleware de autenticação centralizado
 - Configurações criptografadas (config.enc)
 - Prevenção FOUC (Flash of Unstyled Content)
+- **Sessões persistentes com SQLite** (connect-sqlite3)
 
 ### 💾 Backup e Armazenamento
 - Backup automático SQL Server (.bak)
@@ -107,6 +111,7 @@ O Node-Backup é uma aplicação Windows para automatização de backups de banc
 - Estatísticas detalhadas (total, sucessos, falhas, duração)
 - Interface de histórico responsiva
 - Filtros por status e paginação
+- **Logs em tempo real via WebSocket** (v0.3.0)
 
 ### 🎨 Interface Moderna
 - Design responsivo mobile-first
@@ -115,12 +120,14 @@ O Node-Backup é uma aplicação Windows para automatização de backups de banc
 - Componentes modularizados
 - Toast notifications inteligentes
 - Loading states em todas operações
+- **Aba "Logs ao Vivo" com controles interativos** (v0.3.0)
 
 ### 🔧 Infraestrutura
 - Instalação como serviço Windows (NSSM)
 - Sistema de logs rotacionados
 - Build automatizado (pkg)
 - Executável autocontido
+- **WebSocket server integrado para streaming de logs** (v0.3.0)
 
 ## Sistema de Build
 - [scripts/build.js](mdc:scripts/build.js) - Embarca assets e gera executável
@@ -134,24 +141,25 @@ O Node-Backup é uma aplicação Windows para automatização de backups de banc
 - Interface protegida por sessões autenticadas
 - Logs rotacionados em [logs/](mdc:logs) com retenção configurável
 - Histórico persistido em SQLite local
+- **Sessões armazenadas em SQLite para maior robustez** (v0.3.0)
 
 ## Versionamento Atual
-- **Versão Atual**: v0.2.2 (Painel de Histórico + Refatoração)
-- **Última Release**: v0.2.0 (Painel de Histórico SQLite)
+- **Versão Atual**: v0.3.0 (Logs em Tempo Real WebSocket)
+- **Release Anterior**: v0.2.2 (Painel de Histórico + Refatoração)
+- **Release Anterior**: v0.2.0 (Painel de Histórico SQLite)
 - **Release Anterior**: v0.1.0 (Política de Retenção)
-- **Próxima**: v0.3.0 (Logs em Tempo Real WebSocket)
+- **Próxima**: v0.4.0 (Notificações E-mail SMTP)
 
 ## Métricas de Qualidade
-- **Executável**: ~57MB (autocontido)
-- **Frontend**: 60KB total (35KB JS + 25KB CSS)
+- **Executável**: ~85MB (autocontido)
+- **Frontend**: 63KB total (38KB JS + 25KB CSS)
 - **Compatibilidade**: Windows 7+ x64
 - **SQL Server**: 2008 R2+ até 2022
 - **Performance**: < 200MB RAM, < 5s startup
 - **Arquitetura**: Modular, manutenível, escalável
 
 ## Próximos Desenvolvimentos (Roadmap)
-1. **v0.3.0**: Logs em Tempo Real (WebSocket)
-2. **v0.4.0**: Notificações E-mail (SMTP)
-3. **v0.5.0**: Integração Telegram/WhatsApp
-4. **v1.0.0**: Release estável completo
+1. **v0.4.0**: Notificações E-mail (SMTP)
+2. **v0.5.0**: Integração Telegram/WhatsApp
+3. **v1.0.0**: Release estável completo
 
