@@ -1,0 +1,72 @@
+name: Limpeza Automática de Releases
+
+on:
+  schedule:
+    - cron: "0 2 * * 0"
+  workflow_dispatch:
+
+jobs:
+  cleanup-releases:
+    name: Limpar Releases Antigas
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Limpar releases antigas
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { data: releases } = await github.rest.repos.listReleases({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              per_page: 100
+            });
+
+            const releasesSortedByDate = releases.sort((a, b) => 
+              new Date(b.created_at) - new Date(a.created_at)
+            );
+
+            const toKeep = new Set();
+
+            releasesSortedByDate.slice(0, 10).forEach(r => toKeep.add(r.id));
+
+            const latestRelease = releases.find(r => r.tag_name.includes('latest') || !r.prerelease);
+            if (latestRelease) toKeep.add(latestRelease.id);
+
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+            releases.forEach(r => {
+              if (r.prerelease && new Date(r.created_at) > thirtyDaysAgo) {
+                toKeep.add(r.id);
+              }
+            });
+
+            let deletedCount = 0;
+            for (const release of releases) {
+              if (!toKeep.has(release.id)) {
+                console.log(`Deletando release: ${release.tag_name} (${release.created_at})`);
+                await github.rest.repos.deleteRelease({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  release_id: release.id
+                });
+                
+                try {
+                  await github.rest.git.deleteRef({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    ref: `tags/${release.tag_name}`
+                  });
+                } catch (e) {
+                  console.log(`Erro ao deletar tag ${release.tag_name}: ${e.message}`);
+                }
+                
+                deletedCount++;
+                
+                await new Promise(resolve => setTimeout(resolve, 1000));
+              }
+            }
+
+            console.log(`✅ Limpeza concluída: ${deletedCount} releases removidas`);
+            console.log(`📦 Releases mantidas: ${toKeep.size}`);
