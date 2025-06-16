@@ -19,11 +19,27 @@ jobs:
           node-version: "12"
           cache: "npm"
 
-      - name: Instalar dependências
-        run: npm install
+      - name: Cache de dependências
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.npm
+            node_modules
+            **/node_modules
+          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-
 
-      - name: Compilar o executável
+      - name: Instalar dependências
+        run: npm ci --no-audit --no-fund --prefer-offline
+
+      - name: Executar build
         run: npm run build
+
+      - name: Limpar dependências dev
+        run: |
+          npm prune --production
+          npm cache clean --force
 
       - name: Instalar NSIS
         run: |
