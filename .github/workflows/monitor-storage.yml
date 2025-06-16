@@ -1,0 +1,123 @@
+name: Monitor de Uso de Espaço
+
+on:
+  schedule:
+    - cron: "0 8 * * 1"
+  workflow_dispatch:
+
+jobs:
+  monitor-storage:
+    name: Monitorar Uso de Armazenamento
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Verificar uso de espaço
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { data: releases } = await github.rest.repos.listReleases({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              per_page: 100
+            });
+
+            let totalSize = 0;
+            let assetsCount = 0;
+            const sizeByType = {};
+
+            for (const release of releases) {
+              console.log(`\n📦 Release: ${release.tag_name} (${release.created_at})`);
+              
+              for (const asset of release.assets) {
+                const sizeMB = (asset.size / 1024 / 1024).toFixed(2);
+                totalSize += asset.size;
+                assetsCount++;
+                
+                const extension = asset.name.split('.').pop();
+                sizeByType[extension] = (sizeByType[extension] || 0) + asset.size;
+                
+                console.log(`  - ${asset.name}: ${sizeMB} MB`);
+              }
+            }
+
+            const totalSizeGB = (totalSize / 1024 / 1024 / 1024).toFixed(2);
+            const totalSizeMB = (totalSize / 1024 / 1024).toFixed(2);
+
+            console.log(`\n📊 RESUMO DE ARMAZENAMENTO:`);
+            console.log(`📦 Total de releases: ${releases.length}`);
+            console.log(`📁 Total de assets: ${assetsCount}`);
+            console.log(`💾 Tamanho total: ${totalSizeMB} MB (${totalSizeGB} GB)`);
+
+            console.log(`\n📋 Por tipo de arquivo:`);
+            Object.entries(sizeByType).forEach(([ext, size]) => {
+              const sizeMB = (size / 1024 / 1024).toFixed(2);
+              console.log(`  .${ext}: ${sizeMB} MB`);
+            });
+
+            const warnings = [];
+
+            if (releases.length > 80) {
+              warnings.push(`⚠️ Muitas releases: ${releases.length}/100 (recomendado < 50)`);
+            }
+
+            if (totalSize > 1 * 1024 * 1024 * 1024) { // 1GB
+              warnings.push(`⚠️ Armazenamento alto: ${totalSizeGB} GB`);
+            }
+
+            if (assetsCount > 200) {
+              warnings.push(`⚠️ Muitos assets: ${assetsCount} (considere limpeza)`);
+            }
+
+            try {
+              const { data: actionsCacheList } = await github.rest.actions.getActionsCacheList({
+                owner: context.repo.owner,
+                repo: context.repo.repo
+              });
+              
+              const cacheSize = actionsCacheList.actions_caches.reduce((sum, cache) => 
+                sum + cache.size_in_bytes, 0
+              );
+              const cacheSizeMB = (cacheSize / 1024 / 1024).toFixed(2);
+              
+              console.log(`\n🔄 GitHub Actions Cache: ${cacheSizeMB} MB`);
+              
+              if (cacheSize > 400 * 1024 * 1024) {
+                warnings.push(`⚠️ Cache Actions próximo do limite: ${cacheSizeMB}/500 MB`);
+              }
+            } catch (e) {
+              console.log('ℹ️ Não foi possível verificar cache do Actions');
+            }
+
+            if (warnings.length > 0) {
+              console.log(`\n🚨 ALERTAS:`);
+              warnings.forEach(warning => console.log(warning));
+              
+              if (totalSize > 2 * 1024 * 1024 * 1024) {
+                const issueTitle = "🚨 Alerta: Uso de armazenamento alto (" + totalSizeGB + " GB)";
+                
+                let issueBody = "## 🚨 Alerta de Armazenamento\n\n";
+                issueBody += "**Uso atual:** " + totalSizeGB + " GB\n";
+                issueBody += "**Total de releases:** " + releases.length + "\n";
+                issueBody += "**Total de assets:** " + assetsCount + "\n\n";
+                issueBody += "### Recomendações:\n";
+                issueBody += "- [ ] Executar workflow de limpeza de releases\n";
+                issueBody += "- [ ] Considerar usar storage externo para releases antigas\n";
+                issueBody += "- [ ] Verificar se instaladores podem ser mais comprimidos\n\n";
+                issueBody += "### Alertas:\n";
+                warnings.forEach(w => {
+                  issueBody += "- " + w + "\n";
+                });
+                issueBody += "\n_Gerado automaticamente pelo monitor de armazenamento_";
+
+                await github.rest.issues.create({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  title: issueTitle,
+                  body: issueBody,
+                  labels: ['storage', 'maintenance']
+                });
+              }
+            } else {
+              console.log(`\n✅ Uso de armazenamento dentro dos limites recomendados`);
+            }
