@@ -369,6 +369,9 @@ export async function startUpdateProcess() {
     window.lucide.createIcons();
   }
 
+  let connectionErrors = 0;
+  let lastKnownPercentage = 0;
+
   try {
     await apiFetch('/api/updates/install', {
       method: 'POST',
@@ -385,6 +388,8 @@ export async function startUpdateProcess() {
         const progress = await apiFetch('/api/updates/progress');
 
         updateProgressDisplay(progress);
+        lastKnownPercentage = progress.percentage;
+        connectionErrors = 0;
 
         if (progress.status === 'completed') {
           clearInterval(updateProgress);
@@ -395,6 +400,12 @@ export async function startUpdateProcess() {
         }
       } catch (error) {
         console.error('Erro ao verificar progresso:', error);
+        connectionErrors++;
+
+        if (lastKnownPercentage >= 60 && connectionErrors > 2) {
+          clearInterval(updateProgress);
+          showServiceRestarting();
+        }
       }
     }, 1000);
 
@@ -403,6 +414,32 @@ export async function startUpdateProcess() {
     modal.remove();
     showToast('Erro ao iniciar atualização: ' + error.message, 'error');
   }
+}
+
+function showServiceRestarting() {
+  const modalBody = document.querySelector('.update-modal .modal-body');
+  modalBody.innerHTML = `
+    <div class="update-restarting">
+      <i data-lucide="refresh-cw" class="progress-spinner"></i>
+      <h3>Serviço Reiniciando...</h3>
+      <p>A atualização foi aplicada e o serviço está sendo reiniciado.</p>
+      <p>Por favor, aguarde alguns segundos e recarregue a página.</p>
+      <div style="margin-top: 20px;">
+        <button class="btn btn-primary" onclick="setTimeout(() => window.location.reload(), 3000); this.disabled = true; this.innerHTML = '<i data-lucide=\\'loader\\' class=\\'progress-spinner\\'></i> Aguardando...'">
+          <i data-lucide="refresh-cw" class="btn-icon"></i>
+          Recarregar em 3s
+        </button>
+      </div>
+    </div>
+  `;
+
+  if (window.lucide) {
+    window.lucide.createIcons();
+  }
+
+  setTimeout(() => {
+    window.location.reload();
+  }, 5000);
 }
 
 window.updateManager = {

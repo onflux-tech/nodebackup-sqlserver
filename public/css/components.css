@@ -1637,7 +1637,6 @@ input::placeholder {
 }
 
 @keyframes pulse {
-
   0%,
   100% {
     opacity: 1;
@@ -2050,6 +2049,48 @@ input::placeholder {
   width: 16px;
   height: 16px;
   margin-right: var(--space-xs);
+}
+
+/* Update Service Restarting */
+.update-restarting {
+  padding: var(--space-2xl);
+  text-align: center;
+}
+
+.update-restarting .progress-spinner {
+  width: 48px;
+  height: 48px;
+  color: var(--primary-500);
+  margin: 0 auto var(--space-lg);
+  animation: spin 1s linear infinite;
+}
+
+.update-restarting h3 {
+  margin: 0 0 var(--space-md);
+  font-size: 1.25rem;
+  color: var(--text-primary);
+}
+
+.update-restarting p {
+  margin: 0 0 var(--space-sm);
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+.update-restarting .btn {
+  min-width: 180px;
+}
+
+.update-restarting .btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.update-restarting .btn .progress-spinner {
+  width: 16px;
+  height: 16px;
+  margin-right: var(--space-xs);
+  animation: spin 1s linear infinite;
 }
 
 /* ===== NOTIFICATIONS ===== */
