@@ -20,6 +20,7 @@ alwaysApply: true
 - pkg 5.8.1 (suporte a Node 12)
 - **socket.io 4.x** (compatível Node 12 - logs em tempo real)
 - **connect-sqlite3 0.9.x** (armazenamento sessões SQLite)
+- **nodemailer 6.9.x** (compatível Node 12 - notificações SMTP)
 
 ## 📁 Padrões de Estrutura Modular
 
@@ -38,11 +39,13 @@ src/
 │       ├── config.js   # Rotas configuração
 │       ├── database.js # Rotas banco de dados
 │       ├── history.js  # Rotas histórico
+│       ├── notifications.js # Rotas notificações SMTP
 │       └── storage.js  # Rotas armazenamento
 ├── services/
 │   ├── database.js     # Operações SQL Server
 │   ├── ftp.js         # Operações FTP
 │   ├── history.js     # Serviço histórico SQLite
+│   ├── notification.js # Serviço notificações SMTP
 │   ├── scheduler.js   # Agendamento
 │   └── windowsService.js # Serviço Windows
 └── utils/
@@ -67,6 +70,7 @@ public/
 │   ├── database.js    # Seleção e listagem bancos
 │   ├── history.js     # Painel histórico backups
 │   ├── logs.js        # Logs em tempo real WebSocket
+│   ├── notifications.js # Configuração SMTP e notificações
 │   ├── schedule.js    # Agendamento backups
 │   ├── storage.js     # Configuração FTP e limpeza
 │   └── ui.js          # Componentes UI (tema, tabs, toasts)
@@ -90,7 +94,8 @@ export function showToast(message, type) { /* ... */ }
 import { setupThemeToggle, setupTabs } from './js/ui.js';
 import { setupConfigForm, loadConfig } from './js/config.js';
 import { setupDatabase } from './js/database.js';
-import { setupLogs } from './js/logs.js'; // NOVO: Logs em tempo real
+import { setupLogs } from './js/logs.js'; // Logs em tempo real
+import { setupNotifications } from './js/notifications.js'; // NOVO: Notificações SMTP
 ```
 
 ### WebSocket Integration Pattern
@@ -223,9 +228,10 @@ logger.on('log', (logData) => {
 
 ### Performance e Tamanho
 - **CSS Total**: Manter < 25KB (5 arquivos CSS)
-- **JavaScript Total**: Manter < 40KB (9 módulos JS)
+- **JavaScript Total**: Manter < 50KB (10 módulos JS)
 - **Compatibilidade**: IE11+, Chrome 60+, Firefox 55+
 - **WebSocket**: Comunicação eficiente em tempo real
+- **Notificações**: Templates SMTP com compatibilidade de e-mail
 
 ### Sistema de Temas
 - **Variáveis CSS**: Definir em [public/css/base.css](mdc:public/css/base.css)

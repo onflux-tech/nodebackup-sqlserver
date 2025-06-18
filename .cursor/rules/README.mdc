@@ -12,7 +12,9 @@ Este conjunto de regras fornece diretrizes completas para desenvolvimento da apl
 ## 📚 Regras Disponíveis
 
 ### 1. 🏗️ [Visão Geral do Projeto](mdc:projeto-nodebackup.mdc)
+
 **Escopo**: Arquitetura modular, tecnologias e estrutura atual
+
 - Descrição completa do projeto refatorado
 - Stack tecnológica (Node 12, Express, SQL Server, SQLite, WebSocket)
 - Mapeamento da estrutura modular (frontend + backend)
@@ -24,6 +26,7 @@ Este conjunto de regras fornece diretrizes completas para desenvolvimento da apl
 
 ### 2. 🛠️ [Padrões de Desenvolvimento](mdc:padroes-desenvolvimento.mdc)
 **Escopo**: Compatibilidade Node 12, estrutura modular e boas práticas
+
 - Compatibilidade obrigatória com Node.js 12.x
 - **ATUALIZADO**: Padrões de estrutura modular (frontend/backend)
 - **ATUALIZADO**: Organização de módulos JS (ES6) e CSS (variáveis)
@@ -35,6 +38,7 @@ Este conjunto de regras fornece diretrizes completas para desenvolvimento da apl
 
 ### 3. 🌐 [Frontend e API](mdc:frontend-api-patterns.mdc)
 **Escopo**: Interface web modular, padrões de API REST e UX moderna
+
 - **REFATORADO**: Estrutura modular da interface web (5 CSS + 9 JS)
 - **NOVO**: Sistema de design com variáveis CSS e temas
 - Padrões de API REST com rotas modulares
@@ -46,7 +50,9 @@ Este conjunto de regras fornece diretrizes completas para desenvolvimento da apl
 - **NOVO**: WebSocket integration e logs em tempo real
 
 ### 4. 🚀 [Deployment e Versionamento](mdc:deployment-versionamento.mdc)
+
 **Escopo**: Build, releases e distribuição
+
 - Versionamento semântico (v0.3.0 atual)
 - Processo de build com pkg
 - Assets embarcados (7za.exe, nssm.exe, public/ modular)
@@ -56,6 +62,7 @@ Este conjunto de regras fornece diretrizes completas para desenvolvimento da apl
 
 ### 5. 📈 [Roadmap e Tasklist](mdc:roadmap-tasklist.mdc)
 **Escopo**: Próximas implementações sobre base modular
+
 - **ATUALIZADO**: Estado atual v0.3.1 (auto-update silencioso)
 - **ATUALIZADO**: Fases de desenvolvimento com base modular
 - Tasklist detalhada por feature
@@ -69,6 +76,7 @@ Este conjunto de regras fornece diretrizes completas para desenvolvimento da apl
 ## 🎯 Como Usar Estas Regras
 
 ### Para Desenvolvimento Ativo
+
 1. **Consulte** [padroes-desenvolvimento.mdc](mdc:padroes-desenvolvimento.mdc) para estrutura modular
 2. **Verifique** [frontend-api-patterns.mdc](mdc:frontend-api-patterns.mdc) para mudanças na interface
 3. **Siga** os padrões de commit em [deployment-versionamento.mdc](mdc:deployment-versionamento.mdc)
@@ -76,6 +84,7 @@ Este conjunto de regras fornece diretrizes completas para desenvolvimento da apl
 5. **NOVO**: Considere integração WebSocket para funcionalidades em tempo real
 
 ### Para Novas Features
+
 1. **Consulte** [roadmap-tasklist.mdc](mdc:roadmap-tasklist.mdc) para ver se já está planejado
 2. **ATUALIZADO**: Crie módulos JS/CSS apropriados conforme [padroes-desenvolvimento.mdc](mdc:padroes-desenvolvimento.mdc)
 3. **ATUALIZADO**: Use rotas modulares conforme [frontend-api-patterns.mdc](mdc:frontend-api-patterns.mdc)
@@ -83,6 +92,7 @@ Este conjunto de regras fornece diretrizes completas para desenvolvimento da apl
 5. **NOVO**: Avalie necessidade de comunicação WebSocket
 
 ### Para Entendimento Geral
+
 1. **Comece** com [projeto-nodebackup.mdc](mdc:projeto-nodebackup.mdc) para overview modular
 2. **Explore** estrutura modular documentada nas regras
 3. **Consulte** [roadmap-tasklist.mdc](mdc:roadmap-tasklist.mdc) para contexto futuro
@@ -90,6 +100,7 @@ Este conjunto de regras fornece diretrizes completas para desenvolvimento da apl
 ## ⚠️ Restrições Importantes
 
 ### 🔴 Compatibilidade Crítica
+
 - **Node.js 12.x**: Nunca quebrar compatibilidade
 - **Windows 7+**: Executável deve funcionar em sistemas antigos
 - **SQL Server 2008+**: Manter suporte a versões legadas
@@ -98,8 +109,9 @@ Este conjunto de regras fornece diretrizes completas para desenvolvimento da apl
 - **NOVO**: WebSocket deve ser compatível com Node 12
 
 ### 🟡 Limitações Técnicas Atualizadas
+
 - **Tamanho Executável**: < 100MB
-- **Interface Web**: < 70KB total (41KB JS + 25KB CSS - modular)
+- **Interface Web**: < 75KB total (48KB JS + 25KB CSS - modular)
 - **Dependências**: Evitar bibliotecas que exijam Node 14+
 - **Build Target**: pkg node12-win-x64 obrigatório
 - **ATUALIZADO**: Módulos devem seguir padrões estabelecidos
@@ -108,11 +120,12 @@ Este conjunto de regras fornece diretrizes completas para desenvolvimento da apl
 
 ## 🚀 Estado Atual vs Próximos Passos
 
-### ✅ Implementado (v0.3.1 - Auto-Update Silencioso)
+### ✅ Implementado (v0.4.0 - Notificações por E-mail)
+
 - **Base Sólida**: Todas as funcionalidades v0.1.0, v0.2.0, v0.2.2 e v0.3.0
 - **CONSOLIDADO - Arquitetura Modular**: Frontend e backend completamente refatorados
 - **CSS Modular**: 5 arquivos especializados (base, components, layout, login, responsive)
-- **JavaScript Modular**: 10 módulos específicos (ui, config, database, history, storage, schedule, auth, api, logs, updater)
+- **JavaScript Modular**: 10 módulos específicos (ui, config, database, history, storage, schedule, auth, api, logs, updater, notifications)
 - **Backend Reorganizado**: Rotas separadas por funcionalidade com middleware dedicado
 - **Interface Modernizada**: Tema claro/escuro, responsiva, mobile-first
 - **Sistema Anti-FOUC**: Script inline implementado
@@ -120,22 +133,27 @@ Este conjunto de regras fornece diretrizes completas para desenvolvimento da apl
 - **Política de Retenção**: Limpeza automática configurável
 - **Logs em Tempo Real**: WebSocket com Socket.IO para streaming de logs
 - **Sessões Persistentes**: SQLite para armazenamento robusto de sessões
-- **NOVO - Auto-Update**: Sistema completo de atualização automática transparente
-- **NOVO - Instalador Silencioso**: NSIS otimizado para modo /S sem interrupções
+- **Auto-Update**: Sistema completo de atualização automática transparente
+- **Instalador Silencioso**: NSIS otimizado para modo /S sem interrupções
+- **NOVO - Notificações E-mail**: Sistema SMTP completo com templates HTML responsivos
+- **NOVO - Configuração SMTP**: Interface web com teste de conexão e diagnóstico avançado
 
-### 🎯 Próxima Prioridade (v0.4.0 - Fase 2.1)
-- **Notificações por E-mail**: Sistema SMTP para alertas de backup
-- **Templates HTML**: E-mails responsivos para sucesso/falha
-- **Configuração Granular**: Controle detalhado de quando enviar notificações
+### 🎯 Próxima Prioridade (v0.5.0 - Fase 2.2)
+
+- **Integração Telegram**: Bot para notificações e consulta de status
+- **Integração WhatsApp**: Suporte para WhatsApp Business API
+- **Mensageiros Configuráveis**: Interface web para configurar tokens e contatos
 
 ### 🔮 Roadmap v0.x.x Atualizado
-- **v0.4.0**: Notificações por E-mail (SMTP) - 4-5 semanas
+
+- **v0.4.0**: ✅ Notificações por E-mail (SMTP) - Concluído
 - **v0.5.0**: Integração Telegram/WhatsApp - 4-6 semanas
 - **v1.0.0**: Release estável consolidado - 2-3 semanas
 
-## 📊 Melhorias Implementadas na v0.3.1
+## 📊 Melhorias Implementadas na v0.4.0
 
 ### 🏗️ **Arquitetura**
+
 - **Modularidade**: Código separado por responsabilidade
 - **Manutenibilidade**: Fácil localização e edição de funcionalidades
 - **Escalabilidade**: Base sólida para expansão rápida
@@ -144,38 +162,45 @@ Este conjunto de regras fornece diretrizes completas para desenvolvimento da apl
 - **NOVO**: Sistema de auto-update completo e transparente
 
 ### 🎨 **Frontend**
+
 - **CSS Variables**: Sistema de design consistente
 - **Responsividade**: Mobile-first com breakpoints definidos
 - **Temas**: Sistema robusto claro/escuro
 - **Componentes**: Reutilizáveis e bem documentados
 - **Interface de Logs**: Tempo real com controles interativos
-- **NOVO**: Indicador de versão e modal de atualização
+- **Indicador de Versão**: Modal de atualização integrado
+- **NOVO**: Interface de notificações SMTP com teste de conexão
+- **NOVO**: Templates de e-mail responsivos com tema claro/escuro
 
 ### 🔧 **Backend**
+
 - **Rotas Modulares**: Separadas por funcionalidade
 - **Middleware**: Autenticação centralizada
 - **API Consistente**: Padrões de resposta unificados
 - **Error Handling**: Tratamento robusto e informativo
 - **WebSocket Server**: Com autenticação integrada
 - **Sessões Persistentes**: Armazenamento com SQLite
-- **NOVO**: Serviço de auto-update com GitHub API
+- **Serviço Auto-Update**: Integração com GitHub API
+- **NOVO**: Serviço de notificações SMTP com nodemailer
+- **NOVO**: Sistema de diagnóstico avançado para problemas SMTP
 
 ## 📞 Quando Consultar Cada Regra (Atualizado)
 
-| Situação | Regra Principal | Regras Secundárias |
-|----|-----|----|
-| **Novo no projeto** | [projeto-nodebackup.mdc](mdc:projeto-nodebackup.mdc) | Todas |
-| **Desenvolvimento modular** | [padroes-desenvolvimento.mdc](mdc:padroes-desenvolvimento.mdc) | [frontend-api-patterns.mdc](mdc:frontend-api-patterns.mdc) |
+| Situação                      | Regra Principal               | Regras Secundárias           |
+| ----------------------------- | ----------------------------- | ---------------------------- |
+| **Novo no projeto**           | [projeto-nodebackup.mdc](mdc:projeto-nodebackup.mdc)       | Todas                        |
+| **Desenvolvimento modular**   | [padroes-desenvolvimento.mdc](mdc:padroes-desenvolvimento.mdc) | [frontend-api-patterns.mdc](mdc:frontend-api-patterns.mdc) |
 | **Adicionando módulo CSS/JS** | [frontend-api-patterns.mdc](mdc:frontend-api-patterns.mdc) | [padroes-desenvolvimento.mdc](mdc:padroes-desenvolvimento.mdc) |
-| **Nova rota API** | [frontend-api-patterns.mdc](mdc:frontend-api-patterns.mdc) | [padroes-desenvolvimento.mdc](mdc:padroes-desenvolvimento.mdc) |
-| **WebSocket/Tempo Real** | [frontend-api-patterns.mdc](mdc:frontend-api-patterns.mdc) | [padroes-desenvolvimento.mdc](mdc:padroes-desenvolvimento.mdc) |
-| **Fazendo release** | [deployment-versionamento.mdc](mdc:deployment-versionamento.mdc) | Todas |
-| **Bug crítico** | [padroes-desenvolvimento.mdc](mdc:padroes-desenvolvimento.mdc) | [projeto-nodebackup.mdc](mdc:projeto-nodebackup.mdc) |
-| **Planejamento features** | [roadmap-tasklist.mdc](mdc:roadmap-tasklist.mdc) | [padroes-desenvolvimento.mdc](mdc:padroes-desenvolvimento.mdc) |
+| **Nova rota API**             | [frontend-api-patterns.mdc](mdc:frontend-api-patterns.mdc) | [padroes-desenvolvimento.mdc](mdc:padroes-desenvolvimento.mdc) |
+| **WebSocket/Tempo Real**      | [frontend-api-patterns.mdc](mdc:frontend-api-patterns.mdc) | [padroes-desenvolvimento.mdc](mdc:padroes-desenvolvimento.mdc) |
+| **Fazendo release**           | [deployment-versionamento.mdc](mdc:deployment-versionamento.mdc) | Todas                        |
+| **Bug crítico**               | [padroes-desenvolvimento.mdc](mdc:padroes-desenvolvimento.mdc) | [projeto-nodebackup.mdc](mdc:projeto-nodebackup.mdc) |
+| **Planejamento features**     | [roadmap-tasklist.mdc](mdc:roadmap-tasklist.mdc) | [padroes-desenvolvimento.mdc](mdc:padroes-desenvolvimento.mdc) |
 
 ## 🔄 Vantagens da Arquitetura Modular
 
 ### 📈 **Desenvolvimento**
+
 - **Localização Rápida**: Funcionalidade específica em arquivo dedicado
 - **Edição Segura**: Mudanças isoladas sem impacto em outras áreas
 - **Debugging Eficiente**: Logs e erros com contexto específico
@@ -183,6 +208,7 @@ Este conjunto de regras fornece diretrizes completas para desenvolvimento da apl
 - **NOVO**: Logs em tempo real para debugging instantâneo
 
 ### 🚀 **Performance**
+
 - **Carregamento Otimizado**: Módulos carregados conforme necessidade
 - **Cache Inteligente**: Módulos cachados independentemente
 - **Bundle Size**: Controle granular do tamanho de cada área
@@ -190,6 +216,7 @@ Este conjunto de regras fornece diretrizes completas para desenvolvimento da apl
 - **NOVO**: WebSocket eficiente para comunicação em tempo real
 
 ### 🔧 **Manutenção**
+
 - **Atualizações Isoladas**: Mudança em um módulo não afeta outros
 - **Testes Focados**: Cada módulo pode ser testado independentemente
 - **Documentação Clara**: Responsabilidade bem definida
@@ -199,4 +226,3 @@ Este conjunto de regras fornece diretrizes completas para desenvolvimento da apl
 ---
 
 **💡 Dica**: A nova estrutura modular com logs em tempo real permite desenvolvimento mais rápido e manutenção mais fácil. Use Ctrl+F para buscar funcionalidades específicas dentro de cada módulo, ou consulte os links `[arquivo.ext](mdc:arquivo.ext)` para navegar rapidamente pelos arquivos do projeto.
-

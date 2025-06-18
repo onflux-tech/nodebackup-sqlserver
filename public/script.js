@@ -7,6 +7,7 @@ import { setupStorage } from './js/storage.js';
 import { loadHistoryTab, setupHistory } from './js/history.js';
 import { initializeLogs } from './js/logs.js';
 import { setupUpdater } from './js/updater.js';
+import { setupNotifications, loadNotificationConfig } from './js/notifications.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
 
@@ -28,8 +29,17 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupScheduling();
   setupStorage();
   setupHistory();
+  setupNotifications();
 
   loadConfig();
+
+  setTimeout(async () => {
+    try {
+      await loadNotificationConfig();
+    } catch (error) {
+      console.warn('Erro ao carregar configurações de notificação:', error);
+    }
+  }, 1000);
 
   setupUpdater();
 

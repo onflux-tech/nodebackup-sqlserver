@@ -5,7 +5,6 @@ let updateCheckInterval = null;
 let updateProgress = null;
 
 export function setupUpdater() {
-  console.log('🚀 Configurando sistema de atualizações...');
 
   loadCurrentVersion();
 
@@ -33,18 +32,14 @@ async function loadCurrentVersion() {
   try {
     const response = await fetch('/api/updates/version');
     const data = await response.json();
-    console.log('📦 Versão atual carregada:', data);
     updateVersionDisplay(data);
   } catch (error) {
-    console.error('❌ Erro ao carregar versão:', error);
   }
 }
 
 export async function checkForUpdates() {
   try {
-    console.log('🔍 Verificando atualizações...');
     const data = await apiFetch('/api/updates/check');
-    console.log('📦 Dados de atualização recebidos:', data);
 
     updateVersionDisplay(data);
 
@@ -68,8 +63,6 @@ function updateVersionDisplay(updateInfo) {
     console.warn('⚠️ Elemento version-info não encontrado');
     return;
   }
-
-  console.log('🎨 Atualizando display da versão:', updateInfo);
 
   window.currentUpdateInfo = updateInfo;
 

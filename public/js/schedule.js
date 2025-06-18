@@ -68,5 +68,7 @@ export function getScheduleTimes() {
 }
 
 export function setupScheduling() {
-  addScheduleButton?.addEventListener('click', () => addScheduleInput());
+  if (addScheduleButton) {
+    addScheduleButton.addEventListener('click', () => addScheduleInput());
+  }
 } 

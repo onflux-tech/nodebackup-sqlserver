@@ -1,6 +1,6 @@
 {
   "name": "node-backup",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "Backup automático SQL Server",
   "main": "src/app.js",
   "bin": "src/app.js",
@@ -27,6 +27,7 @@
     "express-session": "^1.18.0",
     "mssql": "^6.3.2",
     "node-schedule": "^2.1.1",
+    "nodemailer": "^6.9.13",
     "socket.io": "^4.2.0",
     "sql.js": "1.5.0",
     "winston": "^3.3.3",

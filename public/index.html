@@ -119,6 +119,16 @@
                 </div>
               </button>
 
+              <button class="nav-item" data-tab="notifications">
+                <div class="nav-item-icon">
+                  <i data-lucide="mail"></i>
+                </div>
+                <div class="nav-item-content">
+                  <span class="nav-item-title">Notificações</span>
+                  <span class="nav-item-subtitle">E-mail & SMTP</span>
+                </div>
+              </button>
+
               <button class="nav-item" data-tab="history">
                 <div class="nav-item-icon">
                   <i data-lucide="activity"></i>
@@ -403,6 +413,202 @@
                 <div class="card-content">
                   <div id="scheduleInputs" class="schedule-list"></div>
                   <p class="form-help">Defina um ou mais horários no formato HH:MM para execução automática</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Notifications Tab -->
+          <div class="tab-content" id="tab-notifications">
+            <div class="page-header">
+              <div class="page-header-content">
+                <div class="page-icon">
+                  <i data-lucide="mail"></i>
+                </div>
+                <div class="page-info">
+                  <h2 class="page-title">Notificações por E-mail</h2>
+                  <p class="page-description">Configure alertas automáticos por email para backups</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="notifications-layout">
+              <!-- SMTP Configuration - Compact and Expandable -->
+              <div class="storage-card smtp-config">
+                <div class="card-header">
+                  <div class="smtp-header-left">
+                    <div class="storage-toggle">
+                      <input type="checkbox" id="smtpEnabled" class="toggle-switch">
+                      <label for="smtpEnabled" class="toggle-label">
+                        <span class="toggle-slider"></span>
+                      </label>
+                    </div>
+                    <div class="storage-info">
+                      <h3 class="card-title">
+                        <i data-lucide="server"></i>
+                        Servidor SMTP
+                      </h3>
+                      <p class="card-description">Configure o servidor de email para envio</p>
+                    </div>
+                  </div>
+                  <div class="smtp-header-right">
+                    <button type="button" id="btnTestSMTP" class="btn btn-outline">
+                      <i data-lucide="wifi"></i>
+                      <span class="btn-text">Testar Conexão</span>
+                      <div class="spinner"></div>
+                    </button>
+                  </div>
+                </div>
+
+                <div id="smtpForm" class="storage-form">
+                  <div class="smtp-single-line">
+                    <div class="form-group smtp-server-group">
+                      <label for="smtpHost">Servidor</label>
+                      <div class="input-wrapper">
+                        <i data-lucide="server" class="input-icon"></i>
+                        <input type="text" id="smtpHost" placeholder="smtp.gmail.com" autocomplete="off">
+                      </div>
+                    </div>
+
+                    <div class="form-group smtp-port-group">
+                      <label for="smtpPort">Porta</label>
+                      <div class="input-wrapper">
+                        <i data-lucide="hash" class="input-icon"></i>
+                        <input type="number" id="smtpPort" placeholder="587" value="587" class="smtp-port-input"
+                          max="9999">
+                      </div>
+                    </div>
+
+                    <div class="form-group smtp-email-group">
+                      <label for="smtpUser">E-mail</label>
+                      <div class="input-wrapper">
+                        <i data-lucide="mail" class="input-icon"></i>
+                        <input type="text" id="smtpUser" placeholder="seu@email.com" autocomplete="off">
+                      </div>
+                    </div>
+
+                    <div class="form-group smtp-password-group">
+                      <label for="smtpPassword">Senha</label>
+                      <div class="input-wrapper">
+                        <i data-lucide="lock" class="input-icon"></i>
+                        <input type="password" id="smtpPassword" placeholder="••••••••" autocomplete="new-password">
+                      </div>
+                    </div>
+
+                    <div class="form-group smtp-ssl-group">
+                      <label class="ssl-label">SSL/TLS</label>
+                      <div class="ssl-toggle-inline">
+                        <input type="checkbox" id="smtpSecure" class="toggle-switch">
+                        <label for="smtpSecure" class="toggle-label">
+                          <span class="toggle-slider"></span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Main Content Grid -->
+              <div class="notifications-grid">
+                <!-- Recipients Management - Left Side -->
+                <div class="card recipients-card">
+                  <div class="card-header">
+                    <h3 class="card-title">
+                      <i data-lucide="users"></i>
+                      Destinatários
+                    </h3>
+                  </div>
+                  <div class="card-content">
+                    <div class="form-group">
+                      <label for="newRecipient">Adicionar E-mail</label>
+                      <div class="input-group">
+                        <div class="input-wrapper">
+                          <i data-lucide="mail" class="input-icon"></i>
+                          <input type="text" id="newRecipient" placeholder="admin@empresa.com" autocomplete="off">
+                        </div>
+                        <button type="button" id="addRecipient" class="btn btn-outline">
+                          <i data-lucide="plus"></i>
+                          Adicionar
+                        </button>
+                      </div>
+                    </div>
+
+                    <div id="recipientsList" class="recipients-list">
+                      <div class="empty-recipients">
+                        <i data-lucide="mail"></i>
+                        <span>Nenhum destinatário configurado</span>
+                        <p>Adicione emails para receber notificações</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Right Side - Stacked Cards -->
+                <div class="notifications-right">
+                  <!-- Test Email -->
+                  <div class="card test-email-card">
+                    <div class="card-header">
+                      <h3 class="card-title">
+                        <i data-lucide="send"></i>
+                        Teste de E-mail
+                      </h3>
+                    </div>
+                    <div class="card-content">
+                      <div class="form-group">
+                        <label for="testRecipient">E-mail de Teste</label>
+                        <div class="input-group">
+                          <div class="input-wrapper">
+                            <i data-lucide="mail" class="input-icon"></i>
+                            <input type="text" id="testRecipient" placeholder="teste@exemplo.com" autocomplete="off">
+                          </div>
+                          <button type="button" id="btnTestEmail" class="btn btn-primary">
+                            <i data-lucide="send"></i>
+                            <span class="btn-text">Enviar</span>
+                            <div class="spinner"></div>
+                          </button>
+                        </div>
+                        <p class="form-help">Envie um email de teste para verificar a configuração</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Notification Settings -->
+                  <div class="card notification-settings-card">
+                    <div class="card-header">
+                      <h3 class="card-title">
+                        <i data-lucide="bell"></i>
+                        Configurações de Notificação
+                      </h3>
+                    </div>
+                    <div class="card-content">
+                      <div class="form-group">
+                        <label>Quando Enviar Notificações</label>
+                        <div class="notification-options">
+                          <div class="toggle-group">
+                            <input type="checkbox" id="sendOnSuccess" class="toggle-switch">
+                            <label for="sendOnSuccess" class="toggle-label">
+                              <span class="toggle-slider"></span>
+                              <span class="toggle-text">
+                                <i data-lucide="check-circle" style="color: #10b981;"></i>
+                                Backup bem-sucedido
+                              </span>
+                            </label>
+                          </div>
+
+                          <div class="toggle-group">
+                            <input type="checkbox" id="sendOnFailure" class="toggle-switch" checked>
+                            <label for="sendOnFailure" class="toggle-label">
+                              <span class="toggle-slider"></span>
+                              <span class="toggle-text">
+                                <i data-lucide="x-circle" style="color: #ef4444;"></i>
+                                Backup com falha
+                              </span>
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

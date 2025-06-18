@@ -1,7 +1,8 @@
 import { apiFetch } from './api.js';
-import { showToast, toggleButtonLoading, showDetailedErrorToast } from './ui.js';
+import { showToast, toggleButtonLoading } from './ui.js';
 import { getSelectedDatabases, setSelectedDatabases, renderSelectedDatabasesTags } from './database.js';
 import { addScheduleInput, getScheduleTimes } from './schedule.js';
+import { saveNotificationConfig } from './notifications.js';
 
 const elements = {
   saveButton: document.getElementById('saveButton'),
@@ -160,6 +161,14 @@ async function saveConfig(e) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updatedConfig)
     });
+
+    try {
+      await saveNotificationConfig();
+    } catch (notificationError) {
+      console.warn('Erro ao salvar configurações de notificação:', notificationError);
+      showToast('Atenção: Configurações principais salvas, mas houve erro ao salvar notificações', 'warn');
+    }
+
     showToast(result.message, 'success');
   } catch (error) {
     showToast(error.message || `Erro ao salvar: ${error.message}`, 'error');

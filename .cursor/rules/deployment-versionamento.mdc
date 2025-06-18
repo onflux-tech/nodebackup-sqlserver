@@ -7,7 +7,7 @@ alwaysApply: true
 
 ## 📋 Versionamento Semântico
 
-### Padrão Atual (v0.3.1)
+### Padrão Atual (v0.4.0)
 - **MAJOR** (1.x.x): Mudanças que quebram compatibilidade
 - **MINOR** (0.x.x): Novas funcionalidades compatíveis (pré-release)
 - **PATCH** (x.x.x): Correções de bugs e melhorias
@@ -17,7 +17,7 @@ alwaysApply: true
 - **v0.2.0**: ✅ Fase 1.2 - Painel de Histórico (SQLite + Interface) (Concluído)
 - **v0.3.0**: ✅ Fase 1.3 - Logs em Tempo Real (WebSocket) (Concluído)
 - **v0.3.1**: ✅ Fase 1.4 - Sistema Auto-Update (GitHub) (Concluído)
-- **v0.4.0**: Fase 2.1 - Notificações por E-mail (SMTP)
+- **v0.4.0**: ✅ Fase 2.1 - Notificações por E-mail (SMTP) (Concluído)
 - **v0.5.0**: Fase 2.2 - Integração Telegram/WhatsApp
 - **v1.0.0**: Release estável com todas funcionalidades base
 - **v1.1.0**: Fase 3 - Backup arquivos + MySQL/PostgreSQL
@@ -46,9 +46,9 @@ alwaysApply: true
 ### Assets Embarcados Obrigatórios
 - **7za.exe** (723KB) - 7-Zip console para compressão
 - **nssm.exe** (288KB) - Non-Sucking Service Manager
-- **public/** - Interface web modular completa (≈63KB)
+- **public/** - Interface web modular completa (≈73KB)
   - **CSS Modular**: 5 arquivos especializados (25KB)
-  - **JavaScript Modular**: 9 módulos específicos (38KB)
+  - **JavaScript Modular**: 10 módulos específicos (48KB)
 
 ## 📦 Estrutura de Release
 
@@ -62,8 +62,8 @@ Release/
 ```
 
 ### GitHub Releases
-- **Tag**: v0.3.1 (seguir semver exato)
-- **Title**: "NodeBackup v0.3.1 - Sistema Auto-Update"
+- **Tag**: v0.4.0 (seguir semver exato)
+- **Title**: "NodeBackup v0.4.0 - Notificações por E-mail"
 - **Description**: Changelog detalhado + instruções
 - **Assets**: NodeBackupInstaller.exe (recomendado)
 

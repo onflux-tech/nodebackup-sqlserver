@@ -5,9 +5,36 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
+## [0.4.0] - 19-01-2025
+
+### ✨ Adicionado
+
+- **Sistema de Notificações por E-mail:** Implementado sistema completo SMTP para envio automático de notificações de backup com templates HTML responsivos.
+- **Configuração SMTP Completa:** Interface web para configurar servidor SMTP (host, porta, SSL/TLS, usuário e senha) com teste de conexão integrado.
+- **Notificações Configuráveis:** Controle detalhado de quando enviar e-mails - apenas em sucessos, apenas em falhas, ou ambos.
+- **Gerenciamento de Destinatários:** Sistema para adicionar/remover múltiplos destinatários de e-mail com validação automática.
+- **Diagnóstico SMTP Avançado:** Sistema de sugestões inteligentes para resolver problemas de configuração SMTP com base no tipo de erro.
+- **Dependência nodemailer:** Adicionada biblioteca `nodemailer@6.9.13` para envio de e-mails com compatibilidade Node.js 12.
+
+### 🔧 Modificado
+
+- **Módulo JavaScript:** Adicionado novo módulo `notifications.js` (7KB) para gerenciar configurações SMTP e envio de e-mails.
+- **Interface Principal:** Nova aba "Notificações" integrada ao dashboard principal com formulários responsivos.
+- **Integração com Scheduler:** O sistema de agendamento agora dispara notificações automáticas após cada backup conforme configuração.
+- **Configuração do Sistema:** Estrutura de configuração expandida para incluir configurações de notificação (`config.notifications`).
+
+### 📋 API
+
+- **Novas Rotas de Notificação:**
+  - `GET /api/notifications/config` - Obter configurações de notificação
+  - `POST /api/notifications/config` - Salvar configurações de notificação
+  - `POST /api/notifications/test-smtp` - Testar conexão SMTP
+  - `POST /api/notifications/test-email` - Enviar e-mail de teste
+
 ## [0.3.1] - 14-06-2025
 
 ### ✨ Adicionado
+
 - **Sistema de Auto-Update:** Implementado sistema completo de atualização automática que verifica e instala novas versões diretamente do GitHub.
 - **Verificação Automática:** O sistema verifica por atualizações a cada 6 horas automaticamente.
 - **Interface de Atualização:** Nova interface visual no dashboard mostrando a versão atual e notificações quando há atualizações disponíveis.
@@ -18,6 +45,7 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 - **Rollback Automático:** Sistema cria backup do executável atual antes de aplicar atualizações.
 
 ### 🔧 Modificado
+
 - **Instalador NSIS:** Completamente otimizado para suportar instalações silenciosas:
   - Detecção automática de modo silencioso
   - Supressão de MessageBox em atualizações
@@ -28,14 +56,17 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 - **Package.json:** Versão incrementada para 0.3.1.
 
 ### 🐛 Corrigido
+
 - **Conflito de Arquivo em Uso:** Implementada solução robusta usando PowerShell para substituir executáveis em uso.
 
 ### 🔒 Segurança
+
 - **Verificação de Assinatura:** Sistema valida que atualizações vêm do repositório oficial do GitHub.
 - **HTTPS Only:** Todos os downloads são feitos através de conexões seguras HTTPS.
 - **Backup Automático:** Executável anterior é preservado antes de aplicar atualizações.
 
 ### 💄 Melhorado
+
 - **UX de Atualização:** Interface intuitiva com modal detalhado mostrando versão atual vs nova versão.
 - **Notificações Visuais:** Toast notifications e badges indicando status de atualização.
 - **Transparência Total:** Usuário pode acompanhar todo o processo através da interface.
@@ -44,6 +75,7 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 ## [0.3.0] - 13-06-2025
 
 ### ✨ Adicionado
+
 - **Logs em Tempo Real (WebSocket):** Implementado um sistema completo de streaming de logs em tempo real para monitoramento direto da interface web. A nova aba "Logs ao Vivo" permite acompanhar as atividades do servidor, como início de backups, conexões FTP e erros, instantaneamente.
 - **Interface de Logs Interativa:** A nova seção de logs inclui controles avançados para pausar/continuar o auto-scroll, limpar a visualização e baixar o log atual como um arquivo de texto.
 - **Autenticação WebSocket:** A conexão WebSocket é protegida por autenticação baseada em sessão, garantindo que apenas usuários autenticados possam receber os logs.
@@ -55,6 +87,7 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
   - **Backend Reorganizado:** Rotas API separadas por funcionalidade com middleware dedicado
 
 ### 🔧 Modificado
+
 - **Servidor Express:** O servidor foi estendido para suportar WebSocket com Socket.IO 4.x, mantendo compatibilidade com Node.js 12.
 - **Logger Winston:** O sistema de logging foi aprimorado para transmitir logs em tempo real via WebSocket para todos os clientes autenticados.
 - **Configuração de Sessões:** Ajustado `saveUninitialized` para `false` e reduzido o tempo de expiração das sessões de 24 horas para 1 hora, aumentando a segurança.
@@ -63,6 +96,7 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 - **Estrutura de Arquivos:** Reorganização completa da estrutura frontend e backend para melhor manutenibilidade e escalabilidade.
 
 ### 🐛 Corrigido
+
 - **Flash de Tema Claro (FOUC):** Implementado script inline no `<head>` de todos os arquivos HTML (index.html, login.html, setup.html) para aplicar o tema escuro imediatamente, eliminando o flash indesejado durante o carregamento da página.
 - **Gerenciamento de Sessão:** A mudança para `connect-sqlite3` resolve potenciais problemas de perda de sessão ao reiniciar o serviço, proporcionando maior estabilidade.
 - **Estabilidade WebSocket:** Implementada reconexão automática e tratamento de erros para garantir comunicação confiável em tempo real.
@@ -71,6 +105,7 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 - **Aplicação Duplicada de Tema:** Removida aplicação duplicada do tema nos arquivos JavaScript, deixando apenas o script inline otimizado.
 
 ### ♻️ Refatorado
+
 - **Estrutura Frontend:** CSS separado em 5 módulos especializados para melhor organização e manutenção.
 - **JavaScript Modular:** Script principal dividido em 9 módulos específicos, cada um com responsabilidade bem definida.
 - **Rotas API:** Backend reorganizado com rotas separadas por funcionalidade (auth.js, browse.js, config.js, database.js, history.js, storage.js).
@@ -78,12 +113,14 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 - **Padrões de Código:** Estabelecidos padrões modulares consistentes para facilitar manutenção e expansão futura.
 
 ### 🔒 Segurança
+
 - **Autenticação WebSocket:** Middleware de autenticação implementado para WebSocket, garantindo que apenas usuários logados possam acessar logs em tempo real.
 - **Validação de Sessão:** Verificação contínua de sessões válidas para conexões WebSocket ativas.
 - **Rate Limiting:** Proteção contra spam de logs e sobrecarga do servidor WebSocket.
 - **Sessões Robustas:** Armazenamento persistente de sessões em SQLite para maior segurança e estabilidade.
 
 ### 💄 Melhorado
+
 - **UX de Logs:** Interface mais intuitiva com controles visuais claros para pausar, limpar e baixar logs.
 - **Responsividade:** Interface de logs adaptada para dispositivos móveis com controles touch-friendly.
 - **Performance:** Otimização do buffer de logs em memória para melhor performance em sessões longas.
@@ -92,6 +129,7 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 - **Escalabilidade:** Base sólida estabelecida para adição rápida de novas funcionalidades.
 
 ### 📝 Documentação
+
 - **Regras do Cursor:** Atualizadas completamente todas as regras de desenvolvimento para refletir a nova arquitetura modular.
 - **Padrões Modulares:** Documentados padrões de desenvolvimento frontend e backend.
 - **Roadmap Atualizado:** Marcada Fase 1.3 como concluída e planejamento da Fase 2.1 (Notificações E-mail).
@@ -192,6 +230,7 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ---
 
+[0.4.0]: https://github.com/onflux-tech/nodebackup-sqlserver/compare/v0.3.1...v0.4.0
 [0.3.1]: https://github.com/onflux-tech/nodebackup-sqlserver/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/onflux-tech/nodebackup-sqlserver/compare/v0.2.2...v0.3.0
 [0.2.2]: https://github.com/onflux-tech/nodebackup-sqlserver/compare/v0.2.1...v0.2.2

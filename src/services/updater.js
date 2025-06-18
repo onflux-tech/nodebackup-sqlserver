@@ -22,7 +22,6 @@ class UpdaterService {
 
   async checkForUpdates() {
     try {
-      logger.info('Verificando atualizações disponíveis...');
 
       const latestRelease = await this.getLatestRelease();
 
@@ -37,8 +36,6 @@ class UpdaterService {
 
       const latestVersion = latestRelease.tag_name.replace('v', '');
       const updateAvailable = this.isNewerVersion(latestVersion, this.currentVersion);
-
-      logger.info(`Versão atual: ${this.currentVersion}, Última versão: ${latestVersion}`);
 
       const installerUrl = this.getInstallerUrl(latestRelease);
 
@@ -108,11 +105,9 @@ class UpdaterService {
     );
 
     if (!installer) {
-      logger.warn('Instalador não encontrado nos assets da release');
       return null;
     }
 
-    logger.info(`Instalador encontrado: ${installer.name}`);
     return installer.browser_download_url;
   }
 
@@ -140,7 +135,6 @@ class UpdaterService {
       await this.downloadFile(downloadUrl, installerPath);
 
       this.updateProgress = { status: 'installing', message: 'Instalando atualização...', percentage: 60 };
-      logger.info('Executando instalador em modo silencioso...');
 
       const { stdout, stderr } = await execAsync(`"${installerPath}" /S`);
 
@@ -148,20 +142,16 @@ class UpdaterService {
         logger.warn('Avisos do instalador:', stderr);
       }
 
-      logger.info('Instalação concluída:', stdout);
-
       this.updateProgress = { status: 'cleaning', message: 'Finalizando...', percentage: 90 };
       setTimeout(async () => {
         try {
           await fs.promises.unlink(installerPath);
-          logger.info('Arquivo temporário removido');
         } catch (error) {
           logger.warn('Não foi possível remover arquivo temporário:', error.message);
         }
       }, 5000);
 
       this.updateProgress = { status: 'completed', message: 'Atualização concluída!', percentage: 100 };
-      logger.info('Atualização aplicada com sucesso');
 
       return {
         success: true,
@@ -195,7 +185,7 @@ class UpdaterService {
         response.on('data', (chunk) => {
           downloadedSize += chunk.length;
           const percentage = Math.round((downloadedSize / totalSize) * 100);
-          this.updateProgress.percentage = 10 + Math.round(percentage * 0.5); // 10-60%
+          this.updateProgress.percentage = 10 + Math.round(percentage * 0.5);
 
           const downloadedMB = (downloadedSize / 1024 / 1024).toFixed(1);
           const totalMB = (totalSize / 1024 / 1024).toFixed(1);

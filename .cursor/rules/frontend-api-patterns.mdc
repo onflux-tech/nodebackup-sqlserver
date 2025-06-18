@@ -15,7 +15,7 @@ alwaysApply: true
   - [public/css/login.css](mdc:public/css/login.css) - Estilos login/setup (2KB)
   - [public/css/responsive.css](mdc:public/css/responsive.css) - Media queries (3KB)
 
-- **JavaScript Modular (9 arquivos - 57.7KB total)**:
+- **JavaScript Modular (10 arquivos - 65.7KB total)**:
   - [public/js/ui.js](mdc:public/js/ui.js) - Componentes UI, tema, toasts (8KB)
   - [public/js/config.js](mdc:public/js/config.js) - Gerenciamento configurações (8KB)
   - [public/js/database.js](mdc:public/js/database.js) - Seleção bancos SQL (8KB)
@@ -25,6 +25,7 @@ alwaysApply: true
   - [public/js/auth.js](mdc:public/js/auth.js) - Autenticação (1KB)
   - [public/js/api.js](mdc:public/js/api.js) - Requisições API (1KB)
   - [public/js/logs.js](mdc:public/js/logs.js) - Logs em tempo real WebSocket (10KB)
+  - [public/js/notifications.js](mdc:public/js/notifications.js) - **NOVO**: Notificações SMTP (7KB)
 
 - **HTML Pages**:
   - [public/index.html](mdc:public/index.html) - Dashboard principal
@@ -33,11 +34,12 @@ alwaysApply: true
 
 ### Limitações e Diretrizes Atualizadas
 - **Modularidade**: Código separado por responsabilidade
-- **Performance**: Total < 110KB (CSS + JS)
+- **Performance**: Total < 95KB (CSS + JS)
 - **Compatibilidade**: IE11+, Chrome 60+, Firefox 55+
 - **Temas**: Sistema dual (claro/escuro) com variáveis CSS
 - **FOUC Prevention**: Script inline anti-flash implementado
 - **WebSocket**: Comunicação em tempo real para logs
+- **Notificações**: Templates SMTP responsivos com suporte a e-mail
 
 ## 🔌 Padrões de API REST Modularizada
 
@@ -49,6 +51,7 @@ alwaysApply: true
 ├── config.js       # GET /api/config, POST /api/config
 ├── database.js     # GET /api/list-databases, POST /api/test-connection
 ├── history.js      # GET /api/history, GET /api/history/stats
+├── notifications.js # GET/POST /api/notifications/*, /api/notifications/test-smtp
 └── storage.js      # POST /api/test-ftp, /api/cleanup-local, /api/cleanup-ftp
 ```
 
@@ -178,6 +181,22 @@ export function connectWebSocket() {
 }
 ```
 
+#### 📧 Sistema de Notificações SMTP (public/js/notifications.js)
+```javascript
+export function setupNotifications() {
+  // Configuração SMTP via interface web
+  // Teste de conexão com diagnóstico avançado
+  // Gerenciamento de destinatários
+  // Templates responsivos para e-mail
+}
+
+export function testSMTPConnection() {
+  // Testa conexão SMTP com feedback detalhado
+  // Sugestões automáticas para problemas
+  // Validação de configurações
+}
+```
+
 ## 📱 Responsividade Implementada
 
 ### Breakpoints CSS (public/css/responsive.css)
@@ -246,10 +265,11 @@ export async function apiFetch(url, options = {}) {
 
 ### Métricas Atuais Implementadas
 - **CSS Modular**: 25KB total (5 arquivos especializados)
-- **JavaScript Modular**: 57KB total (9 módulos específicos)
+- **JavaScript Modular**: 66KB total (10 módulos específicos)
 - **Loading Progressivo**: Módulos carregados sob demanda
 - **Cache Control**: Headers apropriados implementados
 - **WebSocket**: Comunicação eficiente em tempo real
+- **Notificações**: Templates SMTP com CSS inline para máxima compatibilidade
 
 ### Otimizações de UX Implementadas
 - **Loading States**: Em todos os botões e operações assíncronas

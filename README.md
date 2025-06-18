@@ -19,6 +19,7 @@ Uma solução segura e leve para automatizar backups de bancos de dados SQL Serv
 
 ## 🌟 Principais Funcionalidades
 
+- **Notificações por E-mail:** Sistema completo SMTP para envio automático de notificações de backup com templates HTML responsivos.
 - **Auto-Update Inteligente:** Sistema automático de atualização que verifica e instala novas versões sem interrupção do serviço.
 - **Setup Inicial Interativo:** Na primeira execução, a aplicação guia você por uma página web segura para criar sua conta de administrador.
 - **Interface Web Segura:** Acesso protegido por login e senha, com funcionalidade para alteração de senha.
@@ -76,6 +77,18 @@ O NodeBackup inclui um sistema inteligente de atualização automática que mant
 - Sistema cria backup automático antes de aplicar atualizações
 - Verificação de integridade dos arquivos baixados
 - Processo totalmente transparente com logs detalhados
+
+## Sistema de Notificações por E-mail
+
+O NodeBackup a partir da v0.4.0 inclui um sistema completo de notificações por e-mail para manter você informado sobre o status dos backups:
+
+### Como Funciona
+
+1. **Configuração SMTP:** Configure qualquer servidor SMTP (Gmail, Outlook, servidor corporativo, etc.) através da interface web.
+2. **Templates Responsivos:** E-mails com design moderno que se adaptam ao tema claro/escuro, incluindo estatísticas visuais.
+3. **Notificações Configuráveis:** Configure quando receber e-mails - apenas em sucessos, apenas em falhas, ou ambos.
+4. **Múltiplos Destinatários:** Adicione quantos e-mails quiser para receber as notificações.
+5. **Diagnóstico Avançado:** Sistema de sugestões inteligentes para resolver problemas de configuração SMTP.
 
 ## 👷 Executando como Serviço do Windows
 
@@ -153,10 +166,14 @@ Abaixo estão as funcionalidades planejadas para o futuro. Contribuições são 
 - **Status:** Concluído
 - **Funcionalidades:** Sistema completo de atualização automática com verificação periódica, download inteligente e instalação silenciosa.
 
-### 🎯 **Fase 2: Notificações (Próximo)**
+### ✅ **Fase 2.1: Notificações por E-mail (v0.4.0)**
 
-- [ ] **Alertas por E-mail:** Enviar notificações sobre o status de cada rotina de backup.
-- [ ] **Integração com Mensageiros:** Adicionar suporte para alertas via Telegram ou WhatsApp.
+- **Status:** Concluído
+- **Funcionalidades:** Sistema completo SMTP para notificações de backups.
+
+### 🎯 **Fase 2.2: Mensageiros (Próximo)**
+
+- [ ] **Integração com WhatsApp:** Suporte para WhatsApp (Wuzapi).
 
 ### Fase 3: Expansão das Fontes de Backup
 

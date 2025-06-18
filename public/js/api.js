@@ -2,6 +2,14 @@ import { showToast } from './ui.js';
 
 export async function apiFetch(endpoint, options = {}) {
   try {
+    if (options.body && typeof options.body === 'string') {
+      if (!options.headers || !options.headers['Content-Type']) {
+        options.headers = Object.assign({
+          'Content-Type': 'application/json'
+        }, options.headers || {});
+      }
+    }
+
     const response = await fetch(endpoint, options);
     if (response.status === 401) {
       showToast('Sessão expirada. Redirecionando para o login...', 'error');
