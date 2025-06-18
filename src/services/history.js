@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const logger = require('../utils/logger');
+const { baseDir } = require('../config');
 
 const dbPath = path.join(process.cwd(), 'history.db');
 const jsonBackupPath = path.join(process.cwd(), 'history-backup.json');
@@ -386,6 +387,10 @@ function getHistoryStatsSqlite() {
       }
     }
 
+    stats.localSize = getLocalBackupsSize();
+    stats.historySize = stats.totalSize;
+    stats.totalSize = stats.localSize;
+
     return stats;
   } catch (error) {
     logger.error('Falha ao obter estatísticas SQLite:', error.message);
@@ -412,14 +417,18 @@ function getHistoryStatsJson() {
       : 0;
 
     const sizesWithValue = records.filter(r => r.fileSize && r.fileSize > 0);
-    const totalSize = sizesWithValue.reduce((sum, r) => sum + r.fileSize, 0);
+    const totalSizeHistory = sizesWithValue.reduce((sum, r) => sum + r.fileSize, 0);
+
+    const localSize = getLocalBackupsSize();
 
     return {
       total,
       success,
       failed,
       avgDuration,
-      totalSize
+      totalSize: localSize,
+      historySize: totalSizeHistory,
+      localSize: localSize
     };
   } catch (error) {
     logger.error('Falha ao obter estatísticas JSON:', error.message);
@@ -428,8 +437,40 @@ function getHistoryStatsJson() {
       success: 0,
       failed: 0,
       avgDuration: 0,
-      totalSize: 0
+      totalSize: 0,
+      historySize: 0,
+      localSize: 0
     };
+  }
+}
+
+function getLocalBackupsSize() {
+  try {
+    const backupsDir = path.join(baseDir, 'backups');
+
+    if (!fs.existsSync(backupsDir)) {
+      return 0;
+    }
+
+    const files = fs.readdirSync(backupsDir);
+    const backupFiles = files.filter(file => file.endsWith('.7z'));
+
+    let totalSize = 0;
+
+    for (const file of backupFiles) {
+      try {
+        const filePath = path.join(backupsDir, file);
+        const stats = fs.statSync(filePath);
+        totalSize += stats.size;
+      } catch (error) {
+        logger.warn(`Erro ao obter tamanho do arquivo ${file}:`, error.message);
+      }
+    }
+
+    return totalSize / (1024 * 1024);
+  } catch (error) {
+    logger.error('Erro ao calcular tamanho dos backups locais:', error);
+    return 0;
   }
 }
 
@@ -438,4 +479,5 @@ module.exports = {
   addHistoryRecord,
   getHistory,
   getHistoryStats,
+  getLocalBackupsSize,
 }; 

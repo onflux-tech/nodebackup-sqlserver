@@ -72,8 +72,13 @@ function scheduleBackups() {
             );
           }
         } else {
-          const errorMessage = (backupResult && backupResult.error) ? backupResult.error.message : 'Erro desconhecido no processo de backup.';
-          logger.error(`❌ Falha no backup agendado #${backupNumber} (status: ${backupResult ? backupResult.status : 'indefinido'})`, { error: errorMessage });
+          const errorMessage = (backupResult && backupResult.error) ? backupResult.error.message :
+            (!backupResult) ? 'Erro: função de backup não retornou resultado' :
+              'Erro desconhecido no processo de backup.';
+
+          if (!backupResult || backupResult.status !== 'success') {
+            logger.error(`❌ Falha no backup agendado #${backupNumber} (status: ${backupResult ? backupResult.status : 'indefinido'})`, { error: errorMessage });
+          }
 
           if (currentConfig.notifications &&
             currentConfig.notifications.smtp &&

@@ -245,6 +245,14 @@ async function performConsolidatedBackup(dbList, clientName, backupNumber, dbCon
     historyRecord.duration = (Date.now() - startTime) / 1000;
     addHistoryRecord(historyRecord);
     logger.info(`Registro de histórico adicionado: status ${historyRecord.status}`);
+
+    return {
+      status: historyRecord.status,
+      totalSize: historyRecord.fileSize,
+      duration: historyRecord.duration,
+      files: historyRecord.databases || [],
+      error: historyRecord.errorMessage ? { message: historyRecord.errorMessage } : null
+    };
   }
 }
 
