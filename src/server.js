@@ -33,7 +33,14 @@ function createSessionMiddleware() {
 
     config.app.sessionSecret = sessionSecret;
     const { saveConfig } = require('./config');
-    saveConfig();
+
+    if (saveConfig()) {
+      logger.info('🔐 Novo sessionSecret gerado e salvo com sucesso');
+    } else {
+      logger.error('❌ Falha ao persistir sessionSecret na configuração');
+      logger.warn('⚠️  O sessionSecret será regenerado na próxima inicialização, invalidando sessões atuais');
+      logger.warn('💡 Verifique as permissões de escrita do arquivo config.enc');
+    }
 
   }
 
