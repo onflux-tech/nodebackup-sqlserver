@@ -1,4 +1,5 @@
 const config = require('../../config');
+const logger = require('../../utils/logger');
 
 const requireAuth = (req, res, next) => {
   const currentConfig = config.getConfig();
@@ -23,17 +24,21 @@ const requireSocketAuth = (socket, next) => {
   }
 
   const request = socket.request;
-  if (!request.session) {
-    socket.userId = 'anonymous';
-    return next();
+  if (!request.session || !request.session.user) {
+    const error = new Error('Unauthorized - WebSocket access denied');
+    error.data = {
+      message: 'Acesso WebSocket negado. Faça login primeiro.',
+      code: 'WEBSOCKET_AUTH_REQUIRED'
+    };
+
+    logger.warn(`🚫 Tentativa de acesso WebSocket não autorizado - IP: ${socket.handshake.address}`);
+    return next(error);
   }
 
-  if (!request.session.user) {
-    socket.userId = 'anonymous';
-    return next();
-  }
+  socket.userId = request.session.user.id || request.session.user.username || 'authenticated';
+  socket.userName = request.session.user.username || 'usuário';
 
-  socket.userId = request.session.user.id || 'authenticated';
+  logger.debug(`✅ WebSocket autenticado: ${socket.userName} (${socket.userId})`);
   next();
 };
 

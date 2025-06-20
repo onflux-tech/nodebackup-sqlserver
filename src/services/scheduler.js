@@ -157,7 +157,20 @@ function reschedule() {
   scheduleBackups();
 }
 
+function stopScheduler() {
+  scheduledJobs.forEach((job, index) => {
+    try {
+      job.cancel();
+    } catch (error) {
+      logger.warn(`⚠️ Erro ao cancelar job #${index + 1}:`, error.message);
+    }
+  });
+
+  scheduledJobs = [];
+}
+
 module.exports = {
   scheduleBackups,
-  reschedule
+  reschedule,
+  stopScheduler
 }; 

@@ -6,42 +6,124 @@ const isPkg = typeof process.pkg !== 'undefined';
 const baseDir = isPkg ? path.dirname(process.execPath) : process.cwd();
 
 class LogBuffer {
-  constructor(maxSize = 1000) {
-    this.buffer = [];
+  constructor(maxSize = 10000) {
+    this.buffer = new Array(maxSize);
+    this.head = 0;
+    this.tail = 0;
+    this.size = 0;
     this.maxSize = maxSize;
     this.subscribers = new Set();
+
+    this.cleanupInterval = setInterval(() => {
+      this.cleanupStaleSubscribers();
+    }, 300000);
   }
 
   addLog(logEntry) {
-    if (this.buffer.length >= this.maxSize) {
-      this.buffer.shift();
+    if (!logEntry.id) {
+      logEntry.id = Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
     }
-    this.buffer.push(logEntry);
 
-    this.subscribers.forEach(callback => {
+    logEntry._index = this.tail;
+
+    this.buffer[this.tail] = logEntry;
+    this.tail = (this.tail + 1) % this.maxSize;
+
+    if (this.size < this.maxSize) {
+      this.size++;
+    } else {
+      this.head = (this.head + 1) % this.maxSize;
+    }
+
+    this.notifySubscribers(logEntry);
+  }
+
+  notifySubscribers(logEntry) {
+    if (this.subscribers.size === 0) return;
+
+    const deadSubscribers = [];
+
+    for (const callback of this.subscribers) {
       try {
         callback(logEntry);
       } catch (error) {
         console.error('Erro ao enviar log para subscriber:', error);
+        deadSubscribers.push(callback);
       }
-    });
+    }
+
+    deadSubscribers.forEach(callback => this.subscribers.delete(callback));
   }
 
   subscribe(callback) {
+    if (typeof callback !== 'function') {
+      throw new Error('Callback deve ser uma função');
+    }
+
     this.subscribers.add(callback);
-    return () => this.subscribers.delete(callback);
+    return () => {
+      this.subscribers.delete(callback);
+    };
   }
 
   getRecentLogs(count = 100) {
-    return this.buffer.slice(-count);
+    const logs = [];
+    const actualCount = Math.min(count, this.size);
+
+    if (actualCount === 0) return logs;
+
+    for (let i = 0; i < actualCount; i++) {
+      const index = (this.head + this.size - actualCount + i) % this.maxSize;
+      if (this.buffer[index]) {
+        logs.push(this.buffer[index]);
+      }
+    }
+
+    return logs;
   }
 
   clear() {
-    this.buffer = [];
+    this.buffer = new Array(this.maxSize);
+    this.head = 0;
+    this.tail = 0;
+    this.size = 0;
+
+    this.notifySubscribers({
+      level: 'info',
+      message: 'Buffer de logs limpo',
+      timestamp: new Date().toISOString(),
+      id: 'clear_' + Date.now()
+    });
+  }
+
+  cleanupStaleSubscribers() {
+    if (this.subscribers.size > 100) {
+      console.warn(`⚠️ Muitos subscribers ativos: ${this.subscribers.size}`);
+    }
+
+  }
+
+  getStats() {
+    return {
+      size: this.size,
+      maxSize: this.maxSize,
+      subscribers: this.subscribers.size,
+      memoryUsageApprox: this.size * 200
+    };
+  }
+
+  destroy() {
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+      this.cleanupInterval = null;
+    }
+
+    this.clear();
+    this.subscribers.clear();
   }
 }
 
-const logBuffer = new LogBuffer(1000);
+const logBuffer = new LogBuffer(10000);
 
 class BroadcastTransport extends winston.Transport {
   constructor(opts = {}) {
