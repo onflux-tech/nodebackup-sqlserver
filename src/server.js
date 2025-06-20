@@ -20,6 +20,8 @@ const io = new Server(server, {
 });
 const PORT = process.env.PORT || 3030;
 
+let httpServer;
+
 function createSessionMiddleware() {
   const config = getConfig();
 
@@ -27,10 +29,12 @@ function createSessionMiddleware() {
 
   if (!sessionSecret) {
     const crypto = require('crypto');
-    const fallbackData = config.client.name || 'nodebackup-app';
-    sessionSecret = crypto.createHash('sha256').update(fallbackData).digest('hex');
+    sessionSecret = crypto.randomBytes(64).toString('hex');
 
-  } else {
+    config.app.sessionSecret = sessionSecret;
+    const { saveConfig } = require('./config');
+    saveConfig();
+
   }
 
   return session({
@@ -42,10 +46,12 @@ function createSessionMiddleware() {
     secret: sessionSecret,
     resave: false,
     saveUninitialized: false,
+    name: 'nodebackup.sid',
     cookie: {
       secure: false,
       httpOnly: true,
-      maxAge: 1000 * 60 * 60 * 24 * 7
+      maxAge: 1000 * 60 * 60 * 24 * 7,
+      sameSite: 'strict'
     }
   });
 }
@@ -198,12 +204,33 @@ function startServer() {
     return req.session.user ? res.redirect('/') : res.redirect('/login.html');
   });
 
-  server.listen(PORT, () => {
+  httpServer = server.listen(PORT, () => {
+    logger.info(`🌐 NodeBackup rodando na porta ${PORT}`);
   });
 
   server.on('error', (error) => {
     logger.error('Erro no servidor HTTP:', error);
   });
+
+  return httpServer;
 }
 
-module.exports = { startServer }; 
+function closeServer() {
+  return new Promise((resolve) => {
+    if (httpServer) {
+      httpServer.close((err) => {
+        if (err) {
+          logger.error('❌ Erro ao fechar servidor HTTP:', err);
+        } else {
+          logger.info('✅ Servidor HTTP fechado');
+        }
+        resolve();
+      });
+    } else {
+      logger.info('ℹ️ Servidor HTTP já estava fechado');
+      resolve();
+    }
+  });
+}
+
+module.exports = { startServer, closeServer }; 

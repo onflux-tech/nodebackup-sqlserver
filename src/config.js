@@ -73,6 +73,12 @@ function loadConfig() {
       if (decryptedConfig) {
         config = decryptedConfig;
 
+        if (config._needsMigration) {
+          delete config._needsMigration;
+          configChanged = true;
+          logger.info('🔄 Migrando configuração para nova chave de criptografia...');
+        }
+
         if (ensureSessionSecret(config)) {
           configChanged = true;
         }

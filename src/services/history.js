@@ -474,10 +474,28 @@ function getLocalBackupsSize() {
   }
 }
 
+async function saveAllPendingData() {
+
+  try {
+    if (sqliteEnabled && db) {
+      persist();
+      createJsonBackup();
+    } else {
+      logger.info('ℹ️ SQLite não disponível, dados já estão em JSON');
+    }
+
+    return true;
+  } catch (error) {
+    logger.error('❌ Erro ao salvar dados pendentes:', error);
+    return false;
+  }
+}
+
 module.exports = {
   initializeDatabase,
   addHistoryRecord,
   getHistory,
   getHistoryStats,
   getLocalBackupsSize,
+  saveAllPendingData
 }; 
