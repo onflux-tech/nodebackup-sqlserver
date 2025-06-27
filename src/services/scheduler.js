@@ -7,6 +7,10 @@ const whatsappService = require('./whatsapp');
 
 let scheduledJobs = [];
 
+function isWhatsAppEnabled(config) {
+  return config && config.notifications && config.notifications.whatsapp && config.notifications.whatsapp.enabled;
+}
+
 function scheduleBackups() {
   const initialConfig = getConfig();
   if (!initialConfig || !initialConfig.backupSchedule) {
@@ -39,7 +43,7 @@ function scheduleBackups() {
         }
       }
 
-      if (currentConfig.notifications && currentConfig.notifications.whatsapp && currentConfig.notifications.whatsapp.enabled) {
+      if (isWhatsAppEnabled(currentConfig)) {
         try {
           await whatsappService.configure(currentConfig.notifications.whatsapp);
         } catch (error) {
@@ -81,9 +85,7 @@ function scheduleBackups() {
             );
           }
 
-          if (currentConfig.notifications &&
-            currentConfig.notifications.whatsapp &&
-            currentConfig.notifications.whatsapp.enabled &&
+          if (isWhatsAppEnabled(currentConfig) &&
             currentConfig.notifications.whatsapp.sendOnSuccess &&
             currentConfig.notifications.whatsapp.recipients &&
             currentConfig.notifications.whatsapp.recipients.length > 0) {
@@ -138,9 +140,7 @@ function scheduleBackups() {
             );
           }
 
-          if (currentConfig.notifications &&
-            currentConfig.notifications.whatsapp &&
-            currentConfig.notifications.whatsapp.enabled &&
+          if (isWhatsAppEnabled(currentConfig) &&
             currentConfig.notifications.whatsapp.sendOnFailure &&
             currentConfig.notifications.whatsapp.recipients &&
             currentConfig.notifications.whatsapp.recipients.length > 0) {
@@ -199,9 +199,7 @@ function scheduleBackups() {
           }
         }
 
-        if (currentConfig.notifications &&
-          currentConfig.notifications.whatsapp &&
-          currentConfig.notifications.whatsapp.enabled &&
+        if (isWhatsAppEnabled(currentConfig) &&
           currentConfig.notifications.whatsapp.sendOnFailure &&
           currentConfig.notifications.whatsapp.recipients &&
           currentConfig.notifications.whatsapp.recipients.length > 0) {

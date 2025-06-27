@@ -48,8 +48,7 @@ class WhatsAppService {
         response.status === 'connected' ||
         response.state === 'CONNECTED' ||
         response.success === true ||
-        (response.data && response.data.connected === true) ||
-        (!response.error && !response.message && response !== null)
+        (response.data && response.data.connected === true)
       );
 
       if (isConnected) {
@@ -335,6 +334,32 @@ class WhatsAppService {
     }
 
     return suggestions;
+  }
+
+  async checkPhoneNumber(phoneNumber) {
+    try {
+      if (!this.config) {
+        throw new Error('WhatsApp não configurado');
+      }
+
+      const cleanPhone = phoneNumber.replace(/\D/g, '');
+
+      const response = await this.makeRequest(this.config, '/user/check', 'POST', { Phone: [cleanPhone] });
+
+      if (response && response.success && response.data && Array.isArray(response.data.Users) && response.data.Users.length > 0) {
+        const user = response.data.Users[0];
+        if (user.IsInWhatsapp === true) {
+          return { isValid: true, jid: user.JID };
+        }
+      }
+
+      logger.warn(`Número ${cleanPhone} não encontrado no WhatsApp ou resposta inesperada:`, response);
+      return { isValid: false, reason: 'O número não parece ser um usuário válido do WhatsApp.' };
+
+    } catch (error) {
+      logger.error(`❌ Erro ao verificar número de telefone no WhatsApp: ${phoneNumber}`, error);
+      return { isValid: false, reason: `Erro de comunicação com a WuzAPI: ${error.message}` };
+    }
   }
 }
 

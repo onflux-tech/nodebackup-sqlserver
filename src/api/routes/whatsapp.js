@@ -182,4 +182,27 @@ router.post('/config', requireAuth, async (req, res) => {
   }
 });
 
+router.post('/check-number', requireAuth, async (req, res) => {
+  try {
+    const { phoneNumber } = req.body;
+    if (!phoneNumber) {
+      return res.status(400).json({ error: 'Número de telefone é obrigatório.' });
+    }
+
+    const config = getConfig();
+    if (!config.notifications || !config.notifications.whatsapp || !config.notifications.whatsapp.enabled) {
+      return res.status(400).json({ isValid: false, error: 'As notificações do WhatsApp não estão ativadas.' });
+    }
+    await whatsappService.configure(config.notifications.whatsapp);
+
+    const result = await whatsappService.checkPhoneNumber(phoneNumber);
+
+    return res.json(result);
+
+  } catch (error) {
+    logger.error('Erro na rota /api/whatsapp/check-number:', error);
+    res.status(500).json({ isValid: false, error: 'Erro interno do servidor ao verificar o número.' });
+  }
+});
+
 module.exports = router; 

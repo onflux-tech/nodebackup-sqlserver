@@ -1,5 +1,6 @@
 import { apiFetch } from './api.js';
 import { showToast, showDetailedErrorToast, toggleButtonLoading } from './ui.js';
+import { isValidPhoneNumber } from './utils/validation.js';
 
 let whatsappConfig = {
   api: {
@@ -18,6 +19,7 @@ export function setupWhatsApp() {
   setupAPIForm();
   setupTestButtons();
   setupRecipientsManager();
+  setupPhoneValidation();
 }
 
 function setupAPIForm() {
@@ -92,9 +94,11 @@ async function testWhatsAppConnection() {
 async function sendTestMessage() {
   const button = document.getElementById('btnTestMessage');
   const testRecipientInput = document.getElementById('testRecipientWhatsApp');
+  const formGroup = testRecipientInput.closest('.form-group');
 
   try {
     const testRecipient = testRecipientInput?.value;
+    formGroup.classList.remove('is-valid', 'is-invalid', 'is-validating');
 
     if (!testRecipient) {
       showToast('Informe um número para teste', 'error');
@@ -102,15 +106,27 @@ async function sendTestMessage() {
       return;
     }
 
-    const phoneRegex = /^\d{10,15}$/;
-    const cleanPhone = testRecipient.replace(/\D/g, '');
-    if (!phoneRegex.test(cleanPhone)) {
+    const cleanPhone = isValidPhoneNumber(testRecipient);
+    if (!cleanPhone) {
       showToast('Informe um número válido (apenas números, 10-15 dígitos)', 'error');
       testRecipientInput?.focus();
+      formGroup.classList.add('is-invalid');
       return;
     }
 
     toggleButtonLoading(button, true);
+
+    const checkResponse = await apiFetch('/api/whatsapp/check-number', {
+      method: 'POST',
+      body: JSON.stringify({ phoneNumber: cleanPhone })
+    });
+
+    if (!checkResponse.isValid) {
+      showToast('O número informado não é um usuário válido do WhatsApp.', 'error');
+      formGroup.classList.add('is-invalid');
+      toggleButtonLoading(button, false);
+      return;
+    }
 
     const response = await apiFetch('/api/whatsapp/test-message', {
       method: 'POST',
@@ -158,19 +174,84 @@ function setupRecipientsManager() {
   }
 }
 
-function addRecipient() {
+function debounce(func, delay) {
+  let timeout;
+  return function (...args) {
+    const context = this;
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func.apply(context, args), delay);
+  };
+}
+
+function setupPhoneValidation() {
   const newRecipientInput = document.getElementById('newRecipientWhatsApp');
+  const testRecipientInput = document.getElementById('testRecipientWhatsApp');
+
+  const validate = async (event) => {
+    const input = event.target;
+    const formGroup = input.closest('.form-group');
+    const phone = input.value;
+
+    formGroup.classList.remove('is-valid', 'is-invalid', 'is-validating');
+
+    if (!phone) {
+      return;
+    }
+
+    if (!isValidPhoneNumber(phone)) {
+      formGroup.classList.add('is-invalid');
+      return;
+    }
+
+    formGroup.classList.add('is-validating');
+
+    try {
+      const response = await apiFetch('/api/whatsapp/check-number', {
+        method: 'POST',
+        body: JSON.stringify({ phoneNumber: phone })
+      });
+
+      formGroup.classList.remove('is-validating');
+
+      if (response.isValid) {
+        formGroup.classList.add('is-valid');
+        formGroup.classList.remove('is-invalid');
+      } else {
+        formGroup.classList.add('is-invalid');
+        formGroup.classList.remove('is-valid');
+      }
+    } catch (error) {
+      console.error('Erro ao verificar número:', error);
+      formGroup.classList.remove('is-validating');
+      formGroup.classList.add('is-invalid');
+    }
+  };
+
+  const debouncedValidate = debounce(validate, 500);
+
+  if (newRecipientInput) {
+    newRecipientInput.addEventListener('input', debouncedValidate);
+  }
+  if (testRecipientInput) {
+    testRecipientInput.addEventListener('input', debouncedValidate);
+  }
+}
+
+async function addRecipient() {
+  const newRecipientInput = document.getElementById('newRecipientWhatsApp');
+  const formGroup = newRecipientInput.closest('.form-group');
   const phone = newRecipientInput?.value?.trim();
+  formGroup.classList.remove('is-valid', 'is-invalid', 'is-validating');
 
   if (!phone) {
     showToast('Informe um número de telefone', 'error');
     return;
   }
 
-  const phoneRegex = /^\d{10,15}$/;
-  const cleanPhone = phone.replace(/\D/g, '');
-  if (!phoneRegex.test(cleanPhone)) {
+  const cleanPhone = isValidPhoneNumber(phone);
+  if (!cleanPhone) {
     showToast('Informe um número válido (apenas números, 10-15 dígitos)', 'error');
+    formGroup.classList.add('is-invalid');
     return;
   }
 
@@ -179,10 +260,28 @@ function addRecipient() {
     return;
   }
 
+  try {
+    const checkResponse = await apiFetch('/api/whatsapp/check-number', {
+      method: 'POST',
+      body: JSON.stringify({ phoneNumber: cleanPhone })
+    });
+
+    if (!checkResponse.isValid) {
+      showToast('O número informado não é um usuário válido do WhatsApp.', 'error');
+      formGroup.classList.add('is-invalid');
+      return;
+    }
+  } catch (error) {
+    showToast('Erro ao verificar o número. Tente novamente.', 'error');
+    console.error('API check failed:', error);
+    return;
+  }
+
   whatsappConfig.schedule.recipients.push(cleanPhone);
   updateRecipientsDisplay();
 
   newRecipientInput.value = '';
+  formGroup.classList.remove('is-valid', 'is-invalid');
 
   showToast(`Número ${cleanPhone} adicionado à lista`, 'success');
 }
