@@ -132,26 +132,28 @@ router.post('/config', requireAuth, async (req, res) => {
       config.notifications = {};
     }
 
-    if (api) {
-      config.notifications.whatsapp = {
-        enabled: api.enabled || false,
-        baseUrl: api.baseUrl || '',
-        token: api.token || (config.notifications.whatsapp && config.notifications.whatsapp.token) || '',
-        sendOnSuccess: schedule ? schedule.sendOnSuccess || false : (config.notifications.whatsapp && config.notifications.whatsapp.sendOnSuccess) || false,
-        sendOnFailure: schedule ? (schedule.sendOnFailure !== false) : (config.notifications.whatsapp && config.notifications.whatsapp.sendOnFailure !== false),
-        recipients: schedule ? (Array.isArray(schedule.recipients) ? schedule.recipients : []) : (config.notifications.whatsapp && config.notifications.whatsapp.recipients) || []
-      };
+    const existingWhatsappConfig = config.notifications.whatsapp || {};
 
-      if (api.token) {
-        config.notifications.whatsapp.token = api.token;
+    const newWhatsappConfig = {
+      ...existingWhatsappConfig
+    };
+
+    if (api) {
+      newWhatsappConfig.enabled = api.enabled || false;
+      newWhatsappConfig.baseUrl = api.baseUrl || '';
+
+      if (typeof api.token === 'string') {
+        newWhatsappConfig.token = api.token;
       }
     }
 
-    if (schedule && config.notifications.whatsapp) {
-      config.notifications.whatsapp.sendOnSuccess = schedule.sendOnSuccess || false;
-      config.notifications.whatsapp.sendOnFailure = schedule.sendOnFailure !== false;
-      config.notifications.whatsapp.recipients = Array.isArray(schedule.recipients) ? schedule.recipients : [];
+    if (schedule) {
+      newWhatsappConfig.sendOnSuccess = schedule.sendOnSuccess || false;
+      newWhatsappConfig.sendOnFailure = schedule.sendOnFailure !== false;
+      newWhatsappConfig.recipients = Array.isArray(schedule.recipients) ? schedule.recipients : [];
     }
+
+    config.notifications.whatsapp = newWhatsappConfig;
 
     const saved = saveConfig();
     if (!saved) {
