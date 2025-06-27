@@ -129,6 +129,16 @@
                 </div>
               </button>
 
+              <button class="nav-item" data-tab="whatsapp">
+                <div class="nav-item-icon">
+                  <i data-lucide="smartphone"></i>
+                </div>
+                <div class="nav-item-content">
+                  <span class="nav-item-title">WhatsApp</span>
+                  <span class="nav-item-subtitle">Wuzapi & Mensagens</span>
+                </div>
+              </button>
+
               <button class="nav-item" data-tab="history">
                 <div class="nav-item-icon">
                   <i data-lucide="activity"></i>
@@ -598,6 +608,179 @@
                           <div class="toggle-group">
                             <input type="checkbox" id="sendOnFailure" class="toggle-switch" checked>
                             <label for="sendOnFailure" class="toggle-label">
+                              <span class="toggle-slider"></span>
+                              <span class="toggle-text">
+                                <i data-lucide="x-circle" style="color: #ef4444;"></i>
+                                Backup com falha
+                              </span>
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- WhatsApp Tab -->
+          <div class="tab-content" id="tab-whatsapp">
+            <div class="page-header">
+              <div class="page-header-content">
+                <div class="page-icon">
+                  <i data-lucide="smartphone"></i>
+                </div>
+                <div class="page-info">
+                  <h2 class="page-title">Notificações WhatsApp</h2>
+                  <p class="page-description">Configure alertas automáticos via WhatsApp usando WuzAPI</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="notifications-layout">
+              <!-- WhatsApp API Configuration -->
+              <div class="storage-card smtp-config">
+                <div class="card-header">
+                  <div class="smtp-header-left">
+                    <div class="storage-toggle">
+                      <input type="checkbox" id="whatsappEnabled" class="toggle-switch">
+                      <label for="whatsappEnabled" class="toggle-label">
+                        <span class="toggle-slider"></span>
+                      </label>
+                    </div>
+                    <div class="storage-info">
+                      <h3 class="card-title">
+                        <i data-lucide="zap"></i>
+                        API WuzAPI
+                      </h3>
+                      <p class="card-description">Configure a conexão com o servidor WuzAPI</p>
+                    </div>
+                  </div>
+                  <div class="smtp-header-right">
+                    <button type="button" id="btnTestWhatsApp" class="btn btn-outline">
+                      <i data-lucide="wifi"></i>
+                      <span class="btn-text">Testar Conexão</span>
+                      <div class="spinner"></div>
+                    </button>
+                  </div>
+                </div>
+
+                <div id="whatsappForm" class="storage-form">
+                  <div class="smtp-single-line">
+                    <div class="form-group smtp-server-group">
+                      <label for="whatsappBaseUrl">URL da API</label>
+                      <div class="input-wrapper">
+                        <i data-lucide="link" class="input-icon"></i>
+                        <input type="text" id="whatsappBaseUrl" placeholder="localhost:8080 ou https://api.exemplo.com"
+                          autocomplete="off">
+                      </div>
+                    </div>
+
+                    <div class="form-group smtp-email-group">
+                      <label for="whatsappToken">Token</label>
+                      <div class="input-wrapper">
+                        <i data-lucide="key" class="input-icon"></i>
+                        <input type="password" id="whatsappToken" placeholder="seu_token_aqui"
+                          autocomplete="new-password">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Main Content Grid -->
+              <div class="notifications-grid">
+                <!-- Recipients Management - Left Side -->
+                <div class="card recipients-card">
+                  <div class="card-header">
+                    <h3 class="card-title">
+                      <i data-lucide="smartphone"></i>
+                      Números de Telefone
+                    </h3>
+                  </div>
+                  <div class="card-content">
+                    <div class="form-group">
+                      <label for="newRecipientWhatsApp">Adicionar Número</label>
+                      <div class="input-group">
+                        <div class="input-wrapper">
+                          <i data-lucide="phone" class="input-icon"></i>
+                          <input type="text" id="newRecipientWhatsApp" placeholder="5511999999999" autocomplete="off">
+                        </div>
+                        <button type="button" id="addRecipientWhatsApp" class="btn btn-outline">
+                          <i data-lucide="plus"></i>
+                          Adicionar
+                        </button>
+                      </div>
+                      <p class="form-help">Digite apenas números (ex: 5511999999999)</p>
+                    </div>
+
+                    <div id="recipientsListWhatsApp" class="recipients-list">
+                      <div class="empty-recipients">
+                        <i data-lucide="smartphone"></i>
+                        <span>Nenhum número configurado</span>
+                        <p>Adicione números para receber notificações</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Right Side - Stacked Cards -->
+                <div class="notifications-right">
+                  <!-- Test Message -->
+                  <div class="card test-email-card">
+                    <div class="card-header">
+                      <h3 class="card-title">
+                        <i data-lucide="message-circle"></i>
+                        Teste de Mensagem
+                      </h3>
+                    </div>
+                    <div class="card-content">
+                      <div class="form-group">
+                        <label for="testRecipientWhatsApp">Número de Teste</label>
+                        <div class="input-group">
+                          <div class="input-wrapper">
+                            <i data-lucide="phone" class="input-icon"></i>
+                            <input type="text" id="testRecipientWhatsApp" placeholder="5511999999999"
+                              autocomplete="off">
+                          </div>
+                          <button type="button" id="btnTestMessage" class="btn btn-primary">
+                            <i data-lucide="send"></i>
+                            <span class="btn-text">Enviar</span>
+                            <div class="spinner"></div>
+                          </button>
+                        </div>
+                        <p class="form-help">Envie uma mensagem de teste para verificar a configuração</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Notification Settings -->
+                  <div class="card notification-settings-card">
+                    <div class="card-header">
+                      <h3 class="card-title">
+                        <i data-lucide="bell"></i>
+                        Configurações de Notificação
+                      </h3>
+                    </div>
+                    <div class="card-content">
+                      <div class="form-group">
+                        <label>Quando Enviar Notificações</label>
+                        <div class="notification-options">
+                          <div class="toggle-group">
+                            <input type="checkbox" id="sendOnSuccessWhatsApp" class="toggle-switch">
+                            <label for="sendOnSuccessWhatsApp" class="toggle-label">
+                              <span class="toggle-slider"></span>
+                              <span class="toggle-text">
+                                <i data-lucide="check-circle" style="color: #10b981;"></i>
+                                Backup bem-sucedido
+                              </span>
+                            </label>
+                          </div>
+
+                          <div class="toggle-group">
+                            <input type="checkbox" id="sendOnFailureWhatsApp" class="toggle-switch" checked>
+                            <label for="sendOnFailureWhatsApp" class="toggle-label">
                               <span class="toggle-slider"></span>
                               <span class="toggle-text">
                                 <i data-lucide="x-circle" style="color: #ef4444;"></i>

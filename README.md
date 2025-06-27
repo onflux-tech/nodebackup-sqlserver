@@ -19,7 +19,7 @@ Uma solução segura e leve para automatizar backups de bancos de dados SQL Serv
 
 ## 🌟 Principais Funcionalidades
 
-- **Notificações por E-mail:** Sistema completo SMTP para envio automático de notificações de backup com templates HTML responsivos.
+- **Notificações Inteligentes:** Sistema completo de notificações por E-mail (SMTP) e WhatsApp (WuzAPI) com templates responsivos e diagnóstico automático.
 - **Auto-Update Inteligente:** Sistema automático de atualização que verifica e instala novas versões sem interrupção do serviço.
 - **Setup Inicial Interativo:** Na primeira execução, a aplicação guia você por uma página web segura para criar sua conta de administrador.
 - **Interface Web Segura:** Acesso protegido por login e senha, com funcionalidade para alteração de senha.
@@ -78,17 +78,31 @@ O NodeBackup inclui um sistema inteligente de atualização automática que mant
 - Verificação de integridade dos arquivos baixados
 - Processo totalmente transparente com logs detalhados
 
-## Sistema de Notificações por E-mail
+## Sistema de Notificações
 
-O NodeBackup a partir da v0.4.0 inclui um sistema completo de notificações por e-mail para manter você informado sobre o status dos backups:
+O NodeBackup oferece múltiplos canais de notificação para manter você informado sobre o status dos backups:
 
-### Como Funciona
+### Notificações por E-mail
+
+A partir da v0.4.0, inclui sistema completo de notificações por e-mail:
 
 1. **Configuração SMTP:** Configure qualquer servidor SMTP (Gmail, Outlook, servidor corporativo, etc.) através da interface web.
 2. **Templates Responsivos:** E-mails com design moderno que se adaptam ao tema claro/escuro, incluindo estatísticas visuais.
 3. **Notificações Configuráveis:** Configure quando receber e-mails - apenas em sucessos, apenas em falhas, ou ambos.
 4. **Múltiplos Destinatários:** Adicione quantos e-mails quiser para receber as notificações.
 5. **Diagnóstico Avançado:** Sistema de sugestões inteligentes para resolver problemas de configuração SMTP.
+
+### Notificações por WhatsApp
+
+A partir da v0.5.0, inclui integração com WhatsApp via WuzAPI:
+
+1. **Configuração WuzAPI:** Integração com servidor WuzAPI para envio via WhatsApp.
+2. **Múltiplos Números:** Configure quantos números de telefone desejar para receber as notificações.
+3. **Testes Integrados:** Teste de conexão e envio de mensagens diretamente pela interface.
+4. **Diagnóstico Inteligente:** Sistema de sugestões para resolver problemas de configuração WhatsApp.
+5. **Templates de Mensagem:** Mensagens personalizadas para diferentes status de backup.
+
+📖 **Documentação Completa:** [Guia de Configuração WhatsApp](./docs/WHATSAPP_NOTIFICATIONS.md)
 
 ## 👷 Executando como Serviço do Windows
 
@@ -171,9 +185,10 @@ Abaixo estão as funcionalidades planejadas para o futuro. Contribuições são 
 - **Status:** Concluído
 - **Funcionalidades:** Sistema completo SMTP para notificações de backups.
 
-### 🎯 **Fase 2.2: Mensageiros (Próximo)**
+### ✅ **Fase 2.2: Notificações WhatsApp (v0.5.0)**
 
-- [ ] **Integração com WhatsApp:** Suporte para WhatsApp (Wuzapi).
+- **Status:** Concluído
+- **Funcionalidades:** Sistema completo de notificações via WhatsApp usando WuzAPI, configuração de URL e token, gerenciamento de destinatários, testes de conexão e mensagens, integração automática com sistema de backup.
 
 ### Fase 3: Expansão das Fontes de Backup
 

@@ -5,6 +5,38 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
+## [0.5.0] - 20-01-2025
+
+### ✨ Adicionado
+
+- **Sistema de Notificações WhatsApp:** Implementado sistema completo de notificações via WhatsApp usando WuzAPI para alertas automáticos de backup.
+- **Configuração WuzAPI:** Interface web para configurar URL da API e token de autenticação com teste de conexão integrado.
+- **Gerenciamento de Destinatários:** Sistema para adicionar/remover múltiplos números de telefone com validação automática.
+- **Notificações Configuráveis:** Controle detalhado de quando enviar mensagens - apenas em sucessos, apenas em falhas, ou ambos.
+- **Diagnóstico WuzAPI:** Sistema de sugestões inteligentes para resolver problemas de configuração WhatsApp com base no tipo de erro.
+- **Compatibilidade Node.js 12:** Implementação usando módulos nativos `http`/`https` para manter compatibilidade com o executável pkg.
+
+### 🔧 Modificado
+
+- **Módulo JavaScript:** Adicionado novo módulo `whatsapp.js` (8KB) para gerenciar configurações WuzAPI e envio de mensagens.
+- **Interface Principal:** Nova aba "WhatsApp" integrada ao dashboard principal com formulários responsivos similares às notificações email.
+- **Integração com Scheduler:** O sistema de agendamento agora dispara notificações WhatsApp automáticas após cada backup conforme configuração.
+- **Configuração do Sistema:** Estrutura de configuração expandida para incluir configurações WhatsApp (`config.notifications.whatsapp`).
+
+### 📋 API
+
+- **Novas Rotas WhatsApp:**
+  - `GET /api/whatsapp/config` - Obter configurações de WhatsApp
+  - `POST /api/whatsapp/config` - Salvar configurações de WhatsApp
+  - `POST /api/whatsapp/test-connection` - Testar conexão WuzAPI
+  - `POST /api/whatsapp/test-message` - Enviar mensagem de teste
+
+### 🚀 Arquitetura
+
+- **Service WhatsApp:** Novo serviço `src/services/whatsapp.js` com métodos para configuração, teste de conexão e envio de mensagens.
+- **Rotas API:** Nova rota `src/api/routes/whatsapp.js` seguindo padrão modular existente.
+- **Integração Scheduler:** Notificações WhatsApp integradas ao processo de backup com tratamento de erros independente.
+
 ## [0.4.0] - 19-01-2025
 
 ### ✨ Adicionado
@@ -230,6 +262,7 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ---
 
+[0.5.0]: https://github.com/onflux-tech/nodebackup-sqlserver/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/onflux-tech/nodebackup-sqlserver/compare/v0.3.1...v0.4.0
 [0.3.1]: https://github.com/onflux-tech/nodebackup-sqlserver/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/onflux-tech/nodebackup-sqlserver/compare/v0.2.2...v0.3.0

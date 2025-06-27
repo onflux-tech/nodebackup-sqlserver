@@ -40,12 +40,14 @@ src/
 │       ├── database.js # Rotas banco de dados
 │       ├── history.js  # Rotas histórico
 │       ├── notifications.js # Rotas notificações SMTP
+│       ├── whatsapp.js # Rotas notificações WhatsApp
 │       └── storage.js  # Rotas armazenamento
 ├── services/
 │   ├── database.js     # Operações SQL Server
 │   ├── ftp.js         # Operações FTP
 │   ├── history.js     # Serviço histórico SQLite
 │   ├── notification.js # Serviço notificações SMTP
+│   ├── whatsapp.js    # Serviço notificações WhatsApp WuzAPI
 │   ├── scheduler.js   # Agendamento
 │   └── windowsService.js # Serviço Windows
 └── utils/
@@ -71,6 +73,7 @@ public/
 │   ├── history.js     # Painel histórico backups
 │   ├── logs.js        # Logs em tempo real WebSocket
 │   ├── notifications.js # Configuração SMTP e notificações
+│   ├── whatsapp.js    # Configuração WhatsApp WuzAPI
 │   ├── schedule.js    # Agendamento backups
 │   ├── storage.js     # Configuração FTP e limpeza
 │   └── ui.js          # Componentes UI (tema, tabs, toasts)

@@ -32,6 +32,7 @@ O Node-Backup é uma aplicação Windows para automatização de backups de banc
 - [src/services/windowsService.js](mdc:src/services/windowsService.js) - Instalação como serviço Windows
 - [src/services/updater.js](mdc:src/services/updater.js) - Sistema de auto-update com GitHub (v0.3.1)
 - [src/services/notification.js](mdc:src/services/notification.js) - Sistema de notificações SMTP com templates HTML (v0.4.0)
+- [src/services/whatsapp.js](mdc:src/services/whatsapp.js) - Sistema de notificações WhatsApp via WuzAPI (v0.5.0)
 
 ### Utilitários
 - [src/utils/logger.js](mdc:src/utils/logger.js) - Sistema de logging com rotação diária e WebSocket streaming
@@ -49,6 +50,7 @@ O Node-Backup é uma aplicação Windows para automatização de backups de banc
   - [src/api/routes/storage.js](mdc:src/api/routes/storage.js) - FTP e limpeza
   - [src/api/routes/updater.js](mdc:src/api/routes/updater.js) - Verificação e instalação de atualizações (v0.3.1)
   - [src/api/routes/notifications.js](mdc:src/api/routes/notifications.js) - Configuração SMTP e envio de e-mails (v0.4.0)
+  - [src/api/routes/whatsapp.js](mdc:src/api/routes/whatsapp.js) - Configuração WuzAPI e envio de mensagens (v0.5.0)
 
 ### Interface Web Modular (public/)
 - **CSS Modular (25KB total)**:
@@ -58,7 +60,7 @@ O Node-Backup é uma aplicação Windows para automatização de backups de banc
   - [public/css/login.css](mdc:public/css/login.css) - Login/setup (2KB)
   - [public/css/responsive.css](mdc:public/css/responsive.css) - Media queries (3KB)
 
-- **JavaScript Modular (41KB total)**:
+- **JavaScript Modular (49KB total)**:
   - [public/js/ui.js](mdc:public/js/ui.js) - Componentes UI, temas, toasts (5KB)
   - [public/js/config.js](mdc:public/js/config.js) - Configurações (6KB)
   - [public/js/database.js](mdc:public/js/database.js) - Seleção bancos (5KB)
@@ -69,7 +71,8 @@ O Node-Backup é uma aplicação Windows para automatização de backups de banc
   - [public/js/api.js](mdc:public/js/api.js) - Requisições API (2KB)
   - [public/js/logs.js](mdc:public/js/logs.js) - Logs em tempo real (3KB)
   - [public/js/updater.js](mdc:public/js/updater.js) - Auto-update interface (3KB)
-  - [public/js/notifications.js](mdc:public/js/notifications.js) - **NOVO**: Notificações SMTP interface (7KB)
+  - [public/js/notifications.js](mdc:public/js/notifications.js) - Notificações SMTP interface (7KB)
+  - [public/js/whatsapp.js](mdc:public/js/whatsapp.js) - **NOVO**: Notificações WhatsApp interface (8KB)
 
 - **HTML Pages**:
   - [public/index.html](mdc:public/index.html) - Dashboard principal
@@ -139,7 +142,8 @@ O Node-Backup é uma aplicação Windows para automatização de backups de banc
 - **Rollback automático** em caso de falha
 - **Interface visual** para acompanhar atualizações
 
-### 📧 Notificações por E-mail (v0.4.0)
+### 📧 Sistema de Notificações Multi-canal (v0.5.0)
+#### E-mail SMTP (v0.4.0)
 - **Configuração SMTP completa** via interface web com teste de conexão
 - **Templates HTML responsivos** com design moderno e tema claro/escuro
 - **Notificações granulares** - controle de quando enviar (sucesso/falha/ambos)
@@ -148,6 +152,16 @@ O Node-Backup é uma aplicação Windows para automatização de backups de banc
 - **Templates especializados** para sucesso, falha e teste
 - **Integração automática** com scheduler para notificações após backups
 - **Logo personalizado** nos e-mails via imagem embarcada
+
+#### WhatsApp WuzAPI (v0.5.0)
+- **Integração WuzAPI completa** via interface web com configuração de URL e token
+- **Teste de conexão** com diagnóstico detalhado e sugestões inteligentes
+- **Gerenciamento de números** para múltiplos destinatários com validação
+- **Notificações configuráveis** - controle granular (sucesso/falha/ambos)
+- **Templates de mensagem** personalizados para diferentes status de backup
+- **Integração automática** com scheduler para envio após cada backup
+- **Compatibilidade Node.js 12** usando módulos nativos http/https
+- **APIs REST completas** para configuração, teste e envio
 
 ### 🔧 Infraestrutura
 - Instalação como serviço Windows (NSSM)
@@ -172,26 +186,27 @@ O Node-Backup é uma aplicação Windows para automatização de backups de banc
 - **Sessões armazenadas em SQLite para maior robustez** (v0.3.0)
 
 ## Versionamento Atual
-- **Versão Atual**: v0.4.0 (Notificações por E-mail SMTP)
+- **Versão Atual**: v0.5.0 (Notificações WhatsApp via WuzAPI)
+- **Release Anterior**: v0.4.0 (Notificações por E-mail SMTP)
 - **Release Anterior**: v0.3.1 (Auto-Update com Instalação Silenciosa)
 - **Release Anterior**: v0.3.0 (Logs em Tempo Real WebSocket)
 - **Release Anterior**: v0.2.2 (Painel de Histórico + Refatoração)
 - **Release Anterior**: v0.2.0 (Painel de Histórico SQLite)
 - **Release Anterior**: v0.1.0 (Política de Retenção)
-- **Próxima**: v0.5.0 (Integração Telegram/WhatsApp)
+- **Próxima**: v1.0.0 (Release estável consolidado)
 
 ## Métricas de Qualidade
 - **Executável**: ~85MB (autocontido)
-- **Frontend**: 73KB total (48KB JS + 25KB CSS)
+- **Frontend**: 81KB total (56KB JS + 25KB CSS)
 - **Compatibilidade**: Windows 7+ x64
 - **SQL Server**: 2008 R2+ até 2022
 - **Performance**: < 200MB RAM, < 5s startup
 - **Arquitetura**: Modular, manutenível, escalável
 - **Auto-Update**: Verificação a cada 6h, instalação silenciosa
-- **Notificações**: Templates responsivos com suporte a múltiplos SMTP
+- **Notificações**: E-mail SMTP + WhatsApp WuzAPI com templates responsivos
 
 ## Próximos Desenvolvimentos (Roadmap)
-1. **v0.5.0**: Integração Telegram/WhatsApp (Bot + Business API)
-2. **v1.0.0**: Release estável completo
-3. **v1.1.0**: Backup Multi-Fonte (Arquivos + MySQL/PostgreSQL)
+1. **v1.0.0**: Release estável consolidado
+2. **v1.1.0**: Backup Multi-Fonte (Arquivos + MySQL/PostgreSQL)
+3. **v1.2.0**: Cloud Integration (AWS S3, Google Drive)
 
