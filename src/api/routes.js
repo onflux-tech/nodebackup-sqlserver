@@ -8,6 +8,7 @@ const browseRoutes = require('./routes/browse');
 const historyRoutes = require('./routes/history');
 const updaterRoutes = require('./routes/updater');
 const notificationRoutes = require('./routes/notifications');
+const whatsappRoutes = require('./routes/whatsapp');
 
 const router = express.Router();
 
@@ -20,5 +21,6 @@ router.use('/browse', browseRoutes);
 router.use('/history', historyRoutes);
 router.use('/updates', updaterRoutes);
 router.use('/notifications', notificationRoutes);
+router.use('/whatsapp', whatsappRoutes);
 
 module.exports = router; 

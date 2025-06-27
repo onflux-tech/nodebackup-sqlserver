@@ -1,6 +1,6 @@
 const nodemailer = require('nodemailer');
+const { formatFileSize, formatDuration } = require('../utils/formatters');
 const logger = require('../utils/logger');
-const { formatFileSize, formatDuration } = require('../utils/errorHandler');
 const fs = require('fs');
 const path = require('path');
 

@@ -3,6 +3,7 @@ import { showToast, toggleButtonLoading } from './ui.js';
 import { getSelectedDatabases, setSelectedDatabases, renderSelectedDatabasesTags } from './database.js';
 import { addScheduleInput, getScheduleTimes } from './schedule.js';
 import { saveNotificationConfig } from './notifications.js';
+import { saveWhatsAppConfig } from './whatsapp.js';
 
 const elements = {
   saveButton: document.getElementById('saveButton'),
@@ -164,8 +165,9 @@ async function saveConfig(e) {
 
     try {
       await saveNotificationConfig();
+      await saveWhatsAppConfig();
     } catch (notificationError) {
-      console.warn('Erro ao salvar configurações de notificação:', notificationError);
+      console.warn('Erro ao salvar configurações de notificação/WhatsApp:', notificationError);
       showToast('Atenção: Configurações principais salvas, mas houve erro ao salvar notificações', 'warn');
     }
 

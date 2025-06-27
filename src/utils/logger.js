@@ -147,20 +147,30 @@ class BroadcastTransport extends winston.Transport {
 
 const fileLogFormat = winston.format.combine(
   winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-  winston.format.printf(({ level, message, timestamp }) => {
-    return `[${timestamp}] [${level.toUpperCase()}] ${message}`;
+  winston.format.splat(),
+  winston.format.printf(({ level, message, timestamp, ...meta }) => {
+    let logMessage = `[${timestamp}] [${level.toUpperCase()}] ${message}`;
+    if (Object.keys(meta).length) {
+      logMessage += ` ${JSON.stringify(meta, null, 2)}`;
+    }
+    return logMessage;
   })
 );
 
 const consoleLogFormat = winston.format.combine(
   winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+  winston.format.splat(),
   winston.format(info => {
     info.level = info.level.toUpperCase();
     return info;
   })(),
   winston.format.colorize(),
-  winston.format.printf(({ level, message, timestamp }) => {
-    return `[${timestamp}] [${level}] ${message}`;
+  winston.format.printf(({ level, message, timestamp, ...meta }) => {
+    let logMessage = `[${timestamp}] [${level}] ${message}`;
+    if (Object.keys(meta).length) {
+      logMessage += ` ${JSON.stringify(meta, null, 2)}`;
+    }
+    return logMessage;
   })
 );
 

@@ -5,7 +5,7 @@ alwaysApply: true
 ---
 # Roadmap e Tasklist - Próximas Implementações
 
-## 📍 Estado Atual (v0.4.0 - Notificações por E-mail)
+## 📍 Estado Atual (v0.5.0 - Notificações WhatsApp)
 **Funcionalidades Implementadas:**
 - ✅ Setup inicial interativo via web
 - ✅ Interface web com autenticação segura e middleware centralizado
@@ -28,7 +28,7 @@ alwaysApply: true
   - ✅ Modal para visualizar detalhes de erros
 - ✅ **Refatoração Estrutural Major** (v0.2.2)
   - ✅ **Frontend Modular**: CSS separado em 5 módulos (25KB total)
-  - ✅ **JavaScript Modular**: 10 módulos específicos (41KB total)
+  - ✅ **JavaScript Modular**: 11 módulos específicos (49KB total)
   - ✅ **Backend Reorganizado**: Rotas separadas por funcionalidade
   - ✅ **Middleware Dedicado**: Autenticação centralizada
   - ✅ **Interface Modernizada**: Tema claro/escuro, responsiva
@@ -56,6 +56,15 @@ alwaysApply: true
   - ✅ **Diagnóstico SMTP Avançado**: Sugestões inteligentes para resolver problemas
   - ✅ **Templates Especializados**: Sucesso, falha e teste com estatísticas visuais
   - ✅ **Integração Automática**: Hook com scheduler para envio após backups
+- ✅ **Sistema de Notificações WhatsApp** (v0.5.0)
+  - ✅ **Integração WuzAPI**: Sistema completo via API oficial do WhatsApp
+  - ✅ **Configuração Web**: Interface para URL da API e token de autenticação
+  - ✅ **Gerenciamento de Números**: Sistema para múltiplos destinatários com validação
+  - ✅ **Teste de Conexão**: Validação de WuzAPI com diagnóstico detalhado
+  - ✅ **Notificações Configuráveis**: Controle granular (sucesso/falha/ambos)
+  - ✅ **Diagnóstico Inteligente**: Sugestões automáticas para problemas de configuração
+  - ✅ **Integração Scheduler**: Envio automático após cada backup conforme configuração
+  - ✅ **Compatibilidade Node.js 12**: Implementação usando módulos nativos http/https
 
 ## 🚀 Roadmap de Desenvolvimento Atualizado
 
@@ -111,8 +120,8 @@ alwaysApply: true
 
 ---
 
-### ✅ **FASE 2: Notificações Inteligentes** (v0.4.0 - CONCLUÍDO)
-*Status: Parcialmente Concluído | Duração: 2 semanas*
+### ✅ **FASE 2: Notificações Inteligentes** (v0.5.0 - CONCLUÍDO)
+*Status: Concluído | Duração: 4 semanas*
 
 #### ✅ **2.1 Sistema de Notificações E-mail** (v0.4.0 - CONCLUÍDO)
 **Status**: ✅ Concluído
@@ -138,28 +147,36 @@ alwaysApply: true
   - ✅ Gerenciamento de múltiplos destinatários com validação
   - ✅ Logs estruturados e diagnóstico avançado SMTP
 
----
+#### ✅ **2.2 Sistema de Notificações WhatsApp** (v0.5.0 - CONCLUÍDO)
+**Status**: ✅ Concluído
+**Arquivos implementados:** [src/services/whatsapp.js](mdc:src/services/whatsapp.js), [public/js/whatsapp.js](mdc:public/js/whatsapp.js), [src/api/routes/whatsapp.js](mdc:src/api/routes/whatsapp.js)
 
-### 🎯 **FASE 2.2: Integração Mensageiros** (v0.5.0 - Próximo)
-*Prioridade: Alta | Estimativa: 4-6 semanas*
-
-#### 📱 **2.2 Integração Mensageiros** (v0.5.0 - Próximo Sprint)
-**Status**: 📝 Planejamento
-**Arquivos a criar:** [src/services/whatsapp.js](mdc:src/services/whatsapp.js), [public/js/messengers.js](mdc:public/js/messengers.js)
-
-**Tasklist Atualizada:**
-- [ ] **Bot Telegram**
-  - [ ] Usar `node-telegram-bot-api` 0.50.x (Node 12 compatível)
-  - [ ] Comandos: /status, /lastbackup, /logs, /stats
-  - [ ] Interface configuração Bot Token
-  - [ ] Webhooks para notificações ativas
-  - [ ] Integração com sistema de notificações existente
+**Implementações Realizadas:**
+- ✅ **Integração WuzAPI**
+  - ✅ Criado [src/services/whatsapp.js](mdc:src/services/whatsapp.js) com métodos de configuração e envio
+  - ✅ Configuração de URL da API e token de autenticação
+  - ✅ Teste de conexão WuzAPI com feedback detalhado
+  - ✅ Implementação usando módulos nativos http/https para compatibilidade Node.js 12
   
-- [ ] **WhatsApp Business API**
-  - [ ] Integrar via WhatsApp Business API oficial
-  - [ ] Fallback para bibliotecas não oficiais se necessário
-  - [ ] Mensagens estruturadas com status
-  - [ ] Interface web para configuração
+- ✅ **Interface Web Completa**
+  - ✅ Criado [public/js/whatsapp.js](mdc:public/js/whatsapp.js) modular (8KB)
+  - ✅ Nova aba "WhatsApp" integrada ao dashboard principal
+  - ✅ Formulários responsivos similares às notificações email
+  - ✅ Gerenciamento de múltiplos números de telefone com validação
+  
+- ✅ **Sistema de Notificações Configuráveis**
+  - ✅ Controle granular: sempre/só falhas/só sucessos/desabilitado
+  - ✅ Templates de mensagem personalizados para diferentes status
+  - ✅ Diagnóstico inteligente com sugestões automáticas para problemas
+  - ✅ Integração automática com scheduler para envio após backups
+  
+- ✅ **APIs REST Completas**
+  - ✅ Criada rota [src/api/routes/whatsapp.js](mdc:src/api/routes/whatsapp.js)
+  - ✅ GET/POST /api/whatsapp/config - Configurações WhatsApp
+  - ✅ POST /api/whatsapp/test-connection - Teste de conexão WuzAPI
+  - ✅ POST /api/whatsapp/test-message - Envio de mensagem de teste
+
+---
 
 ---
 
@@ -315,10 +332,23 @@ alwaysApply: true
 - ✅ Configurações granulares e gerenciamento de destinatários
 - ✅ Sistema de logo personalizado para e-mails
 
+### ✅ **v0.5.0 - Notificações WhatsApp** (CONCLUÍDO)
+**Objetivo**: Sistema completo de notificações por WhatsApp via WuzAPI
+
+**Sprint 1 (Semana 1)**:
+- ✅ Integração WuzAPI com configuração de URL e token
+- ✅ Teste de conexão e diagnóstico inteligente
+
+**Sprint 2 (Semana 2)**:
+- ✅ Interface web com nova aba "WhatsApp"
+- ✅ Gerenciamento de destinatários e notificações configuráveis
+- ✅ Templates de mensagem e integração com scheduler
+- ✅ APIs REST completas para configuração e testes
+
 ### 🔮 **Releases Futuras**
-- **v0.5.0**: Telegram/WhatsApp (4-6 semanas)
 - **v1.0.0**: Release estável consolidado (2-3 semanas de polish)
 - **v1.1.0**: Backup Multi-Fonte (7-9 semanas)
+- **v1.2.0**: Cloud Integration (AWS S3, Google Drive)
 
 ## 📊 Métricas de Progresso
 

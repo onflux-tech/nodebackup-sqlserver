@@ -1637,6 +1637,7 @@ input::placeholder {
 }
 
 @keyframes pulse {
+
   0%,
   100% {
     opacity: 1;
@@ -2475,19 +2476,77 @@ input::placeholder {
 
 @media (max-width: 480px) {
   .notifications-layout {
-    gap: var(--space-sm);
+    grid-template-columns: 1fr;
   }
 
   .notifications-grid {
-    gap: var(--space-sm);
+    grid-template-columns: 1fr;
   }
 
   .recipients-card {
-    max-height: 280px;
+    order: 1;
   }
 
   .recipients-card .recipients-list {
-    min-height: 100px;
-    max-height: 140px;
+    max-height: 200px;
   }
+}
+
+/* ===== VALIDATION FEEDBACK ===== */
+.form-feedback {
+  font-size: 0.75rem;
+  margin-top: var(--space-xs);
+  display: none;
+}
+
+.form-group.is-invalid .form-feedback.invalid {
+  display: block;
+  color: var(--error-600);
+}
+
+.form-group.is-valid .form-feedback.valid {
+  display: block;
+  color: var(--success-600);
+}
+
+.form-group.is-invalid input,
+.form-group.is-invalid .input-wrapper input {
+  border-color: var(--error-500);
+}
+
+.form-group.is-invalid input:focus,
+.form-group.is-invalid .input-wrapper input:focus {
+  border-color: var(--error-500);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+[data-theme="dark"] .form-group.is-invalid input:focus,
+[data-theme="dark"] .form-group.is-invalid .input-wrapper input:focus {
+  box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.2);
+}
+
+.form-group.is-valid input,
+.form-group.is-valid .input-wrapper input {
+  border-color: var(--success-500);
+}
+
+.form-group.is-valid input:focus,
+.form-group.is-valid .input-wrapper input:focus {
+  border-color: var(--success-500);
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+}
+
+[data-theme="dark"] .form-group.is-valid input:focus,
+[data-theme="dark"] .form-group.is-valid .input-wrapper input:focus {
+  box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.2);
+}
+
+.form-group.is-validating .form-feedback.validating {
+  display: block;
+  color: var(--text-muted);
+}
+
+.form-group.is-validating input,
+.form-group.is-validating .input-wrapper input {
+  border-color: var(--border-secondary);
 }

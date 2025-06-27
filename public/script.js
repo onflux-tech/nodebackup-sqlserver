@@ -8,6 +8,7 @@ import { loadHistoryTab, setupHistory } from './js/history.js';
 import { initializeLogs } from './js/logs.js';
 import { setupUpdater } from './js/updater.js';
 import { setupNotifications, loadNotificationConfig } from './js/notifications.js';
+import { setupWhatsApp, loadWhatsAppConfig } from './js/whatsapp.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
 
@@ -30,12 +31,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupStorage();
   setupHistory();
   setupNotifications();
+  setupWhatsApp();
 
   loadConfig();
 
   setTimeout(async () => {
     try {
       await loadNotificationConfig();
+      await loadWhatsAppConfig();
     } catch (error) {
       console.warn('Erro ao carregar configurações de notificação:', error);
     }

@@ -34,6 +34,15 @@ class UpdaterService {
         };
       }
 
+      if (!latestRelease.tag_name) {
+        logger.warn('Resposta da API GitHub não contém tag_name:', latestRelease);
+        return {
+          updateAvailable: false,
+          currentVersion: this.currentVersion,
+          error: 'Formato de resposta inválido da API GitHub'
+        };
+      }
+
       const latestVersion = latestRelease.tag_name.replace('v', '');
       const updateAvailable = this.isNewerVersion(latestVersion, this.currentVersion);
 
@@ -71,19 +80,37 @@ class UpdaterService {
       https.get(options, (res) => {
         let data = '';
 
+        if (res.statusCode !== 200) {
+          reject(new Error(`Erro HTTP ${res.statusCode}: ${res.statusMessage}`));
+          return;
+        }
+
         res.on('data', (chunk) => {
           data += chunk;
         });
 
         res.on('end', () => {
           try {
+            if (!data || data.trim() === '') {
+              reject(new Error('Resposta vazia da API GitHub'));
+              return;
+            }
+
             const release = JSON.parse(data);
+
+            if (!release || typeof release !== 'object') {
+              reject(new Error('Resposta inválida da API GitHub'));
+              return;
+            }
+
             resolve(release);
           } catch (error) {
-            reject(new Error('Erro ao parsear resposta do GitHub'));
+            reject(new Error(`Erro ao parsear resposta do GitHub: ${error.message}`));
           }
         });
-      }).on('error', reject);
+      }).on('error', (error) => {
+        reject(new Error(`Erro de conexão com GitHub: ${error.message}`));
+      });
     });
   }
 

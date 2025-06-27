@@ -3,8 +3,13 @@ const logger = require('../utils/logger');
 const { getConfig } = require('../config');
 const { performConsolidatedBackup } = require('./database');
 const notificationService = require('./notification');
+const whatsappService = require('./whatsapp');
 
 let scheduledJobs = [];
+
+function isWhatsAppEnabled(config) {
+  return config && config.notifications && config.notifications.whatsapp && config.notifications.whatsapp.enabled;
+}
 
 function scheduleBackups() {
   const initialConfig = getConfig();
@@ -38,6 +43,14 @@ function scheduleBackups() {
         }
       }
 
+      if (isWhatsAppEnabled(currentConfig)) {
+        try {
+          await whatsappService.configure(currentConfig.notifications.whatsapp);
+        } catch (error) {
+          logger.warn('⚠️ Erro ao configurar notificações WhatsApp', error);
+        }
+      }
+
       try {
         const backupResult = await performConsolidatedBackup(
           currentConfig.database.databases,
@@ -68,6 +81,26 @@ function scheduleBackups() {
             await notificationService.sendSuccessNotification(
               backupData,
               currentConfig.notifications.schedule.recipients,
+              currentConfig.clientName || 'Cliente'
+            );
+          }
+
+          if (isWhatsAppEnabled(currentConfig) &&
+            currentConfig.notifications.whatsapp.sendOnSuccess &&
+            currentConfig.notifications.whatsapp.recipients &&
+            currentConfig.notifications.whatsapp.recipients.length > 0) {
+
+            const backupData = {
+              databases: currentConfig.database.databases,
+              totalSize: backupResult.totalSize || 0,
+              duration: backupResult.duration || 0,
+              timestamp: new Date().toISOString(),
+              files: backupResult.files || []
+            };
+
+            await whatsappService.sendSuccessNotification(
+              backupData,
+              currentConfig.notifications.whatsapp.recipients,
               currentConfig.clientName || 'Cliente'
             );
           }
@@ -106,6 +139,30 @@ function scheduleBackups() {
               currentConfig.clientName || 'Cliente'
             );
           }
+
+          if (isWhatsAppEnabled(currentConfig) &&
+            currentConfig.notifications.whatsapp.sendOnFailure &&
+            currentConfig.notifications.whatsapp.recipients &&
+            currentConfig.notifications.whatsapp.recipients.length > 0) {
+
+            const errorData = {
+              error: errorMessage,
+              details: (backupResult && backupResult.error) ? backupResult.error.stack : 'Detalhes não disponíveis',
+              timestamp: new Date().toISOString(),
+              databases: currentConfig.database.databases,
+              suggestions: [
+                'Verifique as configurações de conexão com o SQL Server',
+                'Confirme se há espaço suficiente em disco',
+                'Verifique os logs da aplicação para mais detalhes'
+              ]
+            };
+
+            await whatsappService.sendFailureNotification(
+              errorData,
+              currentConfig.notifications.whatsapp.recipients,
+              currentConfig.clientName || 'Cliente'
+            );
+          }
         }
 
       } catch (error) {
@@ -139,6 +196,34 @@ function scheduleBackups() {
             );
           } catch (notificationError) {
             logger.error('❌ Erro ao enviar notificação de falha', notificationError);
+          }
+        }
+
+        if (isWhatsAppEnabled(currentConfig) &&
+          currentConfig.notifications.whatsapp.sendOnFailure &&
+          currentConfig.notifications.whatsapp.recipients &&
+          currentConfig.notifications.whatsapp.recipients.length > 0) {
+
+          const errorData = {
+            error: error.message || 'Erro desconhecido no backup',
+            details: error.stack || 'Detalhes não disponíveis',
+            timestamp: new Date().toISOString(),
+            databases: currentConfig.database.databases,
+            suggestions: [
+              'Verifique as configurações de conexão com o SQL Server',
+              'Confirme se há espaço suficiente em disco',
+              'Verifique os logs da aplicação para mais detalhes'
+            ]
+          };
+
+          try {
+            await whatsappService.sendFailureNotification(
+              errorData,
+              currentConfig.notifications.whatsapp.recipients,
+              currentConfig.clientName || 'Cliente'
+            );
+          } catch (notificationError) {
+            logger.error('❌ Erro ao enviar notificação WhatsApp de falha', notificationError);
           }
         }
 

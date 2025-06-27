@@ -15,7 +15,7 @@ alwaysApply: true
   - [public/css/login.css](mdc:public/css/login.css) - Estilos login/setup (2KB)
   - [public/css/responsive.css](mdc:public/css/responsive.css) - Media queries (3KB)
 
-- **JavaScript Modular (10 arquivos - 65.7KB total)**:
+- **JavaScript Modular (11 arquivos - 73.7KB total)**:
   - [public/js/ui.js](mdc:public/js/ui.js) - Componentes UI, tema, toasts (8KB)
   - [public/js/config.js](mdc:public/js/config.js) - Gerenciamento configurações (8KB)
   - [public/js/database.js](mdc:public/js/database.js) - Seleção bancos SQL (8KB)
@@ -25,7 +25,8 @@ alwaysApply: true
   - [public/js/auth.js](mdc:public/js/auth.js) - Autenticação (1KB)
   - [public/js/api.js](mdc:public/js/api.js) - Requisições API (1KB)
   - [public/js/logs.js](mdc:public/js/logs.js) - Logs em tempo real WebSocket (10KB)
-  - [public/js/notifications.js](mdc:public/js/notifications.js) - **NOVO**: Notificações SMTP (7KB)
+  - [public/js/notifications.js](mdc:public/js/notifications.js) - Notificações SMTP (7KB)
+  - [public/js/whatsapp.js](mdc:public/js/whatsapp.js) - **NOVO**: Notificações WhatsApp (8KB)
 
 - **HTML Pages**:
   - [public/index.html](mdc:public/index.html) - Dashboard principal
@@ -34,12 +35,12 @@ alwaysApply: true
 
 ### Limitações e Diretrizes Atualizadas
 - **Modularidade**: Código separado por responsabilidade
-- **Performance**: Total < 95KB (CSS + JS)
+- **Performance**: Total < 100KB (CSS + JS)
 - **Compatibilidade**: IE11+, Chrome 60+, Firefox 55+
 - **Temas**: Sistema dual (claro/escuro) com variáveis CSS
 - **FOUC Prevention**: Script inline anti-flash implementado
 - **WebSocket**: Comunicação em tempo real para logs
-- **Notificações**: Templates SMTP responsivos com suporte a e-mail
+- **Notificações**: Templates SMTP + WhatsApp WuzAPI com suporte multi-canal
 
 ## 🔌 Padrões de API REST Modularizada
 
@@ -52,6 +53,7 @@ alwaysApply: true
 ├── database.js     # GET /api/list-databases, POST /api/test-connection
 ├── history.js      # GET /api/history, GET /api/history/stats
 ├── notifications.js # GET/POST /api/notifications/*, /api/notifications/test-smtp
+├── whatsapp.js     # GET/POST /api/whatsapp/*, /api/whatsapp/test-connection
 └── storage.js      # POST /api/test-ftp, /api/cleanup-local, /api/cleanup-ftp
 ```
 
@@ -197,6 +199,28 @@ export function testSMTPConnection() {
 }
 ```
 
+#### 📱 Sistema de Notificações WhatsApp (public/js/whatsapp.js)
+```javascript
+export function setupWhatsApp() {
+  // Configuração WuzAPI via interface web
+  // Teste de conexão com diagnóstico detalhado
+  // Gerenciamento de números de telefone
+  // Templates de mensagem personalizados
+}
+
+export function testWuzAPIConnection() {
+  // Testa conexão WuzAPI com feedback detalhado
+  // Sugestões automáticas para problemas de configuração
+  // Validação de URL da API e token
+}
+
+export function sendTestMessage() {
+  // Envio de mensagem de teste para números configurados
+  // Validação de formato de números
+  // Feedback de entrega de mensagens
+}
+```
+
 ## 📱 Responsividade Implementada
 
 ### Breakpoints CSS (public/css/responsive.css)
@@ -265,11 +289,11 @@ export async function apiFetch(url, options = {}) {
 
 ### Métricas Atuais Implementadas
 - **CSS Modular**: 25KB total (5 arquivos especializados)
-- **JavaScript Modular**: 66KB total (10 módulos específicos)
+- **JavaScript Modular**: 74KB total (11 módulos específicos)
 - **Loading Progressivo**: Módulos carregados sob demanda
 - **Cache Control**: Headers apropriados implementados
 - **WebSocket**: Comunicação eficiente em tempo real
-- **Notificações**: Templates SMTP com CSS inline para máxima compatibilidade
+- **Notificações**: Templates SMTP + WhatsApp com compatibilidade multi-canal
 
 ### Otimizações de UX Implementadas
 - **Loading States**: Em todos os botões e operações assíncronas
@@ -394,11 +418,12 @@ io.use((socket, next) => {
 - [ ] **WebSocket**: Considerar comunicação em tempo real se aplicável
 
 ### ✅ Performance e Compatibilidade
-- [ ] **Tamanho**: Verificar impacto no bundle total (< 65KB)
+- [ ] **Tamanho**: Verificar impacto no bundle total (< 75KB)
 - [ ] **Browser Testing**: IE11+, Chrome 60+, Firefox 55+
 - [ ] **Mobile**: Testar touch, gestos, viewport
 - [ ] **Acessibilidade**: ARIA labels, contraste, navegação teclado
 - [ ] **WebSocket**: Testar reconexão e fallbacks
+- [ ] **Multi-canal**: Validar notificações SMTP e WhatsApp funcionando independentemente
 
 ### ✅ Integração
 - [ ] **API**: Seguir padrões de resposta
