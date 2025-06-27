@@ -118,6 +118,7 @@ async function sendTestMessage() {
 
     const checkResponse = await apiFetch('/api/whatsapp/check-number', {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ phoneNumber: cleanPhone })
     });
 
@@ -208,6 +209,7 @@ function setupPhoneValidation() {
     try {
       const response = await apiFetch('/api/whatsapp/check-number', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ phoneNumber: phone })
       });
 
@@ -263,6 +265,7 @@ async function addRecipient() {
   try {
     const checkResponse = await apiFetch('/api/whatsapp/check-number', {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ phoneNumber: cleanPhone })
     });
 
