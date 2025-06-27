@@ -1,7 +1,7 @@
 const https = require('https');
 const http = require('http');
 const logger = require('../utils/logger');
-const { formatFileSize, formatDuration } = require('../utils/errorHandler');
+const { formatFileSize, formatDuration } = require('../utils/formatters');
 
 class WhatsAppService {
   constructor() {
