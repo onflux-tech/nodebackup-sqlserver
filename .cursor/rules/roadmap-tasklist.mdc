@@ -5,7 +5,7 @@ alwaysApply: true
 ---
 # Roadmap e Tasklist - Próximas Implementações
 
-## 📍 Estado Atual (v0.5.0 - Notificações WhatsApp)
+## 📍 Estado Atual (v1.0.0 - Release Estável)
 **Funcionalidades Implementadas:**
 - ✅ Setup inicial interativo via web
 - ✅ Interface web com autenticação segura e middleware centralizado
@@ -16,39 +16,39 @@ alwaysApply: true
 - ✅ Agendamento flexível de backups
 - ✅ Instalação como serviço Windows
 - ✅ Sistema de logs rotacionados
-- ✅ **Política de Retenção de Backups** (v0.1.0)
+- ✅ **Política de Retenção de Backups**
   - ✅ Modo Clássico (sobrescrita) e Modo Retenção (timestamp)
   - ✅ Limpeza automática local e FTP configurável
   - ✅ Interface web completa para configuração
   - ✅ Botões de limpeza manual
-- ✅ **Painel de Histórico Completo** (v0.2.0)
+- ✅ **Painel de Histórico Completo**
   - ✅ Banco SQLite para persistir histórico de backups
   - ✅ Estatísticas detalhadas (total, sucessos/falhas, duração média, tamanho total)
   - ✅ Interface responsiva com filtros por status e paginação
   - ✅ Modal para visualizar detalhes de erros
-- ✅ **Refatoração Estrutural Major** (v0.2.2)
+- ✅ **Arquitetura Modular**
   - ✅ **Frontend Modular**: CSS separado em 5 módulos (25KB total)
-  - ✅ **JavaScript Modular**: 11 módulos específicos (49KB total)
+  - ✅ **JavaScript Modular**: 11 módulos específicos (74KB total)
   - ✅ **Backend Reorganizado**: Rotas separadas por funcionalidade
   - ✅ **Middleware Dedicado**: Autenticação centralizada
   - ✅ **Interface Modernizada**: Tema claro/escuro, responsiva
   - ✅ **Sistema de Toasts**: Notifications inteligentes
   - ✅ **FOUC Prevention**: Script inline anti-flash
   - ✅ **Arquitetura Escalável**: Fácil manutenção e expansão
-- ✅ **Logs em Tempo Real** (v0.3.0)
+- ✅ **Logs em Tempo Real**
   - ✅ **WebSocket Server**: Socket.IO integrado com autenticação
   - ✅ **Stream de Logs**: Logger Winston estendido para broadcast
   - ✅ **Interface Interativa**: Nova aba "Logs ao Vivo" com controles
   - ✅ **Controles Avançados**: Pausar/continuar, limpar, download
-  - ✅ **Sessões Persistentes**: connect-sqlite3 para robustez
-- ✅ **Sistema Auto-Update** (v0.3.1)
+  - ✅ **Sessões Persistentes**: CustomSessionStore em JSON
+- ✅ **Sistema Auto-Update**
   - ✅ **Verificação Automática**: Checagem a cada 6 horas no GitHub
   - ✅ **Download Inteligente**: Prioriza instalador quando disponível
   - ✅ **Instalação Silenciosa**: Modo completamente transparente
   - ✅ **Gerenciamento de Serviço**: Para e reinicia automaticamente
   - ✅ **Interface Visual**: Indicadores e modal de atualização
   - ✅ **Rollback Automático**: Backup antes de atualizar
-- ✅ **Sistema de Notificações por E-mail** (v0.4.0)
+- ✅ **Sistema de Notificações por E-mail**
   - ✅ **Configuração SMTP Completa**: Interface web com teste de conexão integrado
   - ✅ **Templates HTML Responsivos**: E-mails com design moderno e tema claro/escuro
   - ✅ **Notificações Granulares**: Controle de quando enviar (sucesso/falha/ambos)
@@ -56,7 +56,7 @@ alwaysApply: true
   - ✅ **Diagnóstico SMTP Avançado**: Sugestões inteligentes para resolver problemas
   - ✅ **Templates Especializados**: Sucesso, falha e teste com estatísticas visuais
   - ✅ **Integração Automática**: Hook com scheduler para envio após backups
-- ✅ **Sistema de Notificações WhatsApp** (v0.5.0)
+- ✅ **Sistema de Notificações WhatsApp**
   - ✅ **Integração WuzAPI**: Sistema completo via API oficial do WhatsApp
   - ✅ **Configuração Web**: Interface para URL da API e token de autenticação
   - ✅ **Gerenciamento de Números**: Sistema para múltiplos destinatários com validação
@@ -66,289 +66,223 @@ alwaysApply: true
   - ✅ **Integração Scheduler**: Envio automático após cada backup conforme configuração
   - ✅ **Compatibilidade Node.js 12**: Implementação usando módulos nativos http/https
 
-## 🚀 Roadmap de Desenvolvimento Atualizado
+## 🚀 Roadmap de Desenvolvimento
 
-> **📌 Foco Atual**: Versões 0.x.x para adicionar funcionalidades avançadas sobre a base modular sólida estabelecida.
+> **📌 Foco Atual**: Expansão das funcionalidades para v1.1.0 e além, mantendo a estabilidade da base v1.0.0.
 
-### ✅ **FASE 1: Monitoramento e Manutenção Avançada** (v0.3.1 - CONCLUÍDO)
-*Status: Concluído | Duração: 4 semanas*
-
-#### ✅ **1.3 Logs em Tempo Real** (v0.3.0 - CONCLUÍDO)
-**Status**: ✅ Concluído
-**Arquivos implementados:** [src/utils/logger.js](mdc:src/utils/logger.js), [public/js/logs.js](mdc:public/js/logs.js), [src/server.js](mdc:src/server.js)
-
-**Implementações Realizadas:**
-- ✅ **WebSocket Server**
-  - ✅ Integrado `socket.io` 4.x (compatível Node 12)
-  - ✅ Configurado server WebSocket em [src/server.js](mdc:src/server.js)
-  - ✅ Criado middleware de autenticação WebSocket
-  
-- ✅ **Stream de Logs Backend**
-  - ✅ Modificado [src/utils/logger.js](mdc:src/utils/logger.js) para broadcast
-  - ✅ Implementado queue de logs em memória (buffer circular)
-  - ✅ Filtros por nível (info, warn, error) no servidor
-  
-- ✅ **Interface de Logs Frontend**
-  - ✅ Criado [public/js/logs.js](mdc:public/js/logs.js) modular
-  - ✅ Adicionada aba "Logs ao Vivo" no dashboard
-  - ✅ Auto-scroll, pause manual, filtros cliente
-  - ✅ Download de logs atuais em .txt
-  - ✅ Integrado com sistema de temas existente
-
-#### ✅ **1.4 Sistema Auto-Update** (v0.3.1 - CONCLUÍDO)
-**Status**: ✅ Concluído
-**Arquivos implementados:** [src/services/updater.js](mdc:src/services/updater.js), [public/js/updater.js](mdc:public/js/updater.js), [src/api/routes/updater.js](mdc:src/api/routes/updater.js)
-
-**Implementações Realizadas:**
-- ✅ **Backend Auto-Update**
-  - ✅ Criado [src/services/updater.js](mdc:src/services/updater.js) com integração GitHub API
-  - ✅ Verificação automática a cada 6 horas
-  - ✅ Download inteligente com priorização de instalador
-  - ✅ Gerenciamento automático do serviço Windows
-  
-- ✅ **Frontend Interface**
-  - ✅ Criado [public/js/updater.js](mdc:public/js/updater.js) modular
-  - ✅ Indicador de versão na sidebar
-  - ✅ Modal detalhado de atualização
-  - ✅ Progress tracking em tempo real
-  
-- ✅ **Instalador Silencioso**
-  - ✅ Otimizado installer.nsi para modo /S
-  - ✅ Supressão completa de janelas e pop-ups
-  - ✅ Comandos via nsExec para background
-  - ✅ Auto-close e instalação transparente
-
----
-
-### ✅ **FASE 2: Notificações Inteligentes** (v0.5.0 - CONCLUÍDO)
-*Status: Concluído | Duração: 4 semanas*
-
-#### ✅ **2.1 Sistema de Notificações E-mail** (v0.4.0 - CONCLUÍDO)
-**Status**: ✅ Concluído
-**Arquivos implementados:** [src/services/notification.js](mdc:src/services/notification.js), [public/js/notifications.js](mdc:public/js/notifications.js), [src/api/routes/notifications.js](mdc:src/api/routes/notifications.js), [public/logo-mail.png](mdc:public/logo-mail.png)
-
-**Implementações Realizadas:**
-- ✅ **Configuração SMTP Modular**
-  - ✅ Adicionados campos SMTP em [src/config.js](mdc:src/config.js)
-  - ✅ Criada rota em [src/api/routes/notifications.js](mdc:src/api/routes/notifications.js)
-  - ✅ Interface web em nova aba "Notificações"
-  - ✅ Teste de conexão SMTP com feedback detalhado
-  
-- ✅ **Templates HTML Responsivos**
-  - ✅ Template sucesso: resumo visual, estatísticas, lista de arquivos
-  - ✅ Template falha: erro detalhado, logs relevantes, sugestões específicas
-  - ✅ Template teste: validação de configurações SMTP
-  - ✅ CSS inline para máxima compatibilidade de e-mail
-  - ✅ Suporte completo a tema claro/escuro nos e-mails
-  
-- ✅ **Integração com Sistema Existente**
-  - ✅ Hook no scheduler após backup com notificação automática
-  - ✅ Configuração granular: sempre/só falhas/só sucessos/desabilitado
-  - ✅ Gerenciamento de múltiplos destinatários com validação
-  - ✅ Logs estruturados e diagnóstico avançado SMTP
-
-#### ✅ **2.2 Sistema de Notificações WhatsApp** (v0.5.0 - CONCLUÍDO)
-**Status**: ✅ Concluído
-**Arquivos implementados:** [src/services/whatsapp.js](mdc:src/services/whatsapp.js), [public/js/whatsapp.js](mdc:public/js/whatsapp.js), [src/api/routes/whatsapp.js](mdc:src/api/routes/whatsapp.js)
-
-**Implementações Realizadas:**
-- ✅ **Integração WuzAPI**
-  - ✅ Criado [src/services/whatsapp.js](mdc:src/services/whatsapp.js) com métodos de configuração e envio
-  - ✅ Configuração de URL da API e token de autenticação
-  - ✅ Teste de conexão WuzAPI com feedback detalhado
-  - ✅ Implementação usando módulos nativos http/https para compatibilidade Node.js 12
-  
-- ✅ **Interface Web Completa**
-  - ✅ Criado [public/js/whatsapp.js](mdc:public/js/whatsapp.js) modular (8KB)
-  - ✅ Nova aba "WhatsApp" integrada ao dashboard principal
-  - ✅ Formulários responsivos similares às notificações email
-  - ✅ Gerenciamento de múltiplos números de telefone com validação
-  
-- ✅ **Sistema de Notificações Configuráveis**
-  - ✅ Controle granular: sempre/só falhas/só sucessos/desabilitado
-  - ✅ Templates de mensagem personalizados para diferentes status
-  - ✅ Diagnóstico inteligente com sugestões automáticas para problemas
-  - ✅ Integração automática com scheduler para envio após backups
-  
-- ✅ **APIs REST Completas**
-  - ✅ Criada rota [src/api/routes/whatsapp.js](mdc:src/api/routes/whatsapp.js)
-  - ✅ GET/POST /api/whatsapp/config - Configurações WhatsApp
-  - ✅ POST /api/whatsapp/test-connection - Teste de conexão WuzAPI
-  - ✅ POST /api/whatsapp/test-message - Envio de mensagem de teste
-
----
-
----
-
-### 📁 **FASE 3: Expansão das Fontes** (v1.1.0+)
-*Prioridade: Média | Estimativa: 7-9 semanas* (pós v1.0.0)
+### 📁 **FASE 3: Expansão das Fontes** (v1.1.0)
+*Prioridade: Alta | Estimativa: 6-8 semanas*
 
 #### 🗂️ **3.1 Backup Multi-Fonte**
-**Status**: 🔮 Futuro
-**Arquivos a criar:** [src/services/fileBackup.js](mdc:src/services/fileBackup.js), [public/js/file-backup.js](mdc:public/js/file-backup.js)
+**Status**: 📋 Planejado
+**Arquivos a criar:** 
+- `src/services/fileBackup.js` - Serviço de backup de arquivos
+- `public/js/file-backup.js` - Interface para seleção de arquivos
+- `src/api/routes/files.js` - Rotas para gerenciamento de arquivos
 
-**Tasklist Conceptual:**
-- [ ] **Seleção de Diretórios**
-  - [ ] Interface web tree-view para seleção
-  - [ ] Exclusões por extensão/padrão regex
-  - [ ] Preview estimativa de tamanho
+**Tasklist:**
+- [ ] **Backend - Serviço de Arquivos**
+  - [ ] Criar `src/services/fileBackup.js`
+  - [ ] Implementar seleção recursiva de diretórios
+  - [ ] Sistema de exclusões por padrão/regex
+  - [ ] Cálculo de tamanho estimado
+  - [ ] Integração com 7za.exe existente
   
-- [ ] **Backup Híbrido**
-  - [ ] Comprimir arquivos junto com .bak
-  - [ ] Manter estrutura de diretórios
-  - [ ] Progress indicator detalhado
+- [ ] **Frontend - Interface de Seleção**
+  - [ ] Criar `public/js/file-backup.js` modular
+  - [ ] Tree-view para navegação de pastas
+  - [ ] Checkboxes para seleção múltipla
+  - [ ] Preview de tamanho total
+  - [ ] Padrões de exclusão configuráveis
+  
+- [ ] **Integração com Sistema Existente**
+  - [ ] Adaptar scheduler para backups híbridos
+  - [ ] Unificar logs e histórico
+  - [ ] Manter compatibilidade com notificações
 
 #### 🗄️ **3.2 Suporte Multi-Database**
-**Status**: 🔮 Futuro
-**Arquivos a criar:** [src/services/mysql.js](mdc:src/services/mysql.js), [src/services/postgres.js](mdc:src/services/postgres.js)
+**Status**: 📋 Planejado
+**Arquivos a criar:** 
+- `src/services/mysql.js` - Suporte MySQL
+- `src/services/postgres.js` - Suporte PostgreSQL
+- `public/js/multi-database.js` - Interface unificada
 
-**Tasklist Conceptual:**
+**Tasklist:**
 - [ ] **MySQL Support**
-  - [ ] Usar `mysql2` 2.x (Node 12 compatível)
-  - [ ] mysqldump integration
+  - [ ] Instalar `mysql2` 2.x (compatível Node 12)
+  - [ ] Implementar conexão e listagem de bancos
+  - [ ] Integração com mysqldump
+  - [ ] Tratamento de erros específicos MySQL
   
 - [ ] **PostgreSQL Support**
-  - [ ] Usar `pg` 8.x (Node 12 compatível)
-  - [ ] pg_dump integration
+  - [ ] Instalar `pg` 8.x (compatível Node 12)
+  - [ ] Implementar conexão e listagem
+  - [ ] Integração com pg_dump
+  - [ ] Tratamento de erros específicos PostgreSQL
+  
+- [ ] **Interface Unificada**
+  - [ ] Seletor de tipo de banco
+  - [ ] Formulários dinâmicos por tipo
+  - [ ] Validação específica por engine
 
 ---
 
-### ☁️ **FASE 4: Cloud Integration** (v1.2.0+)
-*Prioridade: Baixa | Estimativa: 5-7 semanas* (pós v1.0.0)
+### ☁️ **FASE 4: Cloud Integration** (v1.2.0)
+*Prioridade: Média | Estimativa: 5-7 semanas*
 
 #### 🪣 **4.1 AWS S3 & Compatíveis**
 **Status**: 🔮 Futuro
-**Arquivos a criar:** [src/services/s3.js](mdc:src/services/s3.js)
+**Arquivos a criar:** 
+- `src/services/s3.js` - Cliente S3
+- `public/js/cloud-storage.js` - Interface cloud
+- `src/api/routes/cloud.js` - Rotas cloud
+
+**Tasklist Conceptual:**
+- [ ] **Cliente S3**
+  - [ ] Usar `aws-sdk` v2 (compatível Node 12)
+  - [ ] Suporte a S3 compatíveis (MinIO, etc)
+  - [ ] Upload multipart para arquivos grandes
+  - [ ] Gerenciamento de buckets
+  
+- [ ] **Interface Cloud**
+  - [ ] Configuração de credenciais
+  - [ ] Seleção de buckets
+  - [ ] Políticas de retenção cloud
+  - [ ] Monitoramento de custos estimados
 
 #### 📁 **4.2 Google Drive**
 **Status**: 🔮 Futuro
-**Arquivos a criar:** [src/services/googleDrive.js](mdc:src/services/googleDrive.js)
+**Arquivos a criar:** 
+- `src/services/googleDrive.js`
+- `src/api/routes/google.js`
+
+**Tasklist Conceptual:**
+- [ ] OAuth2 integration
+- [ ] Upload resumível
+- [ ] Organização em pastas
+- [ ] Compartilhamento automático
 
 ---
 
-### 🔄 **FASE 5: Funcionalidades Premium** (v2.0.0+)
-*Prioridade: Baixa | Estimativa: 8-10 semanas* (major release)
+### 🔄 **FASE 5: Funcionalidades Premium** (v2.0.0)
+*Prioridade: Baixa | Estimativa: 8-10 semanas*
 
 #### 📂 **5.1 Interface de Restauração**
 **Status**: 🔮 Futuro
 
-## 🔧 Melhorias de Infraestrutura Priorizadas
+**Funcionalidades Planejadas:**
+- [ ] Listagem de backups disponíveis
+- [ ] Seleção de ponto de restauração
+- [ ] Restauração seletiva (tabelas específicas)
+- [ ] Preview antes de restaurar
+- [ ] Rollback automático em caso de erro
 
-### **Imediatas (Sprint Atual)**
+#### 🔐 **5.2 Criptografia de Backups**
+**Status**: 🔮 Futuro
+
+**Funcionalidades Planejadas:**
+- [ ] AES-256 encryption
+- [ ] Gerenciamento de chaves
+- [ ] Descriptografia sob demanda
+- [ ] Integração com HSM/Key Vault
+
+---
+
+## 🔧 Melhorias de Infraestrutura
+
+### **Curto Prazo (v1.1.0)**
 - [ ] **Testes Automatizados**
   - [ ] Jest para módulos JS frontend
   - [ ] Mocha para backend Node.js
   - [ ] Testes de integração API
+  - [ ] Coverage mínimo 70%
   
 - [ ] **CI/CD Pipeline**
   - [ ] GitHub Actions para build automático
   - [ ] Testes automáticos em PRs
   - [ ] Release automática com tags
+  - [ ] Build matrix (Windows versions)
 
-### **Curto Prazo (v0.4.0 - v0.5.0)**
-- [ ] **Monitoramento**
-  - [ ] Metrics básicas (CPU, RAM, disk)
-  - [ ] Health check endpoint
-  - [ ] Status dashboard interno
-
-### **Médio Prazo (v0.5.0 - v1.0.0)**
-- [ ] **Performance**
-  - [ ] Backup incremental básico
-  - [ ] Cache de configurações
-  - [ ] Connection pooling otimizado
+### **Médio Prazo (v1.2.0)**
+- [ ] **Monitoramento Avançado**
+  - [ ] Métricas detalhadas (CPU, RAM, I/O)
+  - [ ] Dashboard de performance
+  - [ ] Alertas configuráveis
+  - [ ] Integração com ferramentas externas
   
-- [ ] **Segurança**
-  - [ ] Code signing do executável
-  - [ ] Audit logs detalhados
-  - [ ] Rate limiting global
+- [ ] **API REST Completa**
+  - [ ] Documentação OpenAPI/Swagger
+  - [ ] Versionamento de API
+  - [ ] Rate limiting por endpoint
+  - [ ] Webhooks para eventos
 
-## 📝 Notas de Implementação Atualizadas
+### **Longo Prazo (v2.0.0)**
+- [ ] **Multi-tenancy**
+  - [ ] Múltiplos usuários/organizações
+  - [ ] Isolamento de dados
+  - [ ] Quotas e limites
+  - [ ] Billing integration ready
+  
+- [ ] **High Availability**
+  - [ ] Clustering support
+  - [ ] Failover automático
+  - [ ] Load balancing
+  - [ ] Disaster recovery
 
-### **Arquitetura Modular Estabelecida**
-- ✅ Frontend totalmente modularizado (10 módulos JS, 5 módulos CSS)
-- ✅ Backend com rotas separadas por funcionalidade
-- ✅ Middleware de autenticação centralizado
-- ✅ Sistema de temas robusto implementado
-- ✅ WebSocket integrado para comunicação em tempo real
-- ✅ Base sólida para expansão rápida
-- ✅ Sistema de auto-update integrado e transparente
+## 📝 Notas de Implementação
 
-### **Compatibilidade Mantida**
-- ✅ Node.js 12.x obrigatório (validado com pkg)
-- ✅ Windows 7+ compatibilidade confirmada
-- ✅ SQL Server 2008+ até 2022 suportado
-- ✅ Build process estável e documentado
-- ✅ Socket.IO 4.x compatível com Node 12
+### **Base Sólida v1.0.0**
+- ✅ Arquitetura modular estabelecida
+- ✅ Sistema de notificações completo
+- ✅ Interface moderna e responsiva
+- ✅ Performance otimizada
+- ✅ Documentação abrangente
 
-### **Qualidade e Performance**
-- ✅ Frontend otimizado: 66KB total (41KB JS + 25KB CSS)
-- ✅ Executável: ~85MB autocontido
-- ✅ Startup: < 5 segundos
-- ✅ Responsividade mobile completa
-- ✅ WebSocket com baixa latência
-- ✅ Auto-update silencioso sem downtime
+### **Princípios para Desenvolvimento Futuro**
+- Manter compatibilidade Node.js 12
+- Preservar modularidade do código
+- Testes antes de cada release
+- Documentação sempre atualizada
+- Performance como prioridade
 
-## 🗓️ Cronograma Detalhado Atualizado
+### **Padrões de Qualidade**
+- Code coverage mínimo: 70%
+- Tempo de build: < 3 minutos
+- Tamanho do executável: < 100MB
+- Tempo de startup: < 5 segundos
+- Uso de memória: < 300MB
 
-### ✅ **v0.1.0 - Política de Retenção** (CONCLUÍDO)
-- Implementação completa de limpeza automática
-- Dois modos operacionais (Clássico vs Retenção)
-- Interface web completa
+## 🗓️ Cronograma Estimado
 
-### ✅ **v0.2.0 - Painel de Histórico** (CONCLUÍDO)  
-- SQLite para persistência de histórico
-- Interface responsiva com filtros
-- Estatísticas detalhadas
+### ✅ **v1.0.0 - Release Estável** (CONCLUÍDO)
+- Sistema completo e testado
+- Todas as funcionalidades core implementadas
+- Documentação completa
+- Pronto para produção
 
-### ✅ **v0.2.2 - Refatoração Estrutural** (CONCLUÍDO)
-- Modularização completa frontend/backend
-- Arquitetura escalável estabelecida
-- Base sólida para desenvolvimento futuro
-- Correção FOUC implementada
+### 📋 **v1.1.0 - Backup Multi-Fonte** (6-8 semanas)
+**Objetivo**: Expandir para backup de arquivos e outros bancos de dados
 
-### ✅ **v0.3.0 - Logs em Tempo Real** (CONCLUÍDO)
-- WebSocket server com Socket.IO
-- Stream de logs em tempo real
-- Interface interativa com controles
-- Sessões persistentes com SQLite
+**Sprint 1-2 (Semanas 1-3)**:
+- [ ] Implementar serviço de backup de arquivos
+- [ ] Criar interface de seleção de diretórios
 
-### ✅ **v0.3.1 - Sistema Auto-Update** (CONCLUÍDO)
-- Verificação automática no GitHub a cada 6 horas
-- Download inteligente com priorização de instalador
-- Instalação silenciosa sem interrupções
-- Interface visual com indicadores e progresso
-- Instalador NSIS otimizado para modo /S
+**Sprint 3-4 (Semanas 4-6)**:
+- [ ] Adicionar suporte MySQL
+- [ ] Adicionar suporte PostgreSQL
 
-### ✅ **v0.4.0 - Notificações E-mail** (CONCLUÍDO)
-**Objetivo**: Sistema completo de notificações por e-mail
+**Sprint 5 (Semanas 7-8)**:
+- [ ] Testes integrados
+- [ ] Documentação atualizada
+- [ ] Release preparation
 
-**Sprint 1 (Semana 1)**:
-- ✅ Configuração SMTP e interface web
-- ✅ Teste de conexão com diagnóstico avançado
+### 🔮 **v1.2.0 - Cloud Integration** (5-7 semanas)
+- AWS S3 e compatíveis
+- Google Drive integration
+- Interface unificada de storage
 
-**Sprint 2 (Semana 2)**:
-- ✅ Templates HTML responsivos (sucesso/falha/teste)
-- ✅ Integração com scheduler para notificações automáticas
-- ✅ Configurações granulares e gerenciamento de destinatários
-- ✅ Sistema de logo personalizado para e-mails
-
-### ✅ **v0.5.0 - Notificações WhatsApp** (CONCLUÍDO)
-**Objetivo**: Sistema completo de notificações por WhatsApp via WuzAPI
-
-**Sprint 1 (Semana 1)**:
-- ✅ Integração WuzAPI com configuração de URL e token
-- ✅ Teste de conexão e diagnóstico inteligente
-
-**Sprint 2 (Semana 2)**:
-- ✅ Interface web com nova aba "WhatsApp"
-- ✅ Gerenciamento de destinatários e notificações configuráveis
-- ✅ Templates de mensagem e integração com scheduler
-- ✅ APIs REST completas para configuração e testes
-
-### 🔮 **Releases Futuras**
-- **v1.0.0**: Release estável consolidado (2-3 semanas de polish)
-- **v1.1.0**: Backup Multi-Fonte (7-9 semanas)
-- **v1.2.0**: Cloud Integration (AWS S3, Google Drive)
+### 🔮 **v2.0.0 - Premium Features** (8-10 semanas)
+- Interface de restauração
 
 ## 📊 Métricas de Progresso
 
@@ -361,22 +295,20 @@ alwaysApply: true
 - Política de retenção
 - Logs em tempo real
 - Auto-update silencioso
-- Notificações por e-mail
+- Notificações multi-canal
 
-### 🔄 **Funcionalidades Avançadas (60% Complete)**
-- ✅ Logs tempo real: Concluído
-- ✅ Auto-update: Concluído
-- ✅ Notificações E-mail: Concluído
-- 📋 Mensageiros: Planejado
-- 🔮 Multi-database: Futuro
-- 🔮 Cloud storage: Futuro
+### 📋 **Funcionalidades Avançadas (0% - Planejado)**
+- 📋 Backup de arquivos: Planejado v1.1.0
+- 📋 Multi-database: Planejado v1.1.0
+- 🔮 Cloud storage: Futuro v1.2.0
+- 🔮 Restauração: Futuro v2.0.0
 
-### 🏗️ **Infraestrutura (85% Complete)**
+### 🏗️ **Infraestrutura (95% Complete)**
 - ✅ Arquitetura modular estabelecida
 - ✅ Build process automatizado
 - ✅ Sistema de logs robusto
 - ✅ WebSocket integrado
 - ✅ Auto-update transparente
-- 🔄 Testes automatizados (em planejamento)
-- 🔄 CI/CD pipeline (em planejamento)
+- ✅ CI/CD pipeline
+- 📋 Testes automatizados (planejado)
 

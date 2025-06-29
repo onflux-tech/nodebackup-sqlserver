@@ -7,7 +7,7 @@ alwaysApply: true
 
 ## 🌐 Estrutura Modular da Interface Web
 
-### Arquivos Frontend Principais (Refatorados)
+### Arquivos Frontend Principais (v1.0.0)
 - **CSS Modular (5 arquivos - 25KB total)**:
   - [public/css/base.css](mdc:public/css/base.css) - Variáveis CSS, reset, temas (4KB)
   - [public/css/components.css](mdc:public/css/components.css) - Componentes UI (13KB)
@@ -15,7 +15,7 @@ alwaysApply: true
   - [public/css/login.css](mdc:public/css/login.css) - Estilos login/setup (2KB)
   - [public/css/responsive.css](mdc:public/css/responsive.css) - Media queries (3KB)
 
-- **JavaScript Modular (11 arquivos - 73.7KB total)**:
+- **JavaScript Modular (11 arquivos - 74KB total)**:
   - [public/js/ui.js](mdc:public/js/ui.js) - Componentes UI, tema, toasts (8KB)
   - [public/js/config.js](mdc:public/js/config.js) - Gerenciamento configurações (8KB)
   - [public/js/database.js](mdc:public/js/database.js) - Seleção bancos SQL (8KB)
@@ -26,14 +26,15 @@ alwaysApply: true
   - [public/js/api.js](mdc:public/js/api.js) - Requisições API (1KB)
   - [public/js/logs.js](mdc:public/js/logs.js) - Logs em tempo real WebSocket (10KB)
   - [public/js/notifications.js](mdc:public/js/notifications.js) - Notificações SMTP (7KB)
-  - [public/js/whatsapp.js](mdc:public/js/whatsapp.js) - **NOVO**: Notificações WhatsApp (8KB)
+  - [public/js/whatsapp.js](mdc:public/js/whatsapp.js) - Notificações WhatsApp (8KB)
+  - [public/js/updater.js](mdc:public/js/updater.js) - Auto-update interface (3KB)
 
 - **HTML Pages**:
   - [public/index.html](mdc:public/index.html) - Dashboard principal
   - [public/login.html](mdc:public/login.html) - Sistema login
   - [public/setup.html](mdc:public/setup.html) - Setup inicial
 
-### Limitações e Diretrizes Atualizadas
+### Limitações e Diretrizes v1.0.0
 - **Modularidade**: Código separado por responsabilidade
 - **Performance**: Total < 100KB (CSS + JS)
 - **Compatibilidade**: IE11+, Chrome 60+, Firefox 55+
@@ -44,7 +45,7 @@ alwaysApply: true
 
 ## 🔌 Padrões de API REST Modularizada
 
-### Estrutura de Rotas Refatorada
+### Estrutura de Rotas v1.0.0
 ```javascript
 // Rotas organizadas por módulos em src/api/routes/
 ├── auth.js         # POST /api/login, /api/logout, /api/change-password
@@ -54,10 +55,12 @@ alwaysApply: true
 ├── history.js      # GET /api/history, GET /api/history/stats
 ├── notifications.js # GET/POST /api/notifications/*, /api/notifications/test-smtp
 ├── whatsapp.js     # GET/POST /api/whatsapp/*, /api/whatsapp/test-connection
-└── storage.js      # POST /api/test-ftp, /api/cleanup-local, /api/cleanup-ftp
+├── storage.js      # POST /api/test-ftp, /api/cleanup-local, /api/cleanup-ftp
+├── updater.js      # GET /api/check-updates, POST /api/install-update
+└── routes.js       # Agregador principal
 ```
 
-### WebSocket Integration Implementado
+### WebSocket Integration
 ```javascript
 // src/server.js - WebSocket com autenticação
 const { Server } = require('socket.io');
@@ -78,7 +81,7 @@ logger.on('log', (logData) => {
 });
 ```
 
-### Middleware de Autenticação Implementado
+### Middleware de Autenticação
 ```javascript
 // src/api/middleware/auth.js
 const requireAuth = (req, res, next) => {
@@ -92,13 +95,13 @@ const requireAuth = (req, res, next) => {
 
 ### Padrões de Resposta API
 ```javascript
-// ✅ Sucesso (implementado)
+// ✅ Sucesso
 {
   "message": "Operação realizada com sucesso",
   "data": { /* dados opcionais */ }
 }
 
-// ✅ Erro estruturado (implementado)
+// ✅ Erro estruturado
 {
   "error": "Mensagem amigável",
   "details": "Detalhes técnicos",
@@ -108,7 +111,7 @@ const requireAuth = (req, res, next) => {
 
 ## 🎨 Sistema de Design Modular
 
-### Variáveis CSS Implementadas
+### Variáveis CSS v1.0.0
 ```css
 /* Definidas em public/css/base.css */
 :root {
@@ -116,6 +119,12 @@ const requireAuth = (req, res, next) => {
   --bg-primary: #ffffff;
   --text-primary: #0f172a;
   --border-primary: #e2e8f0;
+  
+  /* Status colors */
+  --color-success: #10b981;
+  --color-error: #ef4444;
+  --color-warning: #f59e0b;
+  --color-info: #3b82f6;
   
   /* Espaçamento */
   --space-sm: 0.5rem;
@@ -135,7 +144,7 @@ const requireAuth = (req, res, next) => {
 }
 ```
 
-### Componentes Reutilizáveis Implementados
+### Componentes Reutilizáveis v1.0.0
 
 #### 🔄 Sistema de Loading (public/js/ui.js)
 ```javascript
@@ -151,10 +160,12 @@ export function toggleButtonLoading(button, isLoading) {
 ```javascript
 export function showToast(message, type = 'success', duration = 4000) {
   // Toast com auto-close, hover pause, close button
+  // Suporte para success, error, warning, info
 }
 
 export function showDetailedErrorToast(mainError, details, suggestions) {
   // Toast detalhado para erros complexos
+  // Usado em notificações e diagnósticos
 }
 ```
 
@@ -164,6 +175,7 @@ export function setupThemeToggle() {
   // Toggle tema com persistência localStorage
   // Prevenção FOUC via script inline
   // Auto-reload de ícones Lucide
+  // Broadcast para componentes
 }
 ```
 
@@ -174,12 +186,14 @@ export function setupLogs() {
   // Controles de pause/play, clear, download
   // Filtros por nível de log
   // Auto-scroll inteligente
+  // Buffer circular de 1000 logs
 }
 
 export function connectWebSocket() {
   // Estabelece conexão Socket.IO
   // Gerencia reconexão automática
   // Aplica autenticação de sessão
+  // Rate limiting de mensagens
 }
 ```
 
@@ -190,12 +204,14 @@ export function setupNotifications() {
   // Teste de conexão com diagnóstico avançado
   // Gerenciamento de destinatários
   // Templates responsivos para e-mail
+  // Validação de configurações
 }
 
 export function testSMTPConnection() {
   // Testa conexão SMTP com feedback detalhado
   // Sugestões automáticas para problemas
-  // Validação de configurações
+  // Validação de porta/segurança
+  // Timeout configurável
 }
 ```
 
@@ -206,26 +222,39 @@ export function setupWhatsApp() {
   // Teste de conexão com diagnóstico detalhado
   // Gerenciamento de números de telefone
   // Templates de mensagem personalizados
+  // Validação de formato internacional
 }
 
 export function testWuzAPIConnection() {
   // Testa conexão WuzAPI com feedback detalhado
   // Sugestões automáticas para problemas de configuração
   // Validação de URL da API e token
+  // Verificação de quota/limites
 }
 
 export function sendTestMessage() {
   // Envio de mensagem de teste para números configurados
   // Validação de formato de números
   // Feedback de entrega de mensagens
+  // Retry automático em falhas
 }
 ```
 
-## 📱 Responsividade Implementada
+#### 🔄 Sistema de Auto-Update (public/js/updater.js)
+```javascript
+export function setupUpdater() {
+  // Verificação periódica de atualizações
+  // Modal de atualização com progresso
+  // Download e instalação transparente
+  // Indicador de versão na interface
+}
+```
+
+## 📱 Responsividade v1.0.0
 
 ### Breakpoints CSS (public/css/responsive.css)
 ```css
-/* Mobile first approach implementado */
+/* Mobile first approach */
 @media (max-width: 1024px) { /* Tablets */ }
 @media (max-width: 768px)  { /* Mobile large */ }
 @media (max-width: 480px)  { /* Mobile small */ }
@@ -233,13 +262,14 @@ export function sendTestMessage() {
 ```
 
 ### Componentes Responsivos
-- **Sidebar**: Colapsa para overlay mobile
-- **Cards**: Grid responsivo com breakpoints
-- **Tabelas**: Scroll horizontal em mobile
+- **Sidebar**: Colapsa para overlay mobile com backdrop
+- **Cards**: Grid responsivo com breakpoints inteligentes
+- **Tabelas**: Scroll horizontal em mobile com indicador
 - **Formulários**: Stacking automático em mobile
 - **Modals**: Altura adaptável por viewport
+- **Toasts**: Posicionamento adaptativo
 
-## 🔒 Segurança Frontend Implementada
+## 🔒 Segurança Frontend v1.0.0
 
 ### Validação e Sanitização
 ```javascript
@@ -256,7 +286,13 @@ export async function apiFetch(url, options = {}) {
       setTimeout(() => window.location.href = '/login.html', 1500);
       throw new Error('Unauthorized');
     }
-    // ... tratamento adicional
+    
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Erro desconhecido');
+    }
+    
+    return response.json();
   } catch (error) {
     console.error('API Error:', error);
     throw error;
@@ -270,6 +306,7 @@ export async function apiFetch(url, options = {}) {
 // Validação de origem para prevenir CSRF
 // Rate limiting para prevenir spam de logs
 // Desconexão automática em caso de sessão inválida
+// Sanitização de mensagens recebidas
 ```
 
 ### Prevenção FOUC (Flash of Unstyled Content)
@@ -285,39 +322,76 @@ export async function apiFetch(url, options = {}) {
 </script>
 ```
 
-## 🚀 Performance Frontend Otimizada
+## 🚀 Performance Frontend v1.0.0
 
-### Métricas Atuais Implementadas
+### Métricas Atuais
 - **CSS Modular**: 25KB total (5 arquivos especializados)
 - **JavaScript Modular**: 74KB total (11 módulos específicos)
 - **Loading Progressivo**: Módulos carregados sob demanda
 - **Cache Control**: Headers apropriados implementados
 - **WebSocket**: Comunicação eficiente em tempo real
-- **Notificações**: Templates SMTP + WhatsApp com compatibilidade multi-canal
+- **Notificações**: Templates SMTP + WhatsApp otimizados
+- **First Paint**: < 1 segundo
+- **Interactive**: < 2 segundos
 
-### Otimizações de UX Implementadas
+### Otimizações de UX
 - **Loading States**: Em todos os botões e operações assíncronas
 - **Error Handling**: Toasts informativos com sugestões
 - **Tema Persistence**: LocalStorage com aplicação imediata
 - **Mobile First**: Design responsivo completo
 - **Real-time Feedback**: Logs instantâneos via WebSocket
+- **Progressive Enhancement**: Funciona sem JavaScript (básico)
 
 ## 📋 Padrões para Desenvolvimento Modular
 
 ### Estrutura de Novos Módulos JS
 ```javascript
 // Template para novos módulos
-// Exportar funções específicas
+// public/js/novo-modulo.js
+
+// Importar dependências necessárias
+import { showToast } from './ui.js';
+import { apiFetch } from './api.js';
+
+// Estado do módulo (privado)
+let moduleState = {
+  initialized: false
+};
+
+// Funções públicas
 export function setupNewFeature() {
+  if (moduleState.initialized) return;
+  
   // Inicialização
+  bindEvents();
+  loadInitialData();
+  
+  moduleState.initialized = true;
 }
 
-export function handleNewAction() {
-  // Lógica de ação
+export async function handleNewAction(data) {
+  try {
+    const result = await apiFetch('/api/new-endpoint', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+    
+    showToast('Ação realizada com sucesso', 'success');
+    return result;
+  } catch (error) {
+    showToast(error.message, 'error');
+    throw error;
+  }
 }
 
-// Importar no entry point (script.js)
-import { setupNewFeature } from './js/new-feature.js';
+// Funções privadas
+function bindEvents() {
+  // Event listeners
+}
+
+function loadInitialData() {
+  // Carregamento inicial
+}
 ```
 
 ### WebSocket Module Pattern
@@ -327,14 +401,21 @@ export function setupWebSocketFeature() {
   const socket = io();
   
   socket.on('connect', () => {
-    // Lógica de conexão
+    console.log('Feature WebSocket conectado');
+  });
+  
+  socket.on('feature:update', (data) => {
+    handleFeatureUpdate(data);
   });
   
   socket.on('disconnect', () => {
-    // Lógica de desconexão
+    console.log('Feature WebSocket desconectado');
   });
   
-  return socket;
+  return {
+    send: (event, data) => socket.emit(event, data),
+    disconnect: () => socket.disconnect()
+  };
 }
 ```
 
@@ -346,33 +427,75 @@ export function setupWebSocketFeature() {
 /* responsive.css para media queries */
 
 .new-component {
-  /* Usar variáveis CSS */
+  /* Usar variáveis CSS sempre */
   background-color: var(--bg-primary);
   color: var(--text-primary);
   border: 1px solid var(--border-primary);
   border-radius: var(--radius-md);
   padding: var(--space-md);
+  transition: all 0.2s ease;
+}
+
+/* Estados */
+.new-component:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.new-component.active {
+  border-color: var(--color-primary);
+}
+
+/* Tema escuro */
+[data-theme="dark"] .new-component {
+  /* Ajustes específicos se necessário */
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+  .new-component {
+    padding: var(--space-sm);
+  }
 }
 ```
 
 ## 🔄 APIs e Integração Backend
 
-### Padrão de Rotas Implementado
+### Padrão de Rotas v1.0.0
 ```javascript
 // src/api/routes/[module].js
 const express = require('express');
 const router = express.Router();
 const { requireAuth } = require('../middleware/auth');
+const logger = require('../../utils/logger');
 
 router.get('/endpoint', requireAuth, async (req, res) => {
   try {
+    // Validação de entrada
+    const { param } = req.query;
+    if (!param) {
+      return res.status(400).json({ 
+        error: 'Parâmetro obrigatório ausente',
+        details: 'O parâmetro "param" é obrigatório'
+      });
+    }
+    
     // Lógica da rota
-    res.json({ message: 'Sucesso', data: result });
+    const result = await serviceMethod(param);
+    
+    // Log de sucesso
+    logger.info('Operação realizada', { param, userId: req.session.user.id });
+    
+    // Resposta padronizada
+    res.json({ 
+      message: 'Sucesso', 
+      data: result 
+    });
   } catch (error) {
     logger.error('Erro na rota', error);
     res.status(500).json({ 
       error: 'Erro interno',
-      details: error.message 
+      details: error.message,
+      suggestions: ['Verifique os logs', 'Tente novamente']
     });
   }
 });
@@ -416,14 +539,16 @@ io.use((socket, next) => {
 - [ ] **Loading States**: Implementar para operações assíncronas
 - [ ] **Error Handling**: Toast notifications apropriadas
 - [ ] **WebSocket**: Considerar comunicação em tempo real se aplicável
+- [ ] **Documentação**: JSDoc para funções públicas
 
 ### ✅ Performance e Compatibilidade
-- [ ] **Tamanho**: Verificar impacto no bundle total (< 75KB)
+- [ ] **Tamanho**: Verificar impacto no bundle total (< 100KB)
 - [ ] **Browser Testing**: IE11+, Chrome 60+, Firefox 55+
 - [ ] **Mobile**: Testar touch, gestos, viewport
 - [ ] **Acessibilidade**: ARIA labels, contraste, navegação teclado
 - [ ] **WebSocket**: Testar reconexão e fallbacks
 - [ ] **Multi-canal**: Validar notificações SMTP e WhatsApp funcionando independentemente
+- [ ] **Performance**: Medir impacto no First Paint e TTI
 
 ### ✅ Integração
 - [ ] **API**: Seguir padrões de resposta
@@ -431,4 +556,27 @@ io.use((socket, next) => {
 - [ ] **Logs**: Implementar logging estruturado
 - [ ] **Build**: Verificar compatibilidade com pkg node12-win-x64
 - [ ] **Real-time**: Implementar WebSocket se necessário
+
+## 🎯 Melhores Práticas v1.0.0
+
+### JavaScript
+- Use async/await ao invés de callbacks
+- Sempre tratar erros com try/catch
+- Validar entrada do usuário
+- Usar const/let, nunca var
+- Documentar funções públicas
+
+### CSS
+- Mobile-first approach
+- Usar variáveis CSS sempre
+- Evitar !important
+- Manter especificidade baixa
+- Comentar hacks/workarounds
+
+### UX
+- Feedback imediato para ações
+- Loading states claros
+- Mensagens de erro úteis
+- Confirmação para ações destrutivas
+- Preservar estado do usuário
 

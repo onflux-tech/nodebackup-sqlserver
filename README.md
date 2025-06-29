@@ -1,13 +1,9 @@
-<div align="center">
-<h1>Node-Backup: SQL Server</h1>
-</div>
+# NodeBackup SQL Server
 
-<div align="center">
-
-![🚀 Release](https://github.com/onflux-tech/nodebackup-sqlserver/actions/workflows/release.yml/badge.svg)
-[![GitHub release](https://img.shields.io/github/v/release/onflux-tech/nodebackup-sqlserver?style=flat-square&logo=github&label=Release)](https://github.com/onflux-tech/nodebackup-sqlserver/releases/latest)
-
-</div>
+[![Version](https://img.shields.io/github/v/release/onflux-tech/nodebackup-sqlserver?style=flat-square&logo=github&label=Release)](https://github.com/onflux-tech/nodebackup-sqlserver/releases/latest)
+![Node](https://img.shields.io/badge/node-%3E%3D12.0.0-green.svg)
+![Platform](https://img.shields.io/badge/platform-Windows-blue.svg)
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
 <div align="center">
 
@@ -15,7 +11,25 @@
 
 </div>
 
-Uma solução segura e leve para automatizar backups de bancos de dados SQL Server, com compressão, envio para FTP e com opção de execução como serviço do Windows.
+O NodeBackup é solução segura e leve para automatizar backups de bancos de dados, flexível e segura.
+
+## 🚀 Características Principais
+
+- **Backup Automatizado**: Agendamento flexível para múltiplos bancos SQL Server
+- **Notificações Multi-Canal**: E-mail (SMTP) e WhatsApp (WuzAPI) com templates personalizados
+- **Interface Web Moderna**: Dashboard responsivo com tema claro/escuro
+- **Logs em Tempo Real**: Monitoramento ao vivo via WebSocket
+- **Auto-Update**: Atualizações automáticas transparentes
+- **Compressão Eficiente**: 7-Zip com alta taxa de compressão
+- **Upload FTP**: Envio automático para servidores remotos
+- **Política de Retenção**: Limpeza automática configurável
+- **Histórico Completo**: Estatísticas detalhadas com SQLite
+- **Serviço Windows**: Execução em background confiável
+
+## 📋 Requisitos
+
+- Windows 7 SP1 ou superior (x64)
+- SQL Server 2008 R2 ou superior
 
 ## 🌟 Principais Funcionalidades
 

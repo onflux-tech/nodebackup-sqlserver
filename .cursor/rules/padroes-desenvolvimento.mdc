@@ -19,7 +19,7 @@ alwaysApply: true
 - winston 3.3.3 (evitar versões 3.8+)
 - pkg 5.8.1 (suporte a Node 12)
 - **socket.io 4.x** (compatível Node 12 - logs em tempo real)
-- **connect-sqlite3 0.9.x** (armazenamento sessões SQLite)
+- **express-session 1.18.0** (gerenciamento de sessões)
 - **nodemailer 6.9.x** (compatível Node 12 - notificações SMTP)
 
 ## 📁 Padrões de Estrutura Modular
@@ -41,7 +41,9 @@ src/
 │       ├── history.js  # Rotas histórico
 │       ├── notifications.js # Rotas notificações SMTP
 │       ├── whatsapp.js # Rotas notificações WhatsApp
-│       └── storage.js  # Rotas armazenamento
+│       ├── storage.js  # Rotas armazenamento
+│       └── updater.js  # Rotas auto-update
+│   └── routes.js       # Agregador de rotas + health check
 ├── services/
 │   ├── database.js     # Operações SQL Server
 │   ├── ftp.js         # Operações FTP
@@ -49,11 +51,13 @@ src/
 │   ├── notification.js # Serviço notificações SMTP
 │   ├── whatsapp.js    # Serviço notificações WhatsApp WuzAPI
 │   ├── scheduler.js   # Agendamento
+│   ├── updater.js     # Auto-update GitHub
 │   └── windowsService.js # Serviço Windows
 └── utils/
     ├── logger.js       # Sistema logging + WebSocket streaming
     ├── encryption.js   # Criptografia
-    └── errorHandler.js # Tratamento erros
+    ├── errorHandler.js # Tratamento erros
+    └── sessionStore.js # Armazenamento customizado de sessões
 ```
 
 ### Organização Frontend Modular (public/)
@@ -76,7 +80,8 @@ public/
 │   ├── whatsapp.js    # Configuração WhatsApp WuzAPI
 │   ├── schedule.js    # Agendamento backups
 │   ├── storage.js     # Configuração FTP e limpeza
-│   └── ui.js          # Componentes UI (tema, tabs, toasts)
+│   ├── ui.js          # Componentes UI (tema, tabs, toasts)
+│   └── updater.js     # Interface auto-update
 ├── index.html         # Dashboard principal
 ├── login.html         # Página login
 ├── setup.html         # Configuração inicial
@@ -98,7 +103,8 @@ import { setupThemeToggle, setupTabs } from './js/ui.js';
 import { setupConfigForm, loadConfig } from './js/config.js';
 import { setupDatabase } from './js/database.js';
 import { setupLogs } from './js/logs.js'; // Logs em tempo real
-import { setupNotifications } from './js/notifications.js'; // NOVO: Notificações SMTP
+import { setupNotifications } from './js/notifications.js'; // Notificações SMTP
+import { setupWhatsApp } from './js/whatsapp.js'; // Notificações WhatsApp
 ```
 
 ### WebSocket Integration Pattern
@@ -161,7 +167,7 @@ module.exports = router;
 - Todas as configurações via [src/config.js](mdc:src/config.js)
 - Arquivo config.enc criptografado obrigatório
 - Middleware de autenticação em [src/api/middleware/auth.js](mdc:src/api/middleware/auth.js)
-- **Sessões persistentes com SQLite** (connect-sqlite3)
+- **Sessões persistentes com CustomSessionStore** (JSON)
 - Nunca hardcode credenciais
 
 ## 📝 Logging Padrão
@@ -221,6 +227,7 @@ logger.on('log', (logData) => {
 - Manter compatibilidade com sqlcmd legado
 - Validar funcionamento de todos os módulos JS/CSS
 - **Testar autenticação WebSocket**
+- **Verificar CustomSessionStore**
 
 ## 🎨 Padrões de Desenvolvimento Frontend
 
@@ -230,11 +237,11 @@ logger.on('log', (logData) => {
 - **Modularidade**: Um arquivo por responsabilidade
 
 ### Performance e Tamanho
-- **CSS Total**: Manter < 25KB (5 arquivos CSS)
-- **JavaScript Total**: Manter < 50KB (10 módulos JS)
+- **CSS Total**: Manter < 30KB (5 arquivos CSS)
+- **JavaScript Total**: Manter < 80KB (11 módulos JS)
 - **Compatibilidade**: IE11+, Chrome 60+, Firefox 55+
 - **WebSocket**: Comunicação eficiente em tempo real
-- **Notificações**: Templates SMTP com compatibilidade de e-mail
+- **Notificações**: Templates SMTP e WhatsApp otimizados
 
 ### Sistema de Temas
 - **Variáveis CSS**: Definir em [public/css/base.css](mdc:public/css/base.css)
@@ -250,6 +257,7 @@ logger.on('log', (logData) => {
 - [ ] Verificar funcionamento em tema escuro
 - [ ] Implementar loading states apropriados
 - [ ] **Considerar integração WebSocket se aplicável**
+- [ ] **Validar compatibilidade com notificações existentes**
 
 ### ✅ Backend  
 - [ ] Criar rota em módulo apropriado
@@ -258,6 +266,7 @@ logger.on('log', (logData) => {
 - [ ] Testar tratamento de erros
 - [ ] Validar entrada de dados
 - [ ] **Verificar compatibilidade com WebSocket**
+- [ ] **Testar integração com serviços existentes**
 
 ### ✅ Build e Deploy
 - [ ] Verificar compatibilidade Node 12
@@ -265,4 +274,3 @@ logger.on('log', (logData) => {
 - [ ] Validar tamanho do executável
 - [ ] Testar instalação como serviço
 - [ ] **Validar funcionamento WebSocket em produção**
-

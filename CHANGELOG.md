@@ -5,7 +5,33 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
-## [0.5.0] - 20-01-2025
+## [1.0.0] - 2025-06-29
+
+### 🎉 Release Estável
+
+#### ✨ Melhorias Gerais
+- **Performance**: Otimização do consumo de memória e startup time
+- **Estabilidade**: Correções de edge cases e melhorias de robustez
+- **Compatibilidade**: Validação completa em Windows 7, 10 e 11
+- **Documentação**: Guias completos de uso e troubleshooting
+- **Segurança**: Revisão completa de segurança e validações
+
+#### 📊 Funcionalidades Consolidadas
+- Sistema completo de backup SQL Server
+- Notificações por E-mail (SMTP) e WhatsApp (WuzAPI)
+- Logs em tempo real via WebSocket
+- Auto-update transparente
+- Interface web moderna e responsiva
+- Política de retenção configurável
+- Histórico completo com estatísticas
+- Instalação como serviço Windows
+
+#### 🚀 Pronto para Produção
+- Documentação completa para administradores
+- Suporte a SQL Server 2008 R2 até 2022
+- Executável único autocontido (~85MB)
+
+## [0.5.0] - 2025-06-27
 
 ### ✨ Adicionado
 
@@ -37,7 +63,7 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 - **Rotas API:** Nova rota `src/api/routes/whatsapp.js` seguindo padrão modular existente.
 - **Integração Scheduler:** Notificações WhatsApp integradas ao processo de backup com tratamento de erros independente.
 
-## [0.4.0] - 19-01-2025
+## [0.4.0] - 18-06-2025
 
 ### ✨ Adicionado
 
@@ -262,6 +288,7 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ---
 
+[1.0.0]: https://github.com/onflux-tech/nodebackup-sqlserver/compare/v0.5.0...v1.0.0
 [0.5.0]: https://github.com/onflux-tech/nodebackup-sqlserver/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/onflux-tech/nodebackup-sqlserver/compare/v0.3.1...v0.4.0
 [0.3.1]: https://github.com/onflux-tech/nodebackup-sqlserver/compare/v0.3.0...v0.3.1

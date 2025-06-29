@@ -225,9 +225,3 @@ Com retenção de 1 dia: remove arquivos anteriores a ontem
 - 🎯 **Não faz distinção** por cliente ou prefixo do arquivo
 - 🎯 **Baseada apenas na data** do arquivo e extensão .7z
 
-## 📈 Próximas Versões
-
-- **v0.2.0:** Painel de Histórico com interface gráfica para visualizar backups
-- **v0.3.0:** Logs em tempo real via WebSocket para acompanhar limpezas
-- **v0.4.0:** Notificações por e-mail de backups realizados e limpezas executadas
-- **v0.5.0:** Integração com Telegram/WhatsApp para alertas
