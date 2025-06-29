@@ -3,6 +3,17 @@ const http = require('http');
 const logger = require('../utils/logger');
 const { formatFileSize, formatDuration } = require('../utils/formatters');
 
+function formatTimestamp(isoString) {
+  const date = new Date(isoString);
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+
+  return `${day}/${month}/${year} às ${hours}:${minutes}`;
+}
+
 class WhatsAppService {
   constructor() {
     this.config = null;
@@ -130,14 +141,7 @@ class WhatsAppService {
         throw new Error('WhatsApp não configurado');
       }
 
-      const timestamp = new Date().toLocaleString('pt-BR', {
-        timeZone: 'America/Sao_Paulo',
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
+      const timestamp = formatTimestamp(new Date().toISOString());
 
       const message = `🔔 *Teste de Notificação WhatsApp*\n\n✅ *Cliente:* ${clientName}\n📅 *Data/Hora:* ${timestamp}\n🤖 *Sistema:* NodeBackup SQL Server\n\nSe você recebeu esta mensagem, as notificações WhatsApp estão funcionando corretamente!`;
 
@@ -155,19 +159,15 @@ class WhatsAppService {
         return;
       }
 
-      const timestamp = new Date(backupData.timestamp).toLocaleString('pt-BR', {
-        timeZone: 'America/Sao_Paulo',
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
+      const timestamp = formatTimestamp(backupData.timestamp);
 
       const databaseList = backupData.databases.slice(0, 3).join(', ') +
         (backupData.databases.length > 3 ? ` (+${backupData.databases.length - 3})` : '');
 
-      const message = `✅ *Backup Concluído com Sucesso*\n\n🏢 *Cliente:* ${clientName}\n📅 *Data/Hora:* ${timestamp}\n💾 *Bancos:* ${databaseList}\n📦 *Tamanho:* ${formatFileSize(backupData.totalSize)}\n⏱️ *Duração:* ${formatDuration(backupData.duration)}\n📁 *Arquivos:* ${backupData.files.length}\n\n🎯 Backup realizado automaticamente pelo NodeBackup SQL Server`;
+      const totalSizeBytes = backupData.totalSize * 1024 * 1024;
+      const durationMs = backupData.duration * 1000;
+
+      const message = `✅ *Backup Concluído com Sucesso*\n\n🏢 *Cliente:* ${clientName}\n📅 *Data/Hora:* ${timestamp}\n💾 *Bancos:* ${databaseList}\n📦 *Tamanho:* ${formatFileSize(totalSizeBytes)}\n⏱️ *Duração:* ${formatDuration(durationMs)}\n📁 *Arquivos:* ${backupData.files.length}\n\n🎯 Backup realizado automaticamente pelo NodeBackup SQL Server`;
 
       const promises = recipients.map(async (phone) => {
         try {
@@ -191,14 +191,7 @@ class WhatsAppService {
         return;
       }
 
-      const timestamp = new Date(errorData.timestamp).toLocaleString('pt-BR', {
-        timeZone: 'America/Sao_Paulo',
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
+      const timestamp = formatTimestamp(errorData.timestamp);
 
       const databaseList = errorData.databases.slice(0, 3).join(', ') +
         (errorData.databases.length > 3 ? ` (+${errorData.databases.length - 3})` : '');
