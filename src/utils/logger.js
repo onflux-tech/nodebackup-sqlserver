@@ -21,7 +21,7 @@ class LogBuffer {
 
   addLog(logEntry) {
     if (!logEntry.id) {
-      logEntry.id = Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
+      logEntry.id = `${Date.now()}_${Math.random().toString(36).substring(2, 11)}_${this.tail}`;
     }
 
     logEntry._index = this.tail;
@@ -97,10 +97,20 @@ class LogBuffer {
   }
 
   cleanupStaleSubscribers() {
-    if (this.subscribers.size > 100) {
-      console.warn(`⚠️ Muitos subscribers ativos: ${this.subscribers.size}`);
-    }
+    const maxSubscribers = 100;
 
+    if (this.subscribers.size > maxSubscribers) {
+      console.warn(`⚠️ Muitos subscribers ativos: ${this.subscribers.size}. Executando limpeza...`);
+
+      const subscribersArray = Array.from(this.subscribers);
+      const toRemove = subscribersArray.slice(0, subscribersArray.length - maxSubscribers);
+
+      toRemove.forEach(callback => {
+        this.subscribers.delete(callback);
+      });
+
+      console.info(`✅ Removidos ${toRemove.length} subscribers antigos. Total atual: ${this.subscribers.size}`);
+    }
   }
 
   getStats() {
@@ -136,7 +146,7 @@ class BroadcastTransport extends winston.Transport {
       timestamp: new Date().toISOString(),
       level: info.level,
       message: info.message,
-      id: Date.now() + Math.random()
+      id: `${Date.now()}_${Math.random().toString(36).substring(2, 11)}`
     };
 
     logBuffer.addLog(logEntry);
