@@ -19,10 +19,23 @@ function scheduleBackups() {
   }
 
   initialConfig.backupSchedule.forEach((time, index) => {
+    if (!time || typeof time !== 'string' || !time.includes(':')) {
+      logger.error(`Horário inválido no índice ${index}: ${time}`);
+      return;
+    }
+
     const [hour, minute] = time.split(':');
+    const hourNum = parseInt(hour, 10);
+    const minuteNum = parseInt(minute, 10);
+
+    if (isNaN(hourNum) || isNaN(minuteNum) || hourNum < 0 || hourNum > 23 || minuteNum < 0 || minuteNum > 59) {
+      logger.error(`Horário inválido: ${time}. Deve estar no formato HH:MM com valores válidos.`);
+      return;
+    }
+
     const rule = new schedule.RecurrenceRule();
-    rule.hour = parseInt(hour, 10);
-    rule.minute = parseInt(minute, 10);
+    rule.hour = hourNum;
+    rule.minute = minuteNum;
 
     const backupNumber = index + 1;
 
@@ -226,8 +239,6 @@ function scheduleBackups() {
             logger.error('❌ Erro ao enviar notificação WhatsApp de falha', notificationError);
           }
         }
-
-        throw error;
       }
     });
 
