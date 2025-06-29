@@ -48,14 +48,6 @@ function scheduleBackups() {
 
       logger.info(`Disparando backup consolidado #${backupNumber} para as ${time}. Bancos: ${currentConfig.database.databases.join(', ')}`);
 
-      if (currentConfig.notifications && currentConfig.notifications.smtp && currentConfig.notifications.smtp.enabled) {
-        try {
-          await notificationService.configure(currentConfig.notifications.smtp);
-        } catch (error) {
-          logger.warn('⚠️ Erro ao configurar notificações SMTP', error);
-        }
-      }
-
       if (isWhatsAppEnabled(currentConfig)) {
         try {
           await whatsappService.configure(currentConfig.notifications.whatsapp);
@@ -76,8 +68,6 @@ function scheduleBackups() {
 
         if (backupResult && backupResult.status === 'success') {
           if (currentConfig.notifications &&
-            currentConfig.notifications.smtp &&
-            currentConfig.notifications.smtp.enabled &&
             currentConfig.notifications.schedule &&
             currentConfig.notifications.schedule.sendOnSuccess &&
             currentConfig.notifications.schedule.recipients &&
@@ -94,7 +84,8 @@ function scheduleBackups() {
             await notificationService.sendSuccessNotification(
               backupData,
               currentConfig.notifications.schedule.recipients,
-              currentConfig.clientName || 'Cliente'
+              currentConfig.clientName || 'Cliente',
+              currentConfig.notifications.smtp
             );
           }
 
@@ -127,8 +118,6 @@ function scheduleBackups() {
           }
 
           if (currentConfig.notifications &&
-            currentConfig.notifications.smtp &&
-            currentConfig.notifications.smtp.enabled &&
             currentConfig.notifications.schedule &&
             currentConfig.notifications.schedule.sendOnFailure &&
             currentConfig.notifications.schedule.recipients &&
@@ -149,7 +138,8 @@ function scheduleBackups() {
             await notificationService.sendFailureNotification(
               errorData,
               currentConfig.notifications.schedule.recipients,
-              currentConfig.clientName || 'Cliente'
+              currentConfig.clientName || 'Cliente',
+              currentConfig.notifications.smtp
             );
           }
 
@@ -182,8 +172,6 @@ function scheduleBackups() {
         logger.error(`❌ Falha catastrófica no backup agendado #${backupNumber}`, error);
 
         if (currentConfig.notifications &&
-          currentConfig.notifications.smtp &&
-          currentConfig.notifications.smtp.enabled &&
           currentConfig.notifications.schedule &&
           currentConfig.notifications.schedule.sendOnFailure &&
           currentConfig.notifications.schedule.recipients &&
@@ -205,7 +193,8 @@ function scheduleBackups() {
             await notificationService.sendFailureNotification(
               errorData,
               currentConfig.notifications.schedule.recipients,
-              currentConfig.clientName || 'Cliente'
+              currentConfig.clientName || 'Cliente',
+              currentConfig.notifications.smtp
             );
           } catch (notificationError) {
             logger.error('❌ Erro ao enviar notificação de falha', notificationError);

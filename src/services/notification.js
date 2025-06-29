@@ -99,12 +99,14 @@ class NotificationService {
     }
   }
 
-  async sendSuccessNotification(backupData, recipients, clientName) {
-    if (!this.transporter || !recipients || recipients.length === 0) {
+  async sendSuccessNotification(backupData, recipients, clientName, smtpConfig) {
+    if (!smtpConfig || !recipients || recipients.length === 0) {
+      logger.warn('⚠️  Notificação de sucesso pulada: configuração SMTP ou destinatários ausentes.');
       return;
     }
 
     try {
+      await this.configure(smtpConfig);
       const subject = `Backup realizado com sucesso - ${clientName}`;
       const htmlContent = this.generateSuccessTemplate(backupData, clientName);
 
@@ -115,12 +117,14 @@ class NotificationService {
     }
   }
 
-  async sendFailureNotification(errorData, recipients, clientName) {
-    if (!this.transporter || !recipients || recipients.length === 0) {
+  async sendFailureNotification(errorData, recipients, clientName, smtpConfig) {
+    if (!smtpConfig || !recipients || recipients.length === 0) {
+      logger.warn('⚠️  Notificação de falha pulada: configuração SMTP ou destinatários ausentes.');
       return;
     }
 
     try {
+      await this.configure(smtpConfig);
       const subject = `Falha no backup - ${clientName}`;
       const htmlContent = this.generateFailureTemplate(errorData, clientName);
 
