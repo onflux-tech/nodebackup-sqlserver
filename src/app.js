@@ -143,4 +143,7 @@ process.on('unhandledRejection', (reason, promise) => {
   gracefulShutdown('UNHANDLED_REJECTION', 1);
 });
 
-main(); 
+main().catch(error => {
+  logger.error('❌ Erro crítico na inicialização:', error);
+  gracefulShutdown('MAIN_ERROR', 1);
+}); 

@@ -173,7 +173,8 @@ async function saveConfig(e) {
 
     showToast(result.message, 'success');
   } catch (error) {
-    showToast(error.message || `Erro ao salvar: ${error.message}`, 'error');
+    const errorMessage = error.error || error.message || 'Erro ao salvar configurações';
+    showToast(errorMessage, 'error');
   } finally {
     toggleButtonLoading(elements.saveButton, false);
   }
@@ -185,13 +186,15 @@ function toggleStorageForm(checkbox, form) {
 }
 
 function toggleRetentionFields() {
+  if (!elements.retentionEnabled || !elements.modeClassic) return;
+  
   const isEnabled = elements.retentionEnabled.checked;
   const isClassic = elements.modeClassic.checked;
   const cleanupButtons = document.querySelector('.cleanup-buttons');
 
-  elements.localRetentionDays.disabled = !isEnabled || isClassic;
-  elements.ftpRetentionDays.disabled = !isEnabled || isClassic;
-  elements.autoCleanup.disabled = !isEnabled || isClassic;
+  if (elements.localRetentionDays) elements.localRetentionDays.disabled = !isEnabled || isClassic;
+  if (elements.ftpRetentionDays) elements.ftpRetentionDays.disabled = !isEnabled || isClassic;
+  if (elements.autoCleanup) elements.autoCleanup.disabled = !isEnabled || isClassic;
 
   if (cleanupButtons) {
     const manualCleanupEnabled = isEnabled && !isClassic;

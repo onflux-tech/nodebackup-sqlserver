@@ -10,10 +10,12 @@ class CustomSessionStore extends Store {
     this.options = {
       ttl: options.ttl || 60 * 60 * 24 * 7,
       path: options.path || path.join(process.cwd(), 'sessions.json'),
+      maxFileSize: options.maxFileSize || 10 * 1024 * 1024, // 10MB por padrão
       ...options
     };
 
     this.sessions = Object.create(null);
+    this.saveQueue = null;
     this.load();
 
     setInterval(() => {
@@ -27,13 +29,13 @@ class CustomSessionStore extends Store {
 
   set(sessionId, session, callback) {
     this.sessions[sessionId] = JSON.stringify(session);
-    this.save();
+    this.scheduleSave();
     defer(this, callback, 'set', sessionId, session);
   }
 
   destroy(sessionId, callback) {
     delete this.sessions[sessionId];
-    this.save();
+    this.scheduleSave();
     defer(this, callback, 'destroy', sessionId);
   }
 
@@ -41,7 +43,7 @@ class CustomSessionStore extends Store {
     const currentSession = this.sessions[sessionId];
     if (currentSession) {
       this.sessions[sessionId] = JSON.stringify(session);
-      this.save();
+      this.scheduleSave();
     }
     defer(this, callback, 'touch', sessionId, session);
   }
@@ -102,6 +104,15 @@ class CustomSessionStore extends Store {
   load() {
     try {
       if (fs.existsSync(this.options.path)) {
+        const stats = fs.statSync(this.options.path);
+        
+        // Verificar tamanho do arquivo
+        if (stats.size > this.options.maxFileSize) {
+          logger.warn(`Arquivo de sessões muito grande (${(stats.size / 1024 / 1024).toFixed(2)}MB). Iniciando novo arquivo.`);
+          this.sessions = Object.create(null);
+          return;
+        }
+        
         const data = fs.readFileSync(this.options.path, 'utf8');
         this.sessions = JSON.parse(data) || Object.create(null);
 
@@ -115,25 +126,50 @@ class CustomSessionStore extends Store {
     }
   }
 
-  save() {
-    try {
-      const tempPath = this.options.path + '.tmp';
-      fs.writeFileSync(tempPath, JSON.stringify(this.sessions, null, 2));
+  scheduleSave() {
+    if (this.saveQueue) {
+      clearTimeout(this.saveQueue);
+    }
+    
+    this.saveQueue = setTimeout(() => {
+      this.save();
+    }, 1000); // Aguarda 1 segundo antes de salvar para agrupar mudanças
+  }
 
-      if (fs.existsSync(this.options.path)) {
-        fs.unlinkSync(this.options.path);
+  save() {
+    const tempPath = this.options.path + '.tmp';
+    
+    try {
+      // Usar writeFile assíncrono em vez de writeFileSync
+      const data = JSON.stringify(this.sessions, null, 2);
+      
+      // Verificar tamanho antes de salvar
+      if (Buffer.byteLength(data, 'utf8') > this.options.maxFileSize) {
+        logger.warn('Dados de sessão excedem tamanho máximo. Executando limpeza forçada.');
+        this.cleanup();
+        return;
       }
-      fs.renameSync(tempPath, this.options.path);
+      
+      fs.writeFile(tempPath, data, (writeErr) => {
+        if (writeErr) {
+          logger.error('Erro ao escrever arquivo temporário de sessões:', writeErr);
+          return;
+        }
+        
+        // Renomear arquivo atomicamente
+        fs.rename(tempPath, this.options.path, (renameErr) => {
+          if (renameErr) {
+            logger.error('Erro ao renomear arquivo de sessões:', renameErr);
+            // Tentar limpar arquivo temporário
+            fs.unlink(tempPath, () => {});
+          }
+        });
+      });
     } catch (error) {
       logger.error('Erro ao salvar sessões:', error);
-
-      try {
-        const tempPath = this.options.path + '.tmp';
-        if (fs.existsSync(tempPath)) {
-          fs.unlinkSync(tempPath);
-        }
-      } catch (cleanupError) {
-      }
+      
+      // Tentar limpar arquivo temporário se existir
+      fs.unlink(tempPath, () => {});
     }
   }
 
@@ -151,7 +187,7 @@ class CustomSessionStore extends Store {
 
   _clear(callback) {
     this.sessions = Object.create(null);
-    this.save();
+    this.scheduleSave();
     callback && callback();
   }
 

@@ -10,41 +10,10 @@ let sqliteEnabled = false;
 let initSqlJs;
 
 async function loadSqlJs() {
-  try {
-    initSqlJs = require('sql.js');
-
-    const possiblePaths = [
-      path.join(process.cwd(), 'node_modules', 'sql.js', 'dist'),
-      path.join(__dirname, '..', '..', 'node_modules', 'sql.js', 'dist'),
-      path.join(process.cwd(), 'dist'),
-      path.join(process.cwd()),
-      path.resolve(__dirname, '..', '..', 'node_modules', 'sql.js', 'dist')
-    ];
-
-    let workingPath = null;
-
-    for (const testPath of possiblePaths) {
-      const sqlWasmPath = path.join(testPath, 'sql-wasm.wasm');
-      if (fs.existsSync(sqlWasmPath)) {
-        workingPath = testPath;
-        break;
-      }
-    }
-
-    const SQL = await initSqlJs({
-      locateFile: file => {
-        if (workingPath) {
-          return path.join(workingPath, file);
-        }
-        return file;
-      }
-    });
-
-    return SQL;
-  } catch (error) {
-    logger.warn('Falha ao carregar sql.js, usando fallback JSON:', error.message);
-    return null;
-  }
+  // Desabilitado devido a problemas de compatibilidade com WASM em diferentes versões de Node.js
+  // Usar sempre fallback JSON para maior estabilidade
+  logger.info('Usando armazenamento JSON para histórico (mais estável e compatível)');
+  return null;
 }
 
 async function initializeDatabase() {
@@ -82,10 +51,12 @@ async function initializeDatabase() {
       persist();
       sqliteEnabled = true;
     } else {
-      throw new Error('SQLite não disponível');
+      sqliteEnabled = false;
+      await migrateFromSqliteToJson();
+      logger.info('Serviço de histórico inicializado com fallback JSON (compatibilidade Node.js 12).');
     }
   } catch (err) {
-    logger.warn('Falha ao inicializar SQLite, usando fallback JSON:', err.message);
+    logger.info('Usando fallback JSON para histórico (compatível com Node.js 12)');
     sqliteEnabled = false;
 
     await migrateFromSqliteToJson();
