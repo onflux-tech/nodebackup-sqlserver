@@ -1,6 +1,6 @@
 {
   "name": "nodebackup",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "NodeBackup - Database Backup",
   "main": "src/app.js",
   "bin": "src/app.js",

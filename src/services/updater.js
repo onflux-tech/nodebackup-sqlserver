@@ -369,26 +369,21 @@ del /Q "${tempStatusFile}" > nul 2>&1
 
   async downloadFile(url, destination) {
     return new Promise((resolve, reject) => {
-      const file = fs.createWriteStream(destination);
-      let downloadedSize = 0;
-      let totalSize = 0;
-
-      const download = (downloadUrl) => {
+      const request = (downloadUrl) => {
         https.get(downloadUrl, (response) => {
-          if (response.statusCode === 302 || response.statusCode === 301) {
-            file.close();
-            download(response.headers.location);
+          if (response.statusCode >= 300 && response.statusCode < 400 && response.headers.location) {
+            request(response.headers.location);
             return;
           }
 
           if (response.statusCode !== 200) {
-            file.close();
-            fs.unlinkSync(destination);
             reject(new Error(`HTTP ${response.statusCode}: ${response.statusMessage}`));
             return;
           }
 
-          totalSize = parseInt(response.headers['content-length'], 10);
+          const file = fs.createWriteStream(destination);
+          let downloadedSize = 0;
+          const totalSize = parseInt(response.headers['content-length'], 10);
 
           response.on('data', (chunk) => {
             downloadedSize += chunk.length;
@@ -408,25 +403,18 @@ del /Q "${tempStatusFile}" > nul 2>&1
           response.pipe(file);
 
           file.on('finish', () => {
-            file.close(() => {
-              logger.info(`Download concluído: ${destination}`);
-              resolve();
-            });
+            file.close(resolve);
           });
+          
+          file.on('error', (err) => {
+            fs.unlink(destination, () => reject(err));
+          });
+
         }).on('error', (err) => {
-          file.close();
-          fs.unlinkSync(destination);
           reject(err);
         });
       };
-
-      download(url);
-
-      file.on('error', (err) => {
-        file.close();
-        fs.unlinkSync(destination);
-        reject(err);
-      });
+      request(url);
     });
   }
 
