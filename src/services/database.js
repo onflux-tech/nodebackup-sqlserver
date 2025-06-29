@@ -12,6 +12,11 @@ const { addHistoryRecord } = require('./history');
 const execAsync = promisify(exec);
 const sevenZipAsset = path.join(baseDir, '7za.exe');
 
+if (!fs.existsSync(sevenZipAsset)) {
+  logger.error(`❌ 7za.exe não encontrado em: ${sevenZipAsset}`);
+  logger.error('A aplicação não poderá realizar backups sem o 7-Zip.');
+}
+
 function performSingleBackup(dbName, backupNumber, backupDir, dbConfig) {
   const { server, user, password } = dbConfig;
   const backupFileName = `${dbName}-${backupNumber}.bak`;
@@ -50,6 +55,10 @@ async function performConsolidatedBackup(dbList, clientName, backupNumber, dbCon
   let finalZipPath;
 
   try {
+    if (!fs.existsSync(sevenZipAsset)) {
+      throw new Error(`7za.exe não encontrado em: ${sevenZipAsset}. A aplicação não pode realizar backups sem o 7-Zip.`);
+    }
+
     const useTimestamp = retentionConfig && retentionConfig.enabled && retentionConfig.mode === 'retention';
     let finalZipName;
 
@@ -67,7 +76,12 @@ async function performConsolidatedBackup(dbList, clientName, backupNumber, dbCon
     finalZipPath = path.join(backupsDir, finalZipName);
     const backupFilePaths = [];
 
-    fs.mkdirSync(backupsDir, { recursive: true });
+    try {
+      fs.mkdirSync(backupsDir, { recursive: true });
+    } catch (dirError) {
+      logger.error('Erro ao criar diretório de backups:', dirError);
+      throw new Error(`Não foi possível criar o diretório de backups: ${dirError.message}`);
+    }
 
     logger.info(`Iniciando rotina de limpeza para o backup...`);
     const filesInBackupDir = fs.readdirSync(backupsDir);
@@ -284,11 +298,13 @@ async function listDatabases(dbConfig) {
     encrypt: sqlConfig.options.encrypt
   });
 
+  let pool = null;
+
   try {
-    await mssql.connect(sqlConfig);
+    pool = await mssql.connect(sqlConfig);
     logger.info('Conexão estabelecida com sucesso ao SQL Server');
 
-    const result = await mssql.query`SELECT name FROM sys.databases WHERE name NOT IN ('master', 'tempdb', 'model', 'msdb') ORDER BY name`;
+    const result = await pool.query`SELECT name FROM sys.databases WHERE name NOT IN ('master', 'tempdb', 'model', 'msdb') ORDER BY name`;
     logger.info(`Bancos de dados encontrados: ${result.recordset.length}`);
 
     return result.recordset.map(r => r.name);
@@ -304,8 +320,10 @@ async function listDatabases(dbConfig) {
     throw err;
   } finally {
     try {
-      await mssql.close();
-      logger.debug('Conexão SQL Server fechada');
+      if (pool) {
+        await pool.close();
+        logger.debug('Conexão SQL Server fechada');
+      }
     } catch (closeErr) {
       logger.warn('Erro ao fechar conexão:', closeErr.message);
     }
