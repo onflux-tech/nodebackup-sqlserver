@@ -81,8 +81,10 @@ function startServer() {
     try {
       setTimeout(() => {
         try {
-          const recentLogs = logger.logBuffer.getRecentLogs(50);
-          socket.emit('logs:history', recentLogs);
+          if (logger.logBuffer && typeof logger.logBuffer.getRecentLogs === 'function') {
+            const recentLogs = logger.logBuffer.getRecentLogs(50);
+            socket.emit('logs:history', recentLogs);
+          }
         } catch (error) {
           logger.error('Erro ao enviar logs históricos:', error);
         }
@@ -113,6 +115,11 @@ function startServer() {
 
       socket.on('logs:getHistory', (options = {}) => {
         try {
+          if (!logger.logBuffer || typeof logger.logBuffer.getRecentLogs !== 'function') {
+            socket.emit('error', 'Sistema de logs não disponível');
+            return;
+          }
+
           const count = Math.min(options.count || 100, 1000);
           const levels = options.levels || activeFilters.levels;
 
@@ -133,9 +140,11 @@ function startServer() {
             return;
           }
 
-          logger.logBuffer.clear();
-          io.emit('logs:cleared');
-          logger.info(`🗑️  Logs limpos pelo usuário ${socket.userId}`);
+          if (logger.logBuffer && typeof logger.logBuffer.clear === 'function') {
+            logger.logBuffer.clear();
+            io.emit('logs:cleared');
+            logger.info(`🗑️  Logs limpos pelo usuário ${socket.userId}`);
+          }
         } catch (error) {
           logger.error('Erro ao limpar logs:', error);
         }
@@ -223,9 +232,15 @@ function startServer() {
 }
 
 function closeServer() {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     if (httpServer) {
+      const timeout = setTimeout(() => {
+        logger.error('❌ Timeout ao fechar servidor HTTP');
+        resolve();
+      }, 5000);
+
       httpServer.close((err) => {
+        clearTimeout(timeout);
         if (err) {
           logger.error('❌ Erro ao fechar servidor HTTP:', err);
         } else {
