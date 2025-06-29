@@ -174,7 +174,7 @@ export function showUpdateModal(updateInfoStr) {
         <button id="cancel-update-btn" class="btn btn-secondary" onclick="window.updateManager.closeUpdateModal()">
           Cancelar
         </button>
-        <button id="start-update-btn" class="btn btn-primary" onclick="window.updateManager.startUpdate('${updateInfo.downloadUrl}')">
+        <button id="start-update-btn" class="btn btn-primary" onclick="window.updateManager.startUpdate('${updateInfo.downloadUrl}', '${updateInfo.downloadType || 'installer'}')">
           <i data-lucide="download" class="btn-icon"></i>
           <span>Atualizar Agora</span>
         </button>
@@ -205,7 +205,7 @@ function formatReleaseNotes(notes) {
     .replace(/$/, '</p>');
 }
 
-export async function startUpdate(downloadUrl) {
+export async function startUpdate(downloadUrl, downloadType = 'installer') {
   try {
     document.getElementById('cancel-update-btn').style.display = 'none';
     document.getElementById('start-update-btn').style.display = 'none';
@@ -216,14 +216,18 @@ export async function startUpdate(downloadUrl) {
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ downloadUrl })
+      body: JSON.stringify({ downloadUrl, downloadType })
     });
+
+    let retryCount = 0;
+    const maxRetries = 180;
 
     updateProgress = setInterval(async () => {
       try {
         const progress = await apiFetch('/api/updates/progress');
 
         updateProgressDisplay(progress);
+        retryCount = 0;
 
         if (progress.status === 'completed') {
           clearInterval(updateProgress);
@@ -234,6 +238,18 @@ export async function startUpdate(downloadUrl) {
         }
       } catch (error) {
         console.error('Erro ao verificar progresso:', error);
+        retryCount++;
+
+        if (retryCount > 10 && retryCount < maxRetries) {
+          updateProgressDisplay({
+            status: 'restarting',
+            message: 'Aguardando serviço reiniciar...',
+            percentage: 85
+          });
+        } else if (retryCount >= maxRetries) {
+          clearInterval(updateProgress);
+          showUpdateTimeout();
+        }
       }
     }, 1000);
 
@@ -248,7 +264,46 @@ function updateProgressDisplay(progress) {
   const barElement = document.getElementById('progress-bar-fill');
   const percentageElement = document.getElementById('progress-percentage');
 
-  if (messageElement) messageElement.textContent = progress.message;
+  let displayMessage = progress.message;
+
+  switch (progress.status) {
+    case 'starting':
+      displayMessage = 'Iniciando processo de atualização...';
+      break;
+    case 'downloading':
+      displayMessage = progress.message || 'Baixando nova versão...';
+      break;
+    case 'preparing':
+      displayMessage = 'Preparando atualização...';
+      break;
+    case 'stopping-service':
+      displayMessage = 'Parando serviço...';
+      break;
+    case 'backing-up':
+      displayMessage = 'Criando backup da versão atual...';
+      break;
+    case 'updating-files':
+      displayMessage = 'Substituindo arquivos...';
+      break;
+    case 'installing':
+      displayMessage = 'Instalando nova versão...';
+      break;
+    case 'restarting-service':
+    case 'restarting':
+      displayMessage = 'Reiniciando serviço...';
+      break;
+    case 'cleaning':
+      displayMessage = 'Finalizando atualização...';
+      break;
+    case 'completed':
+      displayMessage = 'Atualização concluída com sucesso!';
+      break;
+    case 'error':
+      displayMessage = progress.message || 'Erro durante a atualização';
+      break;
+  }
+
+  if (messageElement) messageElement.textContent = displayMessage;
   if (barElement) barElement.style.width = `${progress.percentage}%`;
   if (percentageElement) percentageElement.textContent = `${progress.percentage}%`;
 }
@@ -285,6 +340,26 @@ function showUpdateError(errorMessage) {
       <p>${errorMessage || 'Ocorreu um erro durante a atualização.'}</p>
       <button class="btn btn-secondary" onclick="window.updateManager.closeUpdateModal()">
         Fechar
+      </button>
+    </div>
+  `;
+
+  if (window.lucide) {
+    window.lucide.createIcons();
+  }
+}
+
+function showUpdateTimeout() {
+  const modalBody = document.querySelector('.update-modal .modal-body');
+  modalBody.innerHTML = `
+    <div class="update-timeout">
+      <i data-lucide="clock" class="warning-icon"></i>
+      <h3>Atualização em Andamento</h3>
+      <p>A atualização está demorando mais que o esperado. O serviço pode estar reiniciando.</p>
+      <p>Por favor, aguarde alguns minutos e recarregue a página.</p>
+      <button class="btn btn-primary" onclick="window.location.reload()">
+        <i data-lucide="refresh-cw" class="btn-icon"></i>
+        Recarregar Página
       </button>
     </div>
   `;
@@ -371,6 +446,7 @@ export async function startUpdateProcess() {
 
   let connectionErrors = 0;
   let lastKnownPercentage = 0;
+  const maxRetries = 180;
 
   try {
     await apiFetch('/api/updates/install', {
@@ -379,7 +455,8 @@ export async function startUpdateProcess() {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        downloadUrl: window.currentUpdateInfo.downloadUrl
+        downloadUrl: window.currentUpdateInfo.downloadUrl,
+        downloadType: window.currentUpdateInfo.downloadType || 'installer'
       })
     });
 
@@ -402,9 +479,17 @@ export async function startUpdateProcess() {
         console.error('Erro ao verificar progresso:', error);
         connectionErrors++;
 
-        if (lastKnownPercentage >= 60 && connectionErrors > 2) {
-          clearInterval(updateProgress);
-          showServiceRestarting();
+        if (lastKnownPercentage >= 60 && connectionErrors > 5) {
+          updateProgressDisplay({
+            status: 'restarting',
+            message: 'Aguardando serviço reiniciar...',
+            percentage: Math.max(lastKnownPercentage, 85)
+          });
+
+          if (connectionErrors >= maxRetries) {
+            clearInterval(updateProgress);
+            showServiceRestarting();
+          }
         }
       }
     }, 1000);
@@ -427,7 +512,7 @@ function showServiceRestarting() {
       <div style="margin-top: 20px;">
         <button class="btn btn-primary" onclick="setTimeout(() => window.location.reload(), 3000); this.disabled = true; this.innerHTML = '<i data-lucide=\\'loader\\' class=\\'progress-spinner\\'></i> Aguardando...'">
           <i data-lucide="refresh-cw" class="btn-icon"></i>
-          Recarregar em 3s
+          Recarregar em 10s
         </button>
       </div>
     </div>
@@ -439,11 +524,12 @@ function showServiceRestarting() {
 
   setTimeout(() => {
     window.location.reload();
-  }, 5000);
+  }, 10000);
 }
 
 window.updateManager = {
   closeUpdateModal,
   startUpdateProcess,
+  startUpdate,
   dismissNotification
 }; 

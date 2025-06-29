@@ -5,6 +5,25 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
+## [1.0.1] - 2024-07-30
+
+### 🐛 Corrigido e Melhorado
+
+- **Sistema de Atualização**: Aprimorada a lógica de atualização com criação automática de backup do executável anterior e implementação de um mecanismo de rollback em caso de falhas, garantindo maior segurança durante o processo.
+- **Notificações por E-mail**: Corrigida uma falha silenciosa que impedia o envio de notificações por e-mail em certas condições, garantindo que todos os alertas sejam enviados corretamente.
+- **Precisão das Notificações**: Ajustado o cálculo de tamanho e duração do backup exibido nas notificações e padronizada a data para o formato pt-BR.
+- **Gerenciamento de Sessão**: Adicionado um limite de tamanho ao arquivo de sessões (`sessions.json`) para prevenir crescimento excessivo e otimizado o processo de salvamento para evitar escritas desnecessárias no disco.
+- **Logs em Tempo Real**: Melhorado o gerenciamento de IDs de log no buffer e adicionada uma limpeza automática de "subscribers" antigos para otimizar o consumo de memória do WebSocket.
+- **Agendador de Backups**: Implementada uma validação de horário mais robusta para garantir que apenas formatos e valores válidos sejam salvos, prevenindo falhas no agendamento de tarefas.
+- **Robustez da Aplicação**:
+    - Adicionado tratamento de erro para a ausência do `7za.exe`, exibindo uma mensagem clara ao usuário.
+    - Melhorado o gerenciamento de conexões com o SQL Server para evitar falhas de conexão intermitentes.
+    - Implementadas verificações de segurança adicionais no sistema de logs e tratamento de timeout ao fechar o servidor HTTP.
+- **Inicialização e Configuração**:
+    - Adicionado tratamento para erros críticos durante a inicialização, garantindo que falhas graves sejam logadas adequadamente.
+    - Aprimorado o tratamento de erros ao salvar configurações na interface.
+    - Corrigido o tratamento de respostas JSON inválidas da API no frontend.
+
 ## [1.0.0] - 2025-06-29
 
 ### 🎉 Release Estável
@@ -288,6 +307,7 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ---
 
+[1.0.1]: https://github.com/onflux-tech/nodebackup-sqlserver/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/onflux-tech/nodebackup-sqlserver/compare/v0.5.0...v1.0.0
 [0.5.0]: https://github.com/onflux-tech/nodebackup-sqlserver/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/onflux-tech/nodebackup-sqlserver/compare/v0.3.1...v0.4.0

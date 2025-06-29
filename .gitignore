@@ -8,3 +8,7 @@ NodeBackup.exe
 NodeBackupInstaller*.exe
 sessions.json
 .encryption.key
+update-status.json
+temp-update-status.json
+temp/
+test-update.bat

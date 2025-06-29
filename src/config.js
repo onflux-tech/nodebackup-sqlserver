@@ -197,6 +197,7 @@ function setConfig(newConfig) {
 }
 
 module.exports = {
+  config,
   loadConfig,
   saveConfig,
   getConfig,

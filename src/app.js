@@ -94,7 +94,7 @@ async function gracefulShutdown(signal, exitCode = 0) {
 
 ensureAssets();
 
-const { loadConfig } = require('./config');
+const { loadConfig, config } = require('./config');
 const { startServer } = require('./server');
 const { scheduleBackups } = require('./services/scheduler');
 const windowsService = require('./services/windowsService');
@@ -125,6 +125,32 @@ async function main() {
 
   logger.info('⏰ Configurando agendamento de backups...');
   scheduleBackups();
+
+  if (config.autoUpdate !== false) {
+    const updater = require('./services/updater');
+
+    setTimeout(async () => {
+      try {
+        const updateInfo = await updater.checkForUpdates();
+        if (updateInfo.updateAvailable) {
+          logger.info(`Nova versão disponível: v${updateInfo.latestVersion} (atual: v${updateInfo.currentVersion})`);
+        }
+      } catch (error) {
+        logger.warn('Erro ao verificar atualizações:', error.message);
+      }
+    }, 60000);
+
+    setInterval(async () => {
+      try {
+        const updateInfo = await updater.checkForUpdates();
+        if (updateInfo.updateAvailable) {
+          logger.info(`Nova versão disponível: v${updateInfo.latestVersion} (atual: v${updateInfo.currentVersion})`);
+        }
+      } catch (error) {
+        logger.warn('Erro ao verificar atualizações:', error.message);
+      }
+    }, 6 * 60 * 60 * 1000);
+  }
 
 }
 

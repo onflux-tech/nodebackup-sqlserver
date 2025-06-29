@@ -7,7 +7,8 @@
   "scripts": {
     "start": "node src/app.js",
     "build": "node scripts/build.js",
-    "build:installer": "powershell -ExecutionPolicy Bypass -File scripts/build-installer.ps1"
+    "build:installer": "powershell -ExecutionPolicy Bypass -File scripts/build-installer.ps1",
+    "prepare-release": "node scripts/prepare-release.js"
   },
   "keywords": [
     "backup",

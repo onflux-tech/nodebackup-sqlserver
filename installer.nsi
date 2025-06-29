@@ -87,8 +87,9 @@ FunctionEnd
 Section "NodeBackup (obrigatório)" SEC01
     SectionIn RO
 
-    ; Se for atualização, parar o serviço
+    ; Se for atualização, parar o serviço apenas se não for modo silencioso
     ${If} $isUpdate == 1
+    ${AndIf} $isSilent == 0
         DetailPrint "Parando o serviço NodeBackup para atualização..."
         nsExec::ExecToLog '"$INSTDIR\nssm.exe" stop NodeBackupSQLServer'
         Sleep 2000 ; Garante que o serviço teve tempo para parar
@@ -148,9 +149,12 @@ Section "NodeBackup (obrigatório)" SEC01
     nsExec::ExecToLog '"$INSTDIR\nssm.exe" set NodeBackupSQLServer DisplayName "Serviço de Backup Automático SqlServer"'
     nsExec::ExecToLog '"$INSTDIR\nssm.exe" set NodeBackupSQLServer Description "Executa backups automáticos de bancos de dados SQL Server."'
     nsExec::ExecToLog '"$INSTDIR\nssm.exe" set NodeBackupSQLServer Start SERVICE_AUTO_START'
-    nsExec::ExecToLog '"$INSTDIR\nssm.exe" start NodeBackupSQLServer'
     
-    DetailPrint "Serviço $1 e iniciado com sucesso!"
+    ; Inicia o serviço apenas se não for modo silencioso (o script de update fará isso)
+    ${If} $isSilent == 0
+        nsExec::ExecToLog '"$INSTDIR\nssm.exe" start NodeBackupSQLServer'
+        DetailPrint "Serviço $1 e iniciado com sucesso!"
+    ${EndIf}
     
     ; Se for modo silencioso, configurar para fechar automaticamente
     ${If} $isSilent == 1

@@ -27,7 +27,7 @@ router.get('/check', requireAuth, async (req, res) => {
 
 router.post('/install', requireAuth, async (req, res) => {
   try {
-    const { downloadUrl } = req.body;
+    const { downloadUrl, downloadType } = req.body;
 
     if (!downloadUrl) {
       return res.status(400).json({
@@ -35,7 +35,7 @@ router.post('/install', requireAuth, async (req, res) => {
       });
     }
 
-    updaterService.performUpdate(downloadUrl).catch(error => {
+    updaterService.performUpdate(downloadUrl, downloadType).catch(error => {
       logger.error('Erro durante atualização:', error);
     });
 

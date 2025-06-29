@@ -2550,3 +2550,31 @@ input::placeholder {
 .form-group.is-validating .input-wrapper input {
   border-color: var(--border-secondary);
 }
+
+/* Update Timeout State */
+.update-timeout {
+  text-align: center;
+  padding: 2rem;
+}
+
+.update-timeout .warning-icon {
+  width: 48px;
+  height: 48px;
+  color: var(--color-warning);
+  margin-bottom: 1rem;
+}
+
+.update-timeout h3 {
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+}
+
+.update-timeout p {
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+  line-height: 1.6;
+}
+
+.update-timeout .btn {
+  margin-top: 1rem;
+}
