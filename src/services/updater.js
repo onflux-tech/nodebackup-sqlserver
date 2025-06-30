@@ -126,7 +126,6 @@ class UpdaterService {
     if (this.updateInProgress) {
       throw new Error('Atualização já em andamento');
     }
-
     if (!downloadUrl) {
       throw new Error('URL de download não disponível');
     }
@@ -142,178 +141,57 @@ class UpdaterService {
 
       this.updateStatus('downloading', 'Baixando nova versão...', 10);
       const downloadPath = path.join(tempDir, downloadType === 'installer' ? 'NodeBackupInstaller-update.exe' : 'NodeBackup-new.exe');
-
       await this.downloadFile(downloadUrl, downloadPath);
 
-      if (downloadType === 'installer') {
-        return await this.performInstallerUpdate(downloadPath);
-      }
+      this.updateStatus('preparing', 'Preparando para aplicar a atualização...', 40);
 
-      this.updateStatus('preparing', 'Preparando atualização...', 50);
-
-      const updateScript = this.createUpdateScript(downloadPath);
+      const updateScript = this.createUpdateScript(downloadPath, downloadType);
       const scriptPath = path.join(tempDir, 'update.bat');
 
       fs.writeFileSync(scriptPath, updateScript);
-      logger.info('Script de atualização criado:', scriptPath);
+      logger.info('Script de atualização unificado criado:', scriptPath);
 
-      this.updateStatus('updating', 'Aplicando atualização...', 60);
+      this.updateStatus('updating', 'Iniciando script de atualização...', 50);
 
       const updateProcess = spawn('cmd.exe', ['/c', 'start', '/min', scriptPath], {
         detached: true,
         stdio: 'ignore',
         shell: false
       });
-
       updateProcess.unref();
 
-      logger.info('Processo de atualização iniciado. O serviço será reiniciado automaticamente.');
+      logger.info('Processo de atualização iniciado. A aplicação será encerrada pelo script para permitir a substituição dos arquivos.');
 
       return {
         success: true,
         message: 'Atualização iniciada. O serviço será reiniciado em breve.'
       };
-
     } catch (error) {
       this.updateStatus('error', error.message, 0);
-      logger.error('Erro durante atualização:', error);
-      throw error;
-    } finally {
+      logger.error('Erro durante o início da atualização:', error);
       this.updateInProgress = false;
-    }
-  }
-
-  async performInstallerUpdate(installerPath) {
-    try {
-      this.updateStatus('stopping-service', 'Parando serviço para atualização...', 50);
-
-      await execAsync(`sc stop ${this.serviceName}`);
-      await this.waitForServiceStatus('STOPPED', 10000);
-
-      this.updateStatus('installing', 'Instalando atualização...', 60);
-
-      const { stdout, stderr } = await execAsync(`"${installerPath}" /S`);
-
-      if (stderr) {
-        logger.warn('Avisos do instalador:', stderr);
-      }
-
-      await new Promise(resolve => setTimeout(resolve, 3000));
-
-      this.updateStatus('restarting-service', 'Reiniciando serviço...', 80);
-
-      await execAsync(`sc start ${this.serviceName}`);
-      await this.waitForServiceStatus('RUNNING', 15000);
-
-      this.updateStatus('completed', 'Atualização concluída!', 100);
-
-      setTimeout(() => {
-        try {
-          fs.unlinkSync(installerPath);
-        } catch (error) {
-          logger.warn('Não foi possível remover arquivo temporário:', error.message);
-        }
-      }, 5000);
-
-      return {
-        success: true,
-        message: 'Atualização concluída com sucesso. O serviço foi reiniciado.'
-      };
-    } catch (error) {
-      this.updateStatus('error', error.message, 0);
       throw error;
     }
   }
 
-  createUpdateScript(newExePath) {
-    const currentExe = process.execPath;
-    const backupExe = currentExe + '.backup';
-    const tempStatusFile = path.join(path.dirname(this.statusFile), 'temp-update-status.json');
+  createUpdateScript(updateFilePath, updateType) {
+    const serviceName = this.serviceName;
 
-    return `@echo off
-setlocal enabledelayedexpansion
+    const updateCommand = updateType === 'installer'
+      ? `start /wait "" "${updateFilePath}" /S`
+      : `copy /Y "${updateFilePath}" "${process.execPath}"`;
 
-:: Aguardar o processo principal encerrar
-echo Aguardando NodeBackup encerrar...
-timeout /t 3 /nobreak > nul
-
-:: Atualizar status
-echo {"status":"stopping-service","message":"Parando servico...","percentage":20} > "${tempStatusFile}"
-
-:: Parar o serviço
-echo Parando servico NodeBackupSQLServer...
-sc stop NodeBackupSQLServer > nul 2>&1
-timeout /t 5 /nobreak > nul
-
-:: Verificar se o serviço parou
-:check_service
-sc query NodeBackupSQLServer | find "STOPPED" > nul
-if errorlevel 1 (
-    timeout /t 2 /nobreak > nul
-    goto check_service
-)
-
-:: Atualizar status
-echo {"status":"backing-up","message":"Criando backup...","percentage":40} > "${tempStatusFile}"
-
-:: Fazer backup do executável atual
-echo Fazendo backup do executavel atual...
-copy /Y "${currentExe}" "${backupExe}" > nul 2>&1
-if errorlevel 1 (
-    echo Erro ao criar backup
-    echo {"status":"error","message":"Erro ao criar backup","percentage":0} > "${tempStatusFile}"
-    exit /b 1
-)
-
-:: Atualizar status
-echo {"status":"updating-files","message":"Substituindo arquivos...","percentage":60} > "${tempStatusFile}"
-
-:: Tentar substituir o executável
-echo Substituindo executavel...
-:retry_copy
-copy /Y "${newExePath}" "${currentExe}" > nul 2>&1
-if errorlevel 1 (
-    :: Aguardar e tentar novamente
-    timeout /t 2 /nobreak > nul
-    goto retry_copy
-)
-
-:: Atualizar status
-echo {"status":"restarting-service","message":"Reiniciando servico...","percentage":80} > "${tempStatusFile}"
-
-:: Reiniciar o serviço
-echo Reiniciando servico...
-sc start NodeBackupSQLServer > nul 2>&1
-
-:: Aguardar o serviço iniciar
-timeout /t 5 /nobreak > nul
-
-:: Verificar se o serviço iniciou
-sc query NodeBackupSQLServer | find "RUNNING" > nul
-if errorlevel 1 (
-    :: Tentar restaurar backup se falhou
-    echo Erro ao iniciar servico, restaurando backup...
-    echo {"status":"error","message":"Restaurando versao anterior...","percentage":90} > "${tempStatusFile}"
-    copy /Y "${backupExe}" "${currentExe}" > nul 2>&1
-    sc start NodeBackupSQLServer > nul 2>&1
-    echo {"status":"error","message":"Falha na atualizacao, versao anterior restaurada","percentage":0} > "${tempStatusFile}"
-) else (
-    :: Sucesso
-    echo {"status":"completed","message":"Atualizacao concluida com sucesso!","percentage":100} > "${tempStatusFile}"
-    
-    :: Limpar arquivos temporários após sucesso
-    timeout /t 5 /nobreak > nul
-    del /Q "${backupExe}" > nul 2>&1
-    del /Q "${newExePath}" > nul 2>&1
-)
-
-:: Copiar status final para arquivo principal
-copy /Y "${tempStatusFile}" "${this.statusFile}" > nul 2>&1
-del /Q "${tempStatusFile}" > nul 2>&1
-
-:: Auto-deletar este script
+    const script = `
+@echo off
+timeout /t 3 > nul
+sc stop ${serviceName}
+timeout /t 5 > nul
+${updateCommand}
+sc start ${serviceName}
+del /Q "${updateFilePath}" > nul 2>&1
 (goto) 2>nul & del "%~f0"
 `;
+    return script.trim();
   }
 
   updateStatus(status, message, percentage) {
