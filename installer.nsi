@@ -11,7 +11,7 @@ Var isSilent
 
 ; Informações da Versão
 !define PRODUCT_NAME "NodeBackup SQL Server"
-!define PRODUCT_VERSION "1.0.7"
+!define PRODUCT_VERSION "1.0.8"
 !define PRODUCT_PUBLISHER "Onflux Tech"
 !define PRODUCT_WEB_SITE "https://github.com/onflux-tech/nodebackup-sqlserver"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
@@ -26,8 +26,8 @@ ShowInstDetails nevershow
 ShowUnInstDetails nevershow
 
 ; Informações de Versão do Arquivo
-VIProductVersion "1.0.7.0"
-VIFileVersion "1.0.7.0"
+VIProductVersion "1.0.8.0"
+VIFileVersion "1.0.8.0"
 VIAddVersionKey "ProductName" "${PRODUCT_NAME}"
 VIAddVersionKey "Comments" "Backup automático SQL Server"
 VIAddVersionKey "CompanyName" "${PRODUCT_PUBLISHER}"
