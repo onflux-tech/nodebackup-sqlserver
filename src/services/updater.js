@@ -177,22 +177,39 @@ class UpdaterService {
 
   createUpdateScript(updateFilePath, updateType) {
     const serviceName = this.serviceName;
+    const statusFile = this.statusFile;
 
     const updateCommand = updateType === 'installer'
       ? `start /wait "" "${updateFilePath}" /S`
       : `copy /Y "${updateFilePath}" "${process.execPath}"`;
 
-    const script = `
-@echo off
-timeout /t 3 > nul
-sc stop ${serviceName}
-timeout /t 5 > nul
-${updateCommand}
-sc start ${serviceName}
-del /Q "${updateFilePath}" > nul 2>&1
-(goto) 2>nul & del "%~f0"
-`;
-    return script.trim();
+    const script = [
+      '@echo off',
+      'chcp 65001 > nul',
+      'timeout /t 3 > nul',
+      '',
+      `echo {"status":"stopping-service","message":"Parando o servico...","percentage":60} > "${statusFile}"`,
+      `sc stop ${serviceName}`,
+      'timeout /t 5 > nul',
+      '',
+      updateCommand,
+      '',
+      `echo {"status":"restarting-service","message":"Reiniciando o servico...","percentage":80} > "${statusFile}"`,
+      `sc start ${serviceName}`,
+      'timeout /t 5 > nul',
+      '',
+      `sc query ${serviceName} | find "RUNNING" > nul`,
+      'if errorlevel 1 (',
+      `    echo {"status":"error","message":"Falha ao reiniciar o servico apos a atualizacao.","percentage":0} > "${statusFile}"`,
+      ') else (',
+      `    echo {"status":"completed","message":"Atualizacao concluida com sucesso!","percentage":100} > "${statusFile}"`,
+      ')',
+      '',
+      `del /Q "${updateFilePath}" > nul 2>&1`,
+      '(goto) 2>nul & del "%~f0"'
+    ].join('\\r\\n');
+
+    return script;
   }
 
   updateStatus(status, message, percentage) {
