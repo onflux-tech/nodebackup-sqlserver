@@ -149,11 +149,11 @@ class UpdaterService {
       const scriptPath = path.join(tempDir, 'update.bat');
 
       fs.writeFileSync(scriptPath, updateScript);
-      logger.info('Script de atualização unificado criado:', scriptPath);
+      logger.info('Script de atualização unificado criado: ' + scriptPath);
 
       this.updateStatus('updating', 'Iniciando script de atualização...', 50);
 
-      const updateProcess = spawn('cmd.exe', ['/c', 'start', '/min', scriptPath], {
+      const updateProcess = spawn('cmd.exe', ['/c', 'start', '""', '/min', scriptPath], {
         detached: true,
         stdio: 'ignore',
         shell: false
@@ -169,8 +169,9 @@ class UpdaterService {
     } catch (error) {
       this.updateStatus('error', error.message, 0);
       logger.error('Erro durante o início da atualização:', error);
-      this.updateInProgress = false;
       throw error;
+    } finally {
+      this.updateInProgress = false;
     }
   }
 
